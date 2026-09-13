@@ -1,0 +1,33 @@
+# Dipendenze
+node_modules/
+
+# Build Next.js
+.next/
+out/
+
+# Variabili ambiente — NON committare MAI!
+.env
+.env.local
+.env.development.local
+.env.production.local
+.env.test.local
+
+# Uploads e file multimediali locali
+uploads/
+
+# Log
+*.log
+npm-debug.log*
+
+# File di sistema
+.DS_Store
+Thumbs.db
+
+# Cache
+*.tsbuildinfo
+next-env.d.ts
+
+# IDE
+.vscode/
+.idea/
+.trae/

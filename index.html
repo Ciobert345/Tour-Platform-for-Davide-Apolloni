@@ -1,0 +1,2862 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Davide Apolloni | Guida Turistica Autorizzata - Veneto e Trentino</title>
+  <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+  <meta name="description"
+    content="Sito ufficiale di Davide Apolloni: Guida Turistica Autorizzata, Accompagnatore Turistico e Professore di Lettere e Storia. Visite guidate a Venezia, Padova, Vicenza, Ville Palladiane, Castelli Trentini e Luoghi della Grande Guerra.">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap"
+    rel="stylesheet">
+
+  <!-- FontAwesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    /* ==========================================================================
+       DESIGN SYSTEM & CSS VARIABLES
+       ========================================================================== */
+    :root {
+      --bg-main: #f9f5ec;
+      --bg-card: #fffdf9;
+      --bg-alt: #ede1ca;
+      --bg-dark: #241a12;
+      --color-stone: #dec5a5;
+      --color-terracotta: #93161a;
+      --color-terracotta-dark: #4d1a10;
+      --color-olive: #936f52;
+      --color-olive-dark: #482e21;
+      --color-blue-adriatic: #537385;
+      --color-blue-dark: #47596a;
+      --text-main: #2b2018;
+      --text-muted: #72553f;
+      --text-light: #b18e6d;
+      --text-white: #f7f0e3;
+
+
+      --font-serif: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+      --shadow-sm: 0 2px 8px rgba(42, 39, 37, 0.04);
+      --shadow-md: 0 8px 24px rgba(42, 39, 37, 0.08);
+      --shadow-lg: 0 16px 40px rgba(42, 39, 37, 0.12);
+
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --radius-pill: 100px;
+
+      --transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      --max-width: 1240px;
+    }
+
+    /* Base Reset */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      font-size: 16px;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      font-family: var(--font-serif);
+      font-weight: 600;
+      line-height: 1.25;
+      color: var(--text-main);
+    }
+
+    p {
+      margin-bottom: 1rem;
+    }
+
+    a {
+      color: var(--color-terracotta);
+      text-decoration: none;
+      transition: var(--transition);
+    }
+
+    a:hover {
+      color: var(--color-terracotta-dark);
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .container {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    /* Section Styling */
+    section {
+      padding: 6rem 0;
+      position: relative;
+    }
+
+    .section-title-wrap {
+      text-align: center;
+      max-width: 760px;
+      margin: 0 auto 4rem auto;
+    }
+
+    .section-subtitle {
+      font-family: var(--font-sans);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 700;
+      color: var(--color-terracotta);
+      margin-bottom: 0.75rem;
+      display: block;
+    }
+
+    .section-title {
+      font-size: 2.75rem;
+      margin-bottom: 1.25rem;
+      min-height: 3.5rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .section-desc {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      font-weight: 400;
+      min-height: 1.6em;
+      min-width: 100%;
+    }
+
+    /* Buttons — Unified 8px radius throughout */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      padding: 0.9rem 1.8rem;
+      font-family: var(--font-sans);
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: var(--transition);
+      text-decoration: none;
+      white-space: nowrap;
+      min-width: fit-content;
+    }
+
+    .btn-primary {
+      background-color: var(--color-terracotta);
+      color: var(--text-white);
+      box-shadow: 0 4px 14px rgba(200, 109, 81, 0.3);
+    }
+
+    .btn-primary:hover {
+      background-color: var(--color-terracotta-dark);
+      color: var(--text-white);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(200, 109, 81, 0.4);
+    }
+
+    .btn-secondary {
+      background-color: transparent;
+      color: var(--text-main);
+      border-color: var(--text-main);
+    }
+
+    .btn-secondary:hover {
+      background-color: var(--text-main);
+      color: var(--text-white);
+      transform: translateY(-2px);
+    }
+
+    .btn-outline-terracotta {
+      background-color: transparent;
+      color: var(--color-terracotta);
+      border-color: var(--color-terracotta);
+    }
+
+    .btn-outline-terracotta:hover {
+      background-color: var(--color-terracotta);
+      color: var(--text-white);
+      transform: translateY(-2px);
+    }
+
+    .btn-sm {
+      padding: 0.6rem 1.2rem;
+      font-size: 0.85rem;
+    }
+
+    /* ==========================================================================
+       HEADER & NAVIGATION
+       ========================================================================== */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      background-color: rgba(249, 248, 245, 0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(42, 39, 37, 0.06);
+      transition: background-color 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;
+    }
+
+    .header.scrolled {
+      background-color: rgba(255, 255, 255, 0.97);
+      box-shadow: 0 4px 20px rgba(42, 39, 37, 0.08);
+      border-bottom-color: rgba(200, 109, 81, 0.15);
+    }
+
+    .nav-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 72px;
+      min-width: 100%;
+    }
+
+    .logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      text-decoration: none;
+    }
+
+    .logo-badge {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--color-terracotta);
+      transition: var(--transition);
+    }
+
+    .logo-wrap:hover .logo-badge {
+      transform: scale(1.05);
+      box-shadow: 0 2px 8px rgba(200, 109, 81, 0.25);
+    }
+
+    .logo-text-wrap {
+      display: flex;
+      flex-direction: column;
+      min-width: 140px;
+    }
+
+    .logo-name {
+      font-family: var(--font-serif);
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-main);
+      line-height: 1.1;
+      white-space: nowrap;
+    }
+
+    .logo-sub {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--color-terracotta);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .nav-menu {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      list-style: none;
+    }
+
+    .nav-link {
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      position: relative;
+      padding: 0.5rem 0.85rem;
+      border-radius: var(--radius-sm);
+      transition: color 0.3s ease, background-color 0.3s ease;
+      white-space: nowrap;
+      min-width: fit-content;
+    }
+
+    .nav-link:hover {
+      color: var(--color-terracotta);
+      background-color: rgba(200, 109, 81, 0.06);
+    }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: 2px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0%;
+      height: 2px;
+      background: linear-gradient(90deg, var(--color-terracotta), var(--color-terracotta-dark));
+      border-radius: 2px;
+      transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .nav-link:hover::after {
+      width: 60%;
+    }
+
+    .nav-link.active {
+      color: var(--color-terracotta);
+      font-weight: 600;
+    }
+
+    .nav-link.active::after {
+      width: 60%;
+    }
+
+    /* Separator between nav and actions */
+    .nav-separator {
+      width: 1px;
+      height: 28px;
+      background-color: rgba(42, 39, 37, 0.12);
+      margin: 0 0.5rem;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      min-width: fit-content;
+    }
+
+    /* Language Switcher Toggle */
+    .lang-switcher {
+      display: flex;
+      align-items: center;
+      background-color: var(--bg-alt);
+      border-radius: var(--radius-sm);
+      padding: 3px;
+      border: 1px solid rgba(42, 39, 37, 0.08);
+    }
+
+    .lang-btn {
+      border: none;
+      background: none;
+      padding: 0.3rem 0.7rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: var(--transition);
+      min-width: 30px;
+      text-align: center;
+    }
+
+    .lang-btn:hover:not(.active) {
+      color: var(--text-main);
+    }
+
+    .lang-btn.active {
+      background-color: var(--color-terracotta);
+      color: var(--text-white);
+      box-shadow: 0 2px 6px rgba(200, 109, 81, 0.3);
+    }
+
+    /* Mobile Hamburger */
+    .mobile-nav-toggle {
+      display: none;
+      background: none;
+      border: none;
+      width: 40px;
+      height: 40px;
+      position: relative;
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+      transition: var(--transition);
+    }
+
+    .mobile-nav-toggle:hover {
+      background-color: rgba(200, 109, 81, 0.08);
+    }
+
+    .hamburger-line {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background-color: var(--text-main);
+      border-radius: 2px;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .hamburger-line:nth-child(1) {
+      top: 12px;
+    }
+
+    .hamburger-line:nth-child(2) {
+      top: 19px;
+    }
+
+    .hamburger-line:nth-child(3) {
+      top: 26px;
+    }
+
+    .mobile-nav-toggle.active .hamburger-line:nth-child(1) {
+      top: 19px;
+      transform: translateX(-50%) rotate(45deg);
+    }
+
+    .mobile-nav-toggle.active .hamburger-line:nth-child(2) {
+      opacity: 0;
+      transform: translateX(-50%) scaleX(0);
+    }
+
+    .mobile-nav-toggle.active .hamburger-line:nth-child(3) {
+      top: 19px;
+      transform: translateX(-50%) rotate(-45deg);
+    }
+
+    /* Mobile Menu Overlay */
+    .mobile-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      top: 72px;
+      background-color: rgba(30, 36, 33, 0.4);
+      backdrop-filter: blur(4px);
+      z-index: 998;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .mobile-overlay.active {
+      opacity: 1;
+    }
+
+    /* ==========================================================================
+       HERO SECTION
+       ========================================================================== */
+    .hero {
+      padding-top: 150px;
+      padding-bottom: 6rem;
+      min-height: 90vh;
+      display: flex;
+      align-items: center;
+      background: linear-gradient(180deg, rgba(249, 248, 245, 0.4) 0%, rgba(241, 236, 227, 0.8) 100%),
+        url('uploads/villa-maser.jpg') center/cover no-repeat;
+      position: relative;
+    }
+
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(249, 248, 245, 0.95) 0%, rgba(249, 248, 245, 0.85) 50%, rgba(249, 248, 245, 0.4) 100%);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 720px;
+    }
+
+    .hero-academic-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background-color: rgba(92, 107, 87, 0.12);
+      border: 1px solid rgba(92, 107, 87, 0.25);
+      color: var(--color-olive-dark);
+      white-space: nowrap;
+      padding: 0.4rem 1rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      min-width: fit-content;
+    }
+
+    .hero-title {
+      font-size: 3.5rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 1.25rem;
+      letter-spacing: -0.5px;
+    }
+
+    .hero-title span {
+      color: var(--color-terracotta);
+      font-style: italic;
+    }
+
+    .hero-description {
+      font-size: 1.2rem;
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+      line-height: 1.7;
+    }
+
+    .hero-highlights {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.2rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .hero-highlight-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      font-size: 0.95rem;
+      color: var(--text-main);
+    }
+
+    .hero-highlight-item i {
+      color: var(--color-terracotta);
+      font-size: 1.1rem;
+      margin-top: 0.2rem;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      flex-wrap: wrap;
+    }
+
+    /* ==========================================================================
+       CHI SONO / PROFILE SECTION
+       ========================================================================== */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 0.85fr 1.15fr;
+      gap: 4rem;
+      align-items: center;
+    }
+
+    .about-image-wrap {
+      position: relative;
+    }
+
+    .about-image {
+      width: 100%;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      object-fit: cover;
+      aspect-ratio: 4/5;
+    }
+
+    .about-experience-card {
+      position: absolute;
+      bottom: -20px;
+      right: -20px;
+      background-color: var(--color-olive);
+      color: var(--text-white);
+      padding: 1.5rem;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+      max-width: 220px;
+    }
+
+    .about-experience-num {
+      font-family: var(--font-serif);
+      font-size: 2.5rem;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 0.25rem;
+    }
+
+    .about-experience-text {
+      font-size: 0.85rem;
+      line-height: 1.3;
+      opacity: 0.9;
+    }
+
+    .about-bio-text {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      line-height: 1.8;
+    }
+
+    .about-credentials-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.2rem;
+      margin: 2rem 0;
+    }
+
+    .credential-card {
+      background-color: var(--bg-card);
+      padding: 1.2rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(42, 39, 37, 0.08);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .credential-card h4 {
+      font-family: var(--font-sans);
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+      color: var(--color-terracotta);
+    }
+
+    .credential-card p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    /* ==========================================================================
+       TOURS / SERVICES SECTION
+       ========================================================================== */
+    .tours-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+    }
+
+    .tour-card {
+      background-color: var(--bg-card);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+      border: 1px solid rgba(42, 39, 37, 0.06);
+    }
+
+    .tour-card:hover {
+      transform: translateY(-8px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .tour-image-wrap {
+      position: relative;
+      height: 240px;
+      overflow: hidden;
+    }
+
+    .tour-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.6s ease;
+    }
+
+    .tour-card:hover .tour-image {
+      transform: scale(1.06);
+    }
+
+    .tour-tag {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      background-color: rgba(30, 36, 33, 0.85);
+      backdrop-filter: blur(4px);
+      color: var(--text-white);
+      padding: 0.35rem 0.85rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .tour-content {
+      padding: 1.8rem;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+    }
+
+    .tour-title {
+      font-size: 1.6rem;
+      margin-bottom: 0.8rem;
+      color: var(--text-main);
+      min-height: 2rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .tour-desc {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      flex-grow: 1;
+      line-height: 1.6;
+      min-height: 5rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .tour-highlights-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .chip {
+      background-color: var(--bg-alt);
+      color: var(--text-main);
+      padding: 0.25rem 0.6rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.78rem;
+      font-weight: 500;
+    }
+
+    .tour-actions {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: auto;
+    }
+
+    .tour-actions .btn {
+      flex: 1;
+    }
+
+    /* ==========================================================================
+       SLOW TOURISM SECTION (STANDALONE)
+       ========================================================================== */
+    .slow-tourism-section {
+      background-color: var(--bg-alt);
+      padding: 4rem 0;
+    }
+
+    .slow-tourism-banner {
+      background-color: var(--bg-card);
+      border-left: 4px solid var(--color-terracotta);
+      border-radius: var(--radius-md);
+      padding: 2.5rem 3rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 1.5rem;
+      box-shadow: var(--shadow-md);
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .slow-icon {
+      font-size: 2rem;
+      color: var(--color-terracotta);
+      flex-shrink: 0;
+      margin-top: 0.2rem;
+    }
+
+    .slow-content h4 {
+      font-size: 1.35rem;
+      color: var(--text-main);
+      margin-bottom: 0.4rem;
+    }
+
+    .slow-content p {
+      font-size: 0.98rem;
+      color: var(--text-muted);
+      margin: 0;
+      line-height: 1.65;
+    }
+
+    /* ==========================================================================
+       EVENTI IN EVIDENZA / PROSSIME PARTENZE
+       ========================================================================== */
+    .events-section {
+      background-color: var(--bg-alt);
+    }
+
+    .events-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+    }
+
+    .event-card {
+      background-color: var(--bg-card);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+      border: 1px solid rgba(42, 39, 37, 0.06);
+      display: flex;
+      flex-direction: column;
+      transition: var(--transition);
+    }
+
+    .event-card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .event-image-wrap {
+      position: relative;
+      height: 200px;
+      overflow: hidden;
+    }
+
+    .event-image-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+
+    .event-card:hover .event-image-wrap img {
+      transform: scale(1.06);
+    }
+
+    .event-badge {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      background-color: var(--color-terracotta);
+      color: var(--text-white);
+      padding: 0.3rem 0.85rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .event-badge.alt {
+      background-color: var(--color-olive-dark);
+    }
+
+    .event-badge.info {
+      background-color: var(--color-blue-adriatic);
+    }
+
+    .event-content {
+      padding: 1.6rem;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+    }
+
+    .event-title {
+      font-size: 1.4rem;
+      margin-bottom: 0.6rem;
+      min-height: 2.8rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .event-desc {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      flex-grow: 1;
+      line-height: 1.6;
+      min-height: 4.8rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* ==========================================================================
+       ESPERIENZE ESCLUSIVE (SFONDO SCURO)
+       ========================================================================== */
+    .exclusive-section {
+      background-color: var(--bg-dark);
+      color: var(--text-white);
+    }
+
+    .exclusive-section .section-title {
+      color: var(--text-white);
+    }
+
+    .exclusive-section .section-desc {
+      color: rgba(250, 249, 246, 0.75);
+    }
+
+    .exclusive-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+    }
+
+    .exclusive-card {
+      background-color: rgba(255, 255, 255, 0.04);
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: var(--transition);
+    }
+
+    .exclusive-card:hover {
+      transform: translateY(-6px);
+      background-color: rgba(255, 255, 255, 0.07);
+      border-color: rgba(200, 109, 81, 0.5);
+    }
+
+    .exclusive-image-wrap {
+      height: 220px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .exclusive-image-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.6s ease;
+    }
+
+    .exclusive-card:hover .exclusive-image-wrap img {
+      transform: scale(1.08);
+    }
+
+    .exclusive-content {
+      padding: 1.8rem;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+    }
+
+    .exclusive-title {
+      font-size: 1.5rem;
+      color: var(--text-white);
+      margin-bottom: 0.6rem;
+      min-height: 2rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .exclusive-desc {
+      font-size: 0.92rem;
+      color: rgba(250, 249, 246, 0.75);
+      margin-bottom: 1.5rem;
+      flex-grow: 1;
+      line-height: 1.6;
+      min-height: 4.8rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* ==========================================================================
+       TESTIMONIANZE / COSA DICONO I CLIENTII
+       ========================================================================== */
+    .reviews-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+    }
+
+    .review-card {
+      background-color: var(--bg-card);
+      border-radius: var(--radius-md);
+      padding: 2rem;
+      box-shadow: var(--shadow-md);
+      border: 1px solid rgba(42, 39, 37, 0.06);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: var(--transition);
+      min-height: 280px;
+    }
+
+    .review-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .review-stars {
+      color: #E6B800;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+
+    .review-text {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      font-style: italic;
+      line-height: 1.65;
+      margin-bottom: 1.5rem;
+    }
+
+    .review-author {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .review-location {
+      font-size: 0.8rem;
+      color: var(--text-light);
+      font-weight: 400;
+    }
+
+    /* ==========================================================================
+       CITAZIONE DI CHIUSURA (SEZIONE MINIMAL A SÈ)
+       ========================================================================== */
+    .quote-section {
+      background-color: var(--color-olive-dark);
+      color: var(--text-white);
+      padding: 5.5rem 0;
+      text-align: center;
+    }
+
+    .quote-content {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    .quote-text-main {
+      font-family: var(--font-serif);
+      font-size: 2.2rem;
+      font-style: italic;
+      line-height: 1.4;
+      margin-bottom: 1.5rem;
+      color: var(--text-white);
+    }
+
+    .quote-author-name {
+      font-family: var(--font-sans);
+      font-size: 1rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: rgba(250, 249, 246, 0.8);
+    }
+
+    /* ==========================================================================
+       MEDIA / GALLERY & VIDEO SECTION
+       ========================================================================== */
+    .media-section {
+      background-color: var(--bg-alt);
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 4rem;
+    }
+
+    .gallery-item {
+      position: relative;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      height: 220px;
+      cursor: pointer;
+    }
+
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+
+    .gallery-item:hover img {
+      transform: scale(1.08);
+    }
+
+    .gallery-caption {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(0deg, rgba(30, 36, 33, 0.85) 0%, transparent 60%);
+      display: flex;
+      align-items: flex-end;
+      padding: 1rem;
+      color: var(--text-white);
+      font-size: 0.88rem;
+      font-weight: 500;
+      opacity: 0;
+      transition: var(--transition);
+    }
+
+    .gallery-item:hover .gallery-caption {
+      opacity: 1;
+    }
+
+    /* Video Player Box */
+    .video-container-box {
+      background-color: var(--bg-card);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      border: 1px solid rgba(42, 39, 37, 0.08);
+    }
+
+    .video-wrapper {
+      position: relative;
+      background-color: #000;
+      aspect-ratio: 16/9;
+    }
+
+    .video-wrapper video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .video-info-content {
+      padding: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .video-tag {
+      color: var(--color-terracotta);
+      font-weight: 700;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 0.5rem;
+    }
+
+    .video-title {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+    }
+
+    .video-text {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+      margin-bottom: 1.5rem;
+    }
+
+    /* ==========================================================================
+       BOOKING FORM SECTION (CENTRAL CORE)
+       ========================================================================== */
+    .booking-section {
+      background-color: var(--bg-main);
+    }
+
+    .booking-wrapper {
+      background-color: var(--bg-card);
+      border-radius: var(--radius-lg);
+      padding: 3.5rem;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid rgba(42, 39, 37, 0.08);
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .form-group.full-width {
+      grid-column: span 2;
+    }
+
+    .form-label {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .form-label span.req {
+      color: var(--color-terracotta);
+    }
+
+    .form-control {
+      padding: 0.85rem 1rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(42, 39, 37, 0.18);
+      background-color: #FAF9F6;
+      font-family: var(--font-sans);
+      font-size: 0.95rem;
+      color: var(--text-main);
+      transition: var(--transition);
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--color-terracotta);
+      background-color: #FFFFFF;
+      box-shadow: 0 0 0 3px rgba(200, 109, 81, 0.15);
+    }
+
+    textarea.form-control {
+      resize: vertical;
+      min-height: 110px;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--color-terracotta);
+      margin-top: 0.2rem;
+      cursor: pointer;
+    }
+
+    .checkbox-label {
+      font-size: 0.84rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .form-submit-btn {
+      width: 100%;
+      padding: 1.1rem;
+      font-size: 1.05rem;
+      margin-top: 1rem;
+    }
+
+    .form-alert-success {
+      display: none;
+      background-color: rgba(72, 46, 33, 0.12);
+      border: 1px solid var(--color-olive);
+      color: var(--color-olive-dark);
+      padding: 1.2rem;
+      border-radius: var(--radius-sm);
+      text-align: center;
+      margin-top: 1.5rem;
+      font-weight: 600;
+    }
+
+    /* ==========================================================================
+       CONTACTS & DISCREPANCY NOTICE SECTION
+       ========================================================================== */
+    .contacts-section {
+      background-color: var(--bg-dark);
+      color: var(--text-white);
+    }
+
+    .contacts-section .section-title,
+    .contacts-section h3,
+    .contacts-section h4 {
+      color: var(--text-white);
+    }
+
+    .contacts-section .section-desc {
+      color: rgba(250, 249, 246, 0.7);
+    }
+
+    .contacts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      margin-bottom: 3rem;
+    }
+
+    .contact-card {
+      background-color: rgba(255, 255, 255, 0.05);
+      padding: 2rem;
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .contact-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 1.2rem;
+      margin-bottom: 1.8rem;
+    }
+
+    .contact-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .contact-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background-color: var(--color-terracotta);
+      color: var(--text-white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .contact-info h4 {
+      font-family: var(--font-sans);
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 0.2rem;
+      opacity: 0.8;
+    }
+
+    .contact-info a,
+    .contact-info p {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-white);
+      margin: 0;
+    }
+
+    /* Discrepancy Box */
+    .discrepancy-box {
+      background-color: rgba(44, 94, 122, 0.25);
+      border: 1px solid rgba(44, 94, 122, 0.5);
+      border-radius: var(--radius-md);
+      padding: 1.8rem;
+    }
+
+    .discrepancy-title {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      color: #79C2EC;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.8rem;
+    }
+
+    .discrepancy-text {
+      font-size: 0.88rem;
+      line-height: 1.6;
+      color: rgba(250, 249, 246, 0.85);
+    }
+
+    /* ==========================================================================
+       MODALS (CV & TOUR DETAILS)
+       ========================================================================== */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(30, 36, 33, 0.75);
+      backdrop-filter: blur(6px);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: var(--transition);
+    }
+
+    .modal-backdrop.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-window {
+      background-color: var(--bg-card);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 860px;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      padding: 3rem;
+      transform: translateY(20px);
+      transition: var(--transition);
+    }
+
+    .modal-backdrop.active .modal-window {
+      transform: translateY(0);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 1.5rem;
+      right: 1.5rem;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+    }
+
+    .modal-close:hover {
+      background-color: var(--bg-alt);
+      color: var(--text-main);
+    }
+
+    .cv-modal-header {
+      border-bottom: 1px solid rgba(42, 39, 37, 0.1);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .cv-modal-title {
+      font-size: 2.2rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .cv-modal-sub {
+      color: var(--color-terracotta);
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .cv-section {
+      margin-bottom: 2rem;
+    }
+
+    .cv-section-title {
+      font-size: 1.35rem;
+      color: var(--color-olive-dark);
+      border-left: 3px solid var(--color-olive);
+      padding-left: 0.8rem;
+      margin-bottom: 1rem;
+    }
+
+    .cv-list {
+      list-style: none;
+    }
+
+    .cv-list-item {
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .cv-list-item strong {
+      color: var(--text-main);
+    }
+
+    /* ==========================================================================
+       FOOTER
+       ========================================================================== */
+    .footer {
+      background-color: #141816;
+      color: rgba(250, 249, 246, 0.6);
+      padding: 3rem 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.88rem;
+    }
+
+    .footer-flex {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+    }
+
+    .footer-brand {
+      color: var(--text-white);
+      font-family: var(--font-serif);
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+
+    /* ==========================================================================
+       SECTION VISUAL DIVIDERS
+       ========================================================================== */
+    .section-divider {
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--color-terracotta), var(--color-terracotta-dark));
+      border-radius: 3px;
+      margin: 0 auto 2rem auto;
+    }
+
+    /* ==========================================================================
+       RESPONSIVE DESIGN (MOBILE FIRST OVERRIDES)
+       ========================================================================== */
+    @media (max-width: 992px) {
+      .hero-title {
+        font-size: 2.75rem;
+      }
+
+      .about-grid {
+        grid-template-columns: 1fr;
+        gap: 2.5rem;
+      }
+
+      .tours-grid,
+      .events-grid,
+      .exclusive-grid,
+      .reviews-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .gallery-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .video-container-box {
+        grid-template-columns: 1fr;
+      }
+
+      .contacts-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .slow-tourism-banner {
+        flex-direction: column;
+        gap: 0.8rem;
+        padding: 1.5rem 1.8rem;
+      }
+
+      .nav-separator {
+        display: none;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .nav-menu {
+        position: fixed;
+        top: 72px;
+        left: 0;
+        width: 100%;
+        background-color: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        flex-direction: column;
+        padding: 1.5rem 2rem 2rem;
+        gap: 0.25rem;
+        box-shadow: 0 16px 40px rgba(42, 39, 37, 0.12);
+        transform: translateY(-120%);
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        z-index: 999;
+      }
+
+      .nav-menu.active {
+        transform: translateY(0);
+      }
+
+      .nav-menu .nav-link {
+        display: block;
+        width: 100%;
+        padding: 0.8rem 1rem;
+        font-size: 1rem;
+        border-radius: var(--radius-sm);
+      }
+
+      .nav-menu .nav-link::after {
+        display: none;
+      }
+
+      .nav-menu .nav-link.active {
+        background-color: rgba(200, 109, 81, 0.08);
+        color: var(--color-terracotta);
+      }
+
+      .nav-menu .nav-link:hover {
+        background-color: rgba(200, 109, 81, 0.06);
+      }
+
+      .mobile-nav-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .mobile-overlay {
+        display: block;
+        pointer-events: none;
+      }
+
+      .mobile-overlay.active {
+        pointer-events: auto;
+      }
+
+      .nav-separator {
+        display: none;
+      }
+
+      .hero-highlights {
+        grid-template-columns: 1fr;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .form-group.full-width {
+        grid-column: span 1;
+      }
+
+      .booking-wrapper {
+        padding: 2rem 1.5rem;
+      }
+
+      .modal-window {
+        padding: 2rem 1.5rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ==========================================================================
+       STICKY NAVIGATION HEADER
+       ========================================================================== -->
+  <header class="header" id="header">
+    <div class="container nav-container">
+      <a href="#hero" class="logo-wrap">
+        <img src="loghi/Guida-Veneto-e-Trentino.png" alt="Davide Apolloni Logo" class="logo-badge"
+          onerror="this.src='uploads/davide-apolloni.jpg'">
+        <div class="logo-text-wrap">
+          <span class="logo-name">Davide Apolloni</span>
+          <span class="logo-sub" data-i18n="nav.subtitle">Guida Turistica Autorizzata</span>
+        </div>
+      </a>
+
+      <nav>
+        <ul class="nav-menu" id="nav-menu">
+          <li><a href="#chi-sono" class="nav-link" data-i18n="nav.about" data-section="chi-sono">Chi sono</a></li>
+          <li><a href="#tour" class="nav-link" data-i18n="nav.tours" data-section="tour">I Tour</a></li>
+          <li><a href="#esperienze" class="nav-link" data-i18n="nav.experiences"
+              data-section="esperienze">Esperienze</a></li>
+          <li><a href="#grande-guerra" class="nav-link" data-i18n="nav.ww1" data-section="grande-guerra">Grande
+              Guerra</a></li>
+          <li><a href="#media" class="nav-link" data-i18n="nav.media" data-section="media">Galleria & Video</a></li>
+          <li><a href="#contatti" class="nav-link" data-i18n="nav.contacts" data-section="contatti">Contatti</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <div class="nav-separator"></div>
+
+        <!-- Language Switcher -->
+        <div class="lang-switcher">
+          <button class="lang-btn active" id="btn-it" onclick="setLanguage('it')">IT</button>
+          <button class="lang-btn" id="btn-en" onclick="setLanguage('en')">EN</button>
+        </div>
+
+        <a href="#prenota" class="btn btn-primary btn-sm" data-i18n="nav.book">Prenota una visita</a>
+
+        <button class="mobile-nav-toggle" id="mobile-toggle" aria-label="Menu">
+          <span class="hamburger-line"></span>
+          <span class="hamburger-line"></span>
+          <span class="hamburger-line"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile overlay (closes menu when tapping outside) -->
+  <div class="mobile-overlay" id="mobile-overlay"></div>
+
+  <!-- ==========================================================================
+       HERO SECTION
+       ========================================================================== -->
+  <section class="hero" id="hero">
+    <div class="hero-overlay"></div>
+    <div class="container hero-content">
+      <div class="hero-academic-badge">
+        <i class="fa-solid fa-graduation-cap"></i>
+        <span data-i18n="hero.badge">Professore di Lettere & Storia • Specialista in Storia dell'Arte</span>
+      </div>
+
+      <h1 class="hero-title" data-i18n="hero.title">
+        Scopri Veneto & Trentino con una <span>Guida Turistica Autorizzata</span>
+      </h1>
+
+      <p class="hero-description" data-i18n="hero.desc">
+        Itinerari culturali ed eleganti condotti da un professore di storia dell'arte ed esperto del territorio. Dalle
+        iconiche Ville Palladiane ai suggestivi Castelli Trentini, fino ai percorsi storico-letterari sui luoghi della
+        Grande Guerra.
+      </p>
+
+      <div class="hero-highlights">
+        <div class="hero-highlight-item">
+          <i class="fa-solid fa-landmark"></i>
+          <span data-i18n="hero.feat1">Città d'Arte: Venezia, Padova, Vicenza, Trento, Bolzano</span>
+        </div>
+        <div class="hero-highlight-item">
+          <i class="fa-solid fa-castle"></i>
+          <span data-i18n="hero.feat2">Ville Palladiane & Dimore Storiche del Brenta</span>
+        </div>
+        <div class="hero-highlight-item">
+          <i class="fa-solid fa-mountain-sun"></i>
+          <span data-i18n="hero.feat3">Forti & Trincee 1915-1918 (Asiago, Lavarone, Luserna)</span>
+        </div>
+        <div class="hero-highlight-item">
+          <i class="fa-solid fa-motorcycle"></i>
+          <span data-i18n="hero.feat4">Tour guidati su misura anche in bici e moto/scooter</span>
+        </div>
+      </div>
+
+      <div class="hero-actions">
+        <a href="#prenota" class="btn btn-primary" data-i18n="hero.btnBook">Richiedi un Preventivo</a>
+        <a href="#tour" class="btn btn-secondary" data-i18n="hero.btnExplore">Esplora gli Itinerari</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       CHI SONO / BIO & CURRICULUM SINTETICO
+       ========================================================================== -->
+  <section id="chi-sono" class="container">
+    <div class="about-grid">
+      <div class="about-image-wrap">
+        <img src="uploads/davide-apolloni.jpg" alt="Prof. Davide Apolloni" class="about-image">
+        <div class="about-experience-card">
+          <div class="about-experience-num">20+</div>
+          <div class="about-experience-text" data-i18n="about.expText">Anni di esperienza nella divulgazione
+            storico-artistica</div>
+        </div>
+      </div>
+
+      <div class="about-content">
+        <span class="section-subtitle" data-i18n="about.subtitle">Profilo Professionale</span>
+        <h2 class="section-title" data-i18n="about.title">Prof. Davide Apolloni</h2>
+
+        <p class="about-bio-text" data-i18n="about.bioP1">
+          Sono Davide Apolloni, professore di Lettere e Storia, specialista in Storia dell'Arte Moderna, Guida Turistica
+          Autorizzata e Accompagnatore Turistico abilitato anche in lingua inglese.
+        </p>
+        <p class="about-bio-text" data-i18n="about.bioP2">
+          Laureato in Lettere con indirizzo storico-artistico presso l'Università degli Studi di Padova e specializzato
+          presso la Scuola di Specializzazione della medesima università, metto al servizio dei visitatori una solida
+          formazione accademica coniugata alla passione per la divulgazione culturale.
+        </p>
+
+        <div class="about-credentials-list">
+          <div class="credential-card">
+            <h4 data-i18n="about.cred1Title">Formazione di Eccellenza</h4>
+            <p data-i18n="about.cred1Desc">Laurea e Specializzazione in Storia dell'Arte a Padova, Master in Storia
+              della Letteratura e Età Moderna.</p>
+          </div>
+          <div class="credential-card">
+            <h4 data-i18n="about.cred2Title">Autore & Formatore</h4>
+            <p data-i18n="about.cred2Desc">Collaboratore delle case editrici Rizzoli ed Erickson per manuali scolastici
+              e guide per docenti.</p>
+          </div>
+          <div class="credential-card">
+            <h4 data-i18n="about.cred3Title">Istituzioni Culturali</h4>
+            <p data-i18n="about.cred3Desc">Esperienze di ricerca presso Castelvecchio (Verona), Fondazione Cini
+              (Venezia) ed École du Louvre (Parigi).</p>
+          </div>
+          <div class="credential-card">
+            <h4 data-i18n="about.cred4Title">Grande Guerra 1915-1918</h4>
+            <p data-i18n="about.cred4Desc">Specializzato sui luoghi della Prima Guerra Mondiale nell'Altopiano di
+              Asiago, Lavarone e Luserna.</p>
+          </div>
+        </div>
+
+        <button class="btn btn-outline-terracotta" onclick="openModal('cv-modal')">
+          <i class="fa-solid fa-file-invoice"></i>
+          <span data-i18n="about.btnCv">Leggi il Curriculum Vitae Completo</span>
+        </button>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ==========================================================================
+       SLOW TOURISM (SEZIONE STANDALONE)
+       ========================================================================== -->
+  <section class="slow-tourism-section">
+    <div class="container">
+      <div class="slow-tourism-banner">
+        <div class="slow-icon"><i class="fa-solid fa-hourglass-half"></i></div>
+        <div class="slow-content">
+          <h4 data-i18n="slow.title">Slow Tourism: Il Tempo di Guardare</h4>
+          <p data-i18n="slow.text">Niente tour mordi-e-fuggi o tappe forzate. Accompagno gruppi piccoli per offrire il
+            tempo necessario a comprendere, apprezzare e vivere davvero l'arte e la storia del territorio con ritmi
+            rilassati e guidati.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       I TOUR & ITINERARI (3 MAIN CATEGORIES)
+       ========================================================================== -->
+  <section id="tour" class="container">
+    <div class="section-title-wrap">
+      <span class="section-subtitle" data-i18n="tours.subtitle">Esperienze & Itinerari</span>
+      <h2 class="section-title" data-i18n="tours.title">I Nostri Percorsi Guidati</h2>
+      <p class="section-desc" data-i18n="tours.desc">
+        Itinerari studiati per singoli, famiglie, piccoli gruppi o comitive in pullman, con il piacere del turismo lento
+        e percorsi personalizzabili anche per appassionati di ciclismo e mototour.
+      </p>
+    </div>
+
+    <div class="tours-grid">
+      <!-- CARD 1: CITTÀ D'ARTE -->
+      <div class="tour-card">
+        <div class="tour-image-wrap">
+          <img src="uploads/palazzo-thun.jpg" alt="Città d'Arte" class="tour-image"
+            onerror="this.src='https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=800&q=80'">
+          <span class="tour-tag" data-i18n="tours.c1Tag">Cultura & Storia</span>
+        </div>
+        <div class="tour-content">
+          <h3 class="tour-title" data-i18n="tours.c1Title">Città d'Arte (Veneto & Trentino)</h3>
+          <p class="tour-desc" data-i18n="tours.c1Desc">
+            Visite guidate nei centri storici più affascinanti: percorsi classici e monumenti segreti a Venezia, Padova
+            con i suoi capolavori, Vicenza palladiana, Treviso, Verona, Trento, Rovereto, Bolzano, Merano e Bressanone.
+          </p>
+          <div class="tour-highlights-chips">
+            <span class="chip">Venezia</span>
+            <span class="chip">Padova</span>
+            <span class="chip">Vicenza</span>
+            <span class="chip">Verona</span>
+            <span class="chip">Trento</span>
+            <span class="chip">Bolzano</span>
+          </div>
+          <div class="tour-actions">
+            <button class="btn btn-secondary btn-sm" onclick="openModal('tour-citta-modal')"
+              data-i18n="tours.btnMore">Scopri di più</button>
+            <button class="btn btn-primary btn-sm" onclick="selectTourAndScroll('citta')"
+              data-i18n="tours.btnBook">Prenota Tour</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD 2: VILLE E CASTELLI -->
+      <div class="tour-card">
+        <div class="tour-image-wrap">
+          <img src="uploads/villa-maser.jpg" alt="Ville e Castelli" class="tour-image">
+          <span class="tour-tag" data-i18n="tours.c2Tag">Architettura & Nobiltà</span>
+        </div>
+        <div class="tour-content">
+          <h3 class="tour-title" data-i18n="tours.c2Title">Ville Venete & Castelli Trentini</h3>
+          <p class="tour-desc" data-i18n="tours.c2Desc">
+            Un viaggio tra le capolavori di Andrea Palladio (La Rotonda, Villa Maser, Villa Emo, Villa Pojana, Villa
+            Pisani, Riviera del Brenta) e i maestosi castelli del Trentino (Buonconsiglio, Castel Beseno, Stenico,
+            Toblino, Thun), oltre alle suggestive Città Murate.
+          </p>
+          <div class="tour-highlights-chips">
+            <span class="chip">Palladio</span>
+            <span class="chip">Riviera Brenta</span>
+            <span class="chip">Castel Thun</span>
+            <span class="chip">Buonconsiglio</span>
+            <span class="chip">Città Murate</span>
+          </div>
+          <div class="tour-actions">
+            <button class="btn btn-secondary btn-sm" onclick="openModal('tour-ville-modal')"
+              data-i18n="tours.btnMore">Scopri di più</button>
+            <button class="btn btn-primary btn-sm" onclick="selectTourAndScroll('ville')"
+              data-i18n="tours.btnBook">Prenota Tour</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD 3: GRANDE GUERRA -->
+      <div class="tour-card" id="grande-guerra">
+        <div class="tour-image-wrap">
+          <img src="uploads/ville-venete.jpg" alt="Grande Guerra" class="tour-image"
+            onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80'">
+          <span class="tour-tag" data-i18n="tours.c3Tag">1915 - 1918</span>
+        </div>
+        <div class="tour-content">
+          <h3 class="tour-title" data-i18n="tours.c3Title">La Grande Guerra 1915-1918</h3>
+          <p class="tour-desc" data-i18n="tours.c3Desc">
+            Itinerari storico-letterari sui forti, le trincee e i campi di battaglia degli Altipiani di Asiago, Lavarone
+            e Luserna. Dal Fronte Italiano al Fronte Austriaco, con visite al Sacrario Militare e ai Musei storici.
+          </p>
+          <div class="tour-highlights-chips">
+            <span class="chip">Asiago</span>
+            <span class="chip">Lavarone</span>
+            <span class="chip">Luserna</span>
+            <span class="chip">Forte Belvedere</span>
+            <span class="chip">Itinerari Letterari</span>
+          </div>
+          <div class="tour-actions">
+            <button class="btn btn-secondary btn-sm" onclick="openModal('tour-guerra-modal')"
+              data-i18n="tours.btnMore">Scopri di più</button>
+            <button class="btn btn-primary btn-sm" onclick="selectTourAndScroll('guerra')"
+              data-i18n="tours.btnBook">Prenota Tour</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       EVENTI IN EVIDENZA / PROSSIME PARTENZE
+       ========================================================================== -->
+  <!-- NOTA: Le date e gli eventi riportati di seguito sono a titolo di esempio e vanno aggiornati con il calendario reale delle partenze -->
+  <section id="eventi" class="events-section">
+    <div class="container">
+      <div class="section-title-wrap">
+        <span class="section-subtitle" data-i18n="events.subtitle">Prossime Partenze</span>
+        <h2 class="section-title" data-i18n="events.title">Eventi & Visite in Evidenza</h2>
+        <p class="section-desc" data-i18n="events.desc">
+          Date speciali e visite a calendario per piccoli gruppi. Posti limitati per garantire un'esperienza culturale
+          di qualità.
+        </p>
+      </div>
+
+      <div class="events-grid">
+        <!-- EVENTO 1 -->
+        <div class="event-card">
+          <div class="event-image-wrap">
+            <img src="uploads/palazzo-thun.jpg" alt="Venezia in Notturna">
+            <span class="event-badge" data-i18n="events.e1Badge">Prossima Partenza</span>
+          </div>
+          <div class="event-content">
+            <h3 class="event-title" data-i18n="events.e1Title">Venezia in Notturna — 20 Settembre</h3>
+            <p class="event-desc" data-i18n="events.e1Desc">
+              Una passeggiata guidata tra le calli e i campielli di Venezia al calare della sera, quando la folla si
+              dirada e la città ritrova il suo fascino intimo e misterioso.
+            </p>
+            <button class="btn btn-outline-terracotta btn-sm" onclick="selectTourAndScroll('citta', '2026-09-20')">
+              <i class="fa-solid fa-calendar-check"></i>
+              <span data-i18n="events.btnBook">Prenota questa data</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- EVENTO 2 -->
+        <div class="event-card">
+          <div class="event-image-wrap">
+            <img src="uploads/villa-maser.jpg" alt="Ville Venete all'Imbrunire">
+            <span class="event-badge alt" data-i18n="events.e2Badge">Ultimi Posti</span>
+          </div>
+          <div class="event-content">
+            <h3 class="event-title" data-i18n="events.e2Title">Ville Venete all'Imbrunire — 4 Ottobre</h3>
+            <p class="event-desc" data-i18n="events.e2Desc">
+              Visita guidata speciale a Villa Pisani e Riviera del Brenta con la luce dorata del tramonto e introduzione
+              all'architettura palladiana.
+            </p>
+            <button class="btn btn-outline-terracotta btn-sm" onclick="selectTourAndScroll('ville', '2026-10-04')">
+              <i class="fa-solid fa-calendar-check"></i>
+              <span data-i18n="events.btnBook">Prenota questa data</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- EVENTO 3 -->
+        <div class="event-card">
+          <div class="event-image-wrap">
+            <img src="uploads/castel-thun.jpg" alt="I Forti del Fronte Alpino">
+            <span class="event-badge info" data-i18n="events.e3Badge">Iscrizioni Aperte</span>
+          </div>
+          <div class="event-content">
+            <h3 class="event-title" data-i18n="events.e3Title">I Forti del Fronte Alpino — 18 Ottobre</h3>
+            <p class="event-desc" data-i18n="events.e3Desc">
+              Itinerario storico-letterario tra Forte Belvedere Gschwent e le trincee dell'Altopiano di Lavarone, con
+              letture dai diari di guerra.
+            </p>
+            <button class="btn btn-outline-terracotta btn-sm" onclick="selectTourAndScroll('guerra', '2026-10-18')">
+              <i class="fa-solid fa-calendar-check"></i>
+              <span data-i18n="events.btnBook">Prenota questa data</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       ESPERIENZE ESCLUSIVE (SFONDO SCURO)
+       ========================================================================== -->
+  <section id="esperienze" class="exclusive-section">
+    <div class="container">
+      <div class="section-title-wrap">
+        <span class="section-subtitle" data-i18n="exclusive.subtitle">Visite Speciali</span>
+        <h2 class="section-title" data-i18n="exclusive.title">Esperienze Esclusive</h2>
+        <p class="section-desc" data-i18n="exclusive.desc">
+          Itinerari evocativi fuori dagli orari di afflusso di massa, disegnati per chi desidera assaporare l'arte e il
+          paesaggio con la giusta calma ed eleganza.
+        </p>
+      </div>
+
+      <div class="exclusive-grid">
+        <!-- PROPOSTA 1 -->
+        <div class="exclusive-card">
+          <div class="exclusive-image-wrap">
+            <img src="uploads/palazzo-thun.jpg" alt="Venezia in Notturna">
+          </div>
+          <div class="exclusive-content">
+            <h3 class="exclusive-title" data-i18n="exclusive.ex1Title">Venezia in Notturna</h3>
+            <p class="exclusive-desc" data-i18n="exclusive.ex1Desc">
+              La Basilica di San Marco e le calli veneziane dopo il tramonto. Un'atmosfera sospesa nel tempo per
+              riscoprire il volto più autentico e poetico della Serenissima.
+            </p>
+            <button class="btn btn-primary btn-sm" onclick="selectTourAndScroll('esperienze')">
+              <i class="fa-solid fa-moon"></i>
+              <span data-i18n="exclusive.btn">Richiedi questa esperienza</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- PROPOSTA 2 -->
+        <div class="exclusive-card">
+          <div class="exclusive-image-wrap">
+            <img src="uploads/villa-maser.jpg" alt="Ville Venete By Night">
+          </div>
+          <div class="exclusive-content">
+            <h3 class="exclusive-title" data-i18n="exclusive.ex2Title">Ville Venete By Night</h3>
+            <p class="exclusive-desc" data-i18n="exclusive.ex2Desc">
+              Una dimora palladiana all'imbrunire, tra giardini monumentali, saloni affrescati e luci soffuse. Un
+              viaggio raffinato nella civiltà della Villa Veneta.
+            </p>
+            <button class="btn btn-primary btn-sm" onclick="selectTourAndScroll('esperienze')">
+              <i class="fa-solid fa-cloud-moon"></i>
+              <span data-i18n="exclusive.btn">Richiedi questa esperienza</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- PROPOSTA 3 -->
+        <div class="exclusive-card">
+          <div class="exclusive-image-wrap">
+            <img src="uploads/ville-venete.jpg" alt="Città d'Arte all'Alba o al Tramonto">
+          </div>
+          <div class="exclusive-content">
+            <h3 class="exclusive-title" data-i18n="exclusive.ex3Title">Città d'Arte all'Alba o al Tramonto</h3>
+            <p class="exclusive-desc" data-i18n="exclusive.ex3Desc">
+              Piazza dei Signori a Vicenza o le antiche mura di Padova all'ora del silenzio, per ammirare le quinte
+              architettoniche urbane senza il caos quotidiano.
+            </p>
+            <button class="btn btn-primary btn-sm" onclick="selectTourAndScroll('esperienze')">
+              <i class="fa-solid fa-sun"></i>
+              <span data-i18n="exclusive.btn">Richiedi questa esperienza</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       TESTIMONIANZE / COSA DICONO I CLIENTII
+       ========================================================================== -->
+  <!-- NOTA: Le recensioni riportate in questa sezione sono contenuti di esempio e vanno sostituite con testimonianze reali autentiche dei clienti appena disponibili -->
+  <section id="testimonianze" class="container">
+    <div class="section-title-wrap">
+      <span class="section-subtitle" data-i18n="reviews.subtitle">Dicono di Noi</span>
+      <h2 class="section-title" data-i18n="reviews.title">Testimonianze dei Visitatori</h2>
+    </div>
+
+    <div class="reviews-grid">
+      <!-- RECENSIONE 1 -->
+      <div class="review-card">
+        <div>
+          <div class="review-stars">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+              class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+          </div>
+          <p class="review-text" data-i18n="reviews.r1Text">
+            "Il Prof. Apolloni ha saputo farci rivivere la storia delle Ville Venete con una passione e una chiarezza
+            straordinarie. Un tour colmo di dettagli che non si trovano sulle guide classiche."
+          </p>
+        </div>
+        <div>
+          <div class="review-author" data-i18n="reviews.r1Author">Marco & Elena B.</div>
+          <div class="review-location" data-i18n="reviews.r1Loc">Milano</div>
+        </div>
+      </div>
+
+      <!-- RECENSIONE 2 -->
+      <div class="review-card">
+        <div>
+          <div class="review-stars">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+              class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+          </div>
+          <p class="review-text" data-i18n="reviews.r2Text">
+            "L'itinerario della Grande Guerra sull'Altopiano di Asiago è stato toccante ed esaustivo. Le letture
+            storiche durante il cammino hanno reso la giornata indimenticabile."
+          </p>
+        </div>
+        <div>
+          <div class="review-author" data-i18n="reviews.r2Author">Giuseppe T.</div>
+          <div class="review-location" data-i18n="reviews.r2Loc">Verona</div>
+        </div>
+      </div>
+
+      <!-- RECENSIONE 3 -->
+      <div class="review-card">
+        <div>
+          <div class="review-stars">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+              class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+          </div>
+          <p class="review-text" data-i18n="reviews.r3Text">
+            "La visita di Venezia in notturna è stata magica. Davide cammina davvero al tuo fianco, lasciando spazio
+            alle domande e al piacere di osservare."
+          </p>
+        </div>
+        <div>
+          <div class="review-author" data-i18n="reviews.r3Author">Sophie & Thomas</div>
+          <div class="review-location" data-i18n="reviews.r3Loc">Parigi (Francia)</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       MEDIA / GALLERIA & VIDEO EMBED
+       ========================================================================== -->
+  <section id="media" class="media-section">
+    <div class="container">
+      <div class="section-title-wrap">
+        <span class="section-subtitle" data-i18n="media.subtitle">Galleria & Esperienze</span>
+        <h2 class="section-title" data-i18n="media.title">Scorci e Momenti sul Campo</h2>
+        <p class="section-desc" data-i18n="media.desc">
+          Tutte le immagini del sito e i video testimoniano i luoghi straordinari che potrai scoprire lungo i nostri
+          itinerari guidati.
+        </p>
+      </div>
+
+      <!-- Gallery Grid -->
+      <div class="gallery-grid">
+        <div class="gallery-item">
+          <img src="uploads/villa-maser.jpg" alt="Villa Maser">
+          <div class="gallery-caption">Villa Maser, Andrea Palladio (Treviso)</div>
+        </div>
+        <div class="gallery-item">
+          <img src="uploads/palazzo-thun.jpg" alt="Palazzo Thun Trento">
+          <div class="gallery-caption">Palazzo Thun, Trento</div>
+        </div>
+        <div class="gallery-item">
+          <img src="uploads/castel-thun.jpg" alt="Castel Thun">
+          <div class="gallery-caption">Castel Thun, Val di Non</div>
+        </div>
+        <div class="gallery-item">
+          <img src="uploads/ville-venete.jpg" alt="Ville e Castelli">
+          <div class="gallery-caption">Villa Veneta sul Brenta</div>
+        </div>
+      </div>
+
+      <!-- Video Player Container -->
+      <div class="video-container-box">
+        <div class="video-wrapper">
+          <video controls poster="uploads/riviera-brenta-mototour.jpg">
+            <source src="uploads/riviera-brenta-mototour.mp4" type="video/mp4">
+            Il tuo browser non supporta la riproduzione video HTML5.
+          </video>
+        </div>
+        <div class="video-info-content">
+          <span class="video-tag" data-i18n="media.vTag">Tour Motociclistico Guidato</span>
+          <h3 class="video-title" data-i18n="media.vTitle">Riviera del Brenta in Moto & Scooter</h3>
+          <p class="video-text" data-i18n="media.vDesc">
+            Video realizzato dal <em>Treviso Scooter Club</em> durante l'uscita alla scoperta delle Ville Venete del
+            Settecento lungo la Riviera del Brenta, guidati dal Prof. Davide Apolloni con oltre 50 motociclisti!
+          </p>
+          <div>
+            <a href="#prenota" onclick="selectTourAndScroll('guerra')" class="btn btn-outline-terracotta btn-sm">
+              <i class="fa-solid fa-motorcycle"></i>
+              <span data-i18n="media.vBtn">Richiedi "Forti & Ville in Moto"</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       CITAZIONE DI CHIUSURA (SEZIONE MINIMAL A SÈ)
+       ========================================================================== -->
+  <section id="citazione" class="quote-section">
+    <div class="container quote-content">
+      <p class="quote-text-main" data-i18n="quote.text">"Una buona guida non recita una lezione: cammina accanto a voi e
+        vi lascia il tempo di guardare."</p>
+      <div class="quote-author-name" data-i18n="quote.author">— Davide Apolloni</div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       FORM DI PRENOTAZIONE VISITE GUIDATE (SEZIONE CENTRALE)
+       ========================================================================== -->
+  <section id="prenota" class="booking-section">
+    <div class="container">
+      <div class="section-title-wrap">
+        <span class="section-subtitle" data-i18n="form.subtitle">Pianifica la tua Visita</span>
+        <h2 class="section-title" data-i18n="form.title">Richiedi un Preventivo Personalizzato</h2>
+        <p class="section-desc" data-i18n="form.desc">
+          Compila il modulo sottostante indicando le tue preferenze. Riceverai un'offerta su misura per singoli, gruppi,
+          scuole o tour specifici entro 24-48 ore.
+        </p>
+      </div>
+
+      <div class="booking-wrapper">
+        <!-- SERVIZIO DI INVIO: Configurato per Web3Forms (o Formspree POST). Sostituire 'YOUR_WEB3FORMS_ACCESS_KEY' con la propria chiave gratuita registrata su Web3Forms.com -->
+        <form id="bookingForm" action="https://api.web3forms.com/submit" method="POST"
+          onsubmit="handleFormSubmit(event)">
+          <!-- Hidden Access Key per Web3Forms -->
+          <input type="hidden" name="access_key" value="YOUR_WEB3FORMS_ACCESS_KEY">
+          <input type="hidden" name="subject" value="Nuova Richiesta di Prenotazione - Davide Apolloni Guida">
+          <input type="hidden" name="from_name" value="Sito Web Davide Apolloni">
+
+          <div class="form-grid">
+
+            <!-- Nome e Cognome -->
+            <div class="form-group">
+              <label class="form-label" for="fullName"><span data-i18n="form.name">Nome e Cognome</span> <span
+                  class="req">*</span></label>
+              <input type="text" id="fullName" name="fullName" class="form-control" placeholder="Mario Rossi" required
+                data-i18n-ph="form.phName">
+            </div>
+
+            <!-- Email -->
+            <div class="form-group">
+              <label class="form-label" for="email"><span data-i18n="form.email">Indirizzo Email</span> <span
+                  class="req">*</span></label>
+              <input type="email" id="email" name="email" class="form-control" placeholder="mario.rossi@email.com"
+                required data-i18n-ph="form.phEmail">
+            </div>
+
+            <!-- Telefono -->
+            <div class="form-group">
+              <label class="form-label" for="phone" data-i18n="form.phone">Telefono / WhatsApp</label>
+              <input type="tel" id="phone" name="phone" class="form-control" placeholder="+39 347 0000000"
+                data-i18n-ph="form.phPhone">
+            </div>
+
+            <!-- Categoria Tour -->
+            <div class="form-group">
+              <label class="form-label" for="tourCategory"><span data-i18n="form.category">Tipo di Tour</span> <span
+                  class="req">*</span></label>
+              <select id="tourCategory" name="tourCategory" class="form-control" onchange="updateDestinations()"
+                required>
+                <option value="citta" data-i18n="form.catCitta">Città d'Arte (Veneto & Trentino)</option>
+                <option value="ville" data-i18n="form.catVille">Ville Venete & Castelli Trentini</option>
+                <option value="guerra" data-i18n="form.catGuerra">Grande Guerra 1915-1918</option>
+                <option value="esperienze" data-i18n="form.catEsperienze">Esperienza Esclusiva (Notturna / Alba /
+                  Tramonto)</option>
+                <option value="misura" data-i18n="form.catMisura">Itinerario Personalizzato / Su Misura</option>
+              </select>
+            </div>
+
+            <!-- Destinazione Specifica -->
+            <div class="form-group">
+              <label class="form-label" for="destination" data-i18n="form.destination">Destinazione Preferita</label>
+              <select id="destination" name="destination" class="form-control">
+                <!-- Populato dinamicamente via JS -->
+              </select>
+            </div>
+
+            <!-- Lingua della Visita -->
+            <div class="form-group">
+              <label class="form-label" for="visitLang" data-i18n="form.visitLang">Lingua della Visita</label>
+              <select id="visitLang" name="visitLang" class="form-control">
+                <option value="it" data-i18n="form.langIt">Italiano</option>
+                <option value="en" data-i18n="form.langEn">Inglese (English)</option>
+              </select>
+            </div>
+
+            <!-- Data Preferita -->
+            <div class="form-group">
+              <label class="form-label" for="datePref" data-i18n="form.datePref">Data Preferita</label>
+              <input type="date" id="datePref" name="datePref" class="form-control">
+            </div>
+
+            <!-- Data Alternativa -->
+            <div class="form-group">
+              <label class="form-label" for="dateAlt" data-i18n="form.dateAlt">Data Alternativa (Opzionale)</label>
+              <input type="date" id="dateAlt" name="dateAlt" class="form-control">
+            </div>
+
+            <!-- Participants Count -->
+            <div class="form-group">
+              <label class="form-label" for="participants" data-i18n="form.participants">Numero Partecipanti</label>
+              <input type="number" id="participants" name="participants" class="form-control" min="1" max="100"
+                placeholder="Es. 4" data-i18n-ph="form.phPart">
+            </div>
+
+            <!-- Transport Mode -->
+            <div class="form-group">
+              <label class="form-label" for="transport" data-i18n="form.transport">Modalità di Spostamento</label>
+              <select id="transport" name="transport" class="form-control">
+                <option value="feet" data-i18n="form.trFeet">A piedi (Walk tour)</option>
+                <option value="bike" data-i18n="form.trBike">In Bicicletta / E-Bike</option>
+                <option value="moto" data-i18n="form.trMoto">In Moto / Scooter</option>
+                <option value="bus" data-i18n="form.trBus">Pullman / Gruppo Organizzato</option>
+              </select>
+            </div>
+
+            <!-- Notes -->
+            <div class="form-group full-width">
+              <label class="form-label" for="notes" data-i18n="form.notes">Note / Richieste Particolari</label>
+              <textarea id="notes" name="notes" class="form-control"
+                placeholder="Indica eventuali esigenze specifiche, orari preferiti o dettagli del gruppo..."
+                data-i18n-ph="form.phNotes"></textarea>
+            </div>
+
+            <!-- GDPR Checkbox -->
+            <div class="form-group full-width checkbox-group">
+              <input type="checkbox" id="gdprCheck" name="gdprCheck" required>
+              <label class="checkbox-label" for="gdprCheck" data-i18n="form.gdpr">
+                Autorizzo il trattamento dei dati personali ai sensi della normativa privacy (GDPR D.Lgs 196/2003 e Reg.
+                UE 2016/679) esclusivamente per rispondere alla richiesta. <span class="req">*</span>
+              </label>
+            </div>
+
+          </div>
+
+          <button type="submit" id="submitBtn" class="btn btn-primary form-submit-btn">
+            <i class="fa-solid fa-paper-plane"></i>
+            <span data-i18n="form.submit">Invia Richiesta di Preventivo</span>
+          </button>
+
+          <div class="form-alert-success" id="formSuccess">
+            <i class="fa-solid fa-circle-check"></i>
+            <span data-i18n="form.success">Grazie! La tua richiesta è stata inviata con successo. Davide ti risponderà
+              entro 24-48 ore.</span>
+          </div>
+
+          <div class="form-alert-error" id="formError">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span data-i18n="form.error">Si è verificato un errore durante l'invio del modulo. Riprova o invia una mail
+              a guidaturistica@davideapolloni.it.</span>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       CONTATTI & NOTE SULLE DISCREPANZE RECAPITI
+       ========================================================================== -->
+  <section id="contatti" class="contacts-section">
+    <div class="container">
+      <div class="section-title-wrap">
+        <span class="section-subtitle" data-i18n="contacts.subtitle">Invia una Mail o Chiama</span>
+        <h2 class="section-title" data-i18n="contacts.title">Contatti Diretti</h2>
+        <p class="section-desc" data-i18n="contacts.desc">
+          Per informazioni rapide, prenotazioni urgenti o collaborazioni istituzionali:
+        </p>
+      </div>
+
+      <div class="contacts-grid">
+        <div class="contact-card">
+          <div class="contact-item">
+            <div class="contact-icon"><i class="fa-solid fa-envelope"></i></div>
+            <div class="contact-info">
+              <h4 data-i18n="contacts.emailLabel">Email Principale</h4>
+              <a href="mailto:guidaturistica@davideapolloni.it">guidaturistica@davideapolloni.it</a>
+            </div>
+          </div>
+
+          <div class="contact-item">
+            <div class="contact-icon"><i class="fa-solid fa-phone"></i></div>
+            <div class="contact-info">
+              <h4 data-i18n="contacts.phoneLabel">Telefono / Cellulare</h4>
+              <a href="tel:+393497130282">+39 349 7130282</a> / <a href="tel:+390424522197">+39 0424 522197</a>
+            </div>
+          </div>
+
+          <div class="contact-item">
+            <div class="contact-icon"><i class="fa-solid fa-map-location-dot"></i></div>
+            <div class="contact-info">
+              <h4 data-i18n="contacts.areaLabel">Area Operativa</h4>
+              <p data-i18n="contacts.areaText">Regione Veneto & Provincia Autonoma di Trento</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Box Discrepanze Storiche (Trasparenza) -->
+        <div class="discrepancy-box">
+          <div class="discrepancy-title">
+            <i class="fa-solid fa-circle-info"></i>
+            <span data-i18n="disc.title">Nota di Trasparenza sui Recapiti Storici</span>
+          </div>
+          <p class="discrepancy-text" data-i18n="disc.text">
+            Nel corso degli anni, sul vecchio sito web Weebly figuravano differenti indirizzi email (come
+            info@ilproftiguida.com e davide@castlesandvillasontheroad.com) e recapiti telefonici. Il canale ufficiale
+            unico di riferimento corrente per ogni comunicazione e prenotazione è l'indirizzo
+            guidaturistica@davideapolloni.it.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       MODAL: CURRICULUM VITAE ESTESO
+       ========================================================================== -->
+  <div class="modal-backdrop" id="cv-modal" onclick="closeModalOnBackdrop(event, 'cv-modal')">
+    <div class="modal-window">
+      <button class="modal-close" onclick="closeModal('cv-modal')"><i class="fa-solid fa-xmark"></i></button>
+
+      <div class="cv-modal-header">
+        <h2 class="cv-modal-title">Prof. Davide Apolloni</h2>
+        <div class="cv-modal-sub" data-i18n="cv.sub">Curriculum Vitae Accademico & Professionale</div>
+      </div>
+
+      <div class="cv-section">
+        <h3 class="cv-section-title" data-i18n="cv.s1Title">Formazione & Specializzazioni</h3>
+        <ul class="cv-list">
+          <li class="cv-list-item" data-i18n="cv.s1i1">Laurea in Lettere (indirizzo storico-artistico) presso
+            l'Università degli Studi di Padova.</li>
+          <li class="cv-list-item" data-i18n="cv.s1i2">Specializzazione in Storia dell'Arte Moderna presso la Scuola di
+            Specializzazione dell'Università di Padova.</li>
+          <li class="cv-list-item" data-i18n="cv.s1i3">Due Master annuali in Letteratura Italiana ed Età Moderna e
+            Contemporanea.</li>
+          <li class="cv-list-item" data-i18n="cv.s1i4">Abilitazioni all'Insegnamento presso le Università di Bolzano e
+            Udine.</li>
+          <li class="cv-list-item" data-i18n="cv.s1i5">Corso di Specializzazione 'I Luoghi della Grande Guerra' (Asiago,
+            2014) con il patrocinio della Regione Veneto.</li>
+        </ul>
+      </div>
+
+      <div class="cv-section">
+        <h3 class="cv-section-title" data-i18n="cv.s2Title">Esperienze e Collaborazioni Culturali</h3>
+        <ul class="cv-list">
+          <li class="cv-list-item" data-i18n="cv.s2i1">Gabinetto di Disegni e Stampe del Museo Castelvecchio di Verona.
+          </li>
+          <li class="cv-list-item" data-i18n="cv.s2i2">Istituto di Storia dell'Arte della Fondazione Giorgio Cini di
+            Venezia.</li>
+          <li class="cv-list-item" data-i18n="cv.s2i3">Collaborazioni con l'Istituto Veneto di Scienze, Lettere ed Arti
+            di Venezia e l'École du Louvre di Parigi.</li>
+          <li class="cv-list-item" data-i18n="cv.s2i4">Guida storica sul battello 'Il Burchiello' lungo la Riviera del
+            Brenta.</li>
+          <li class="cv-list-item" data-i18n="cv.s2i5">Formatore docenti e autore per le case editrici Rizzoli Education
+            ed Erickson.</li>
+        </ul>
+      </div>
+
+      <div class="cv-section">
+        <h3 class="cv-section-title" data-i18n="cv.s3Title">Principali Pubblicazioni & Volumi</h3>
+        <ul class="cv-list">
+          <li class="cv-list-item"><strong>Pietro Monaco e la «Raccolta di cento dodici stampe di pittura della storia
+              sacra»</strong>, Edizioni della Laguna, 2000 (prefazione di A. Mariuz).</li>
+          <li class="cv-list-item"><strong>Concorso Docenti - Italiano, Storia e Geografia (Classe A-22)</strong>,
+            Erickson 2021.</li>
+          <li class="cv-list-item"><strong>Come d'incanto</strong> (corso di storia dell'arte facilitato), Rizzoli
+            Education / Sansoni 2020.</li>
+          <li class="cv-list-item">Schede nei volumi <em>Gli affreschi nelle ville venete - Il Seicento</em> (Marsilio
+            2009) e <em>Tiepolo, Piazzetta, Novelli</em> (Antigaedizioni 2012).</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL TOUR DETAILS: CITTÀ D'ARTE -->
+  <div class="modal-backdrop" id="tour-citta-modal" onclick="closeModalOnBackdrop(event, 'tour-citta-modal')">
+    <div class="modal-window">
+      <button class="modal-close" onclick="closeModal('tour-citta-modal')"><i class="fa-solid fa-xmark"></i></button>
+      <h2 class="cv-modal-title" data-i18n="mCitta.title">Città d'Arte in Veneto & Trentino</h2>
+      <p data-i18n="mCitta.p1">
+        Scopri le gemme urbane del Nord-Est con un itinerario condotto da un professore di storia dell'arte. Ogni visita
+        è personalizzata in base agli interessi del gruppo.
+      </p>
+      <h4 style="margin-top:1.5rem; margin-bottom:0.5rem;" data-i18n="mCitta.h1">Itinerari Principali:</h4>
+      <ul style="padding-left:1.2rem; line-height:1.8;">
+        <li><strong>Venezia:</strong> Percorsi classici (San Marco, Rialto) e la Venezia nascosta e sconosciuta.</li>
+        <li><strong>Padova:</strong> La città del Santo, la Cappella degli Scrovegni e l'Università Bo.</li>
+        <li><strong>Vicenza:</strong> Il centro storico iscritto all'UNESCO e i palazzi palladiani.</li>
+        <li><strong>Treviso & Verona:</strong> Le bellezze affrescate della Marca e la Verona romana e scaligera.</li>
+        <li><strong>Trento & Rovereto:</strong> Il Castello del Buonconsiglio, il Concilio di Trento e il Mart.</li>
+        <li><strong>Alto Adige:</strong> Bressanone, Merano e Bolzano.</li>
+      </ul>
+      <div style="margin-top:2rem;">
+        <button class="btn btn-primary" onclick="closeModal('tour-citta-modal'); selectTourAndScroll('citta');"
+          data-i18n="tours.btnBook">Prenota questo Tour</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL TOUR DETAILS: VILLE E CASTELLI -->
+  <div class="modal-backdrop" id="tour-ville-modal" onclick="closeModalOnBackdrop(event, 'tour-ville-modal')">
+    <div class="modal-window">
+      <button class="modal-close" onclick="closeModal('tour-ville-modal')"><i class="fa-solid fa-xmark"></i></button>
+      <h2 class="cv-modal-title" data-i18n="mVille.title">Ville Venete & Castelli Trentini</h2>
+      <p data-i18n="mVille.p1">
+        Un'esperienza unica tra le splendide dimore nobiliari e le fortezze alpine del Nord-Est.
+      </p>
+      <h4 style="margin-top:1.5rem; margin-bottom:0.5rem;" data-i18n="mVille.h1">Luoghi in Evidenza:</h4>
+      <ul style="padding-left:1.2rem; line-height:1.8;">
+        <li><strong>Itinerari Palladiani:</strong> Villa Capra detta "La Rotonda", Villa Maser, Villa Emo, Villa Pojana,
+          Villa Godi Malinverni.</li>
+        <li><strong>Riviera del Brenta:</strong> Villa Pisani a Stra e le ville del Settecento veneziano lungo il
+          canale.</li>
+        <li><strong>Castelli Trentini:</strong> Castello del Buonconsiglio (Trento), Castel Thun (Val di Non), Castel
+          Beseno, Castel Stenico, Castel Toblino, Castelli di Avio e Arco.</li>
+        <li><strong>Città Murate:</strong> Bassano del Grappa, Marostica, Este, Monselice e Montagnana.</li>
+      </ul>
+      <div style="margin-top:2rem;">
+        <button class="btn btn-primary" onclick="closeModal('tour-ville-modal'); selectTourAndScroll('ville');"
+          data-i18n="tours.btnBook">Prenota questo Tour</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL TOUR DETAILS: GRANDE GUERRA -->
+  <div class="modal-backdrop" id="tour-guerra-modal" onclick="closeModalOnBackdrop(event, 'tour-guerra-modal')">
+    <div class="modal-window">
+      <button class="modal-close" onclick="closeModal('tour-guerra-modal')"><i class="fa-solid fa-xmark"></i></button>
+      <h2 class="cv-modal-title" data-i18n="mGuerra.title">La Grande Guerra 1915-1918</h2>
+      <p data-i18n="mGuerra.p1">
+        Percorsi storico-letterari sui luoghi simbolo del primo conflitto mondiale, condotti da una guida accreditata
+        dal corso di specializzazione del Centenario.
+      </p>
+      <h4 style="margin-top:1.5rem; margin-bottom:0.5rem;" data-i18n="mGuerra.h1">Itinerari Dettagliati:</h4>
+      <ul style="padding-left:1.2rem; line-height:1.8;">
+        <li><strong>Altopiano di Asiago:</strong> I forti corazzati italiani e austriaci, il Sacrario Militare di Asiago
+          e il Museo della Grande Guerra.</li>
+        <li><strong>Altipiani di Lavarone & Luserna:</strong> Forte Belvedere Gschwent e le trincee del fronte alpino.
+        </li>
+        <li><strong>Itinerari Letterari:</strong> Rilettura dei luoghi attraverso le opere di Mario Rigoni Stern, Emilio
+          Lussu e Gianni Stuparich.</li>
+        <li><strong>Proposta speciale "Forti in Moto":</strong> Tour guidati in motocicletta e scooter sugli altopiani.
+        </li>
+      </ul>
+      <div style="margin-top:2rem;">
+        <button class="btn btn-primary" onclick="closeModal('tour-guerra-modal'); selectTourAndScroll('guerra');"
+          data-i18n="tours.btnBook">Prenota questo Tour</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       FOOTER
+       ========================================================================== -->
+  <footer class="footer">
+    <div class="container footer-flex">
+      <div>
+        <div class="footer-brand">Davide Apolloni</div>
+        <p style="margin:0.2rem 0 0 0;" data-i18n="footer.role">Guida Turistica Autorizzata & Accompagnatore Turistico
+        </p>
+      </div>
+      <div>
+        &copy; 2026 Davide Apolloni. All rights reserved.
+      </div>
+      <div>
+        <a href="#hero" style="color:rgba(250,249,246,0.8);" data-i18n="footer.top">Torna in alto ↑</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==========================================================================
+       JAVASCRIPT BILINGUE ENGINE & LOGIC
+       ========================================================================== -->
+  <script src="translations.js"></script>
+  <script>
+    let currentLang = 'it';
+
+    function setLanguage(lang) {
+      currentLang = lang;
+
+      // Update Active Buttons
+      document.getElementById('btn-it').classList.toggle('active', lang === 'it');
+      document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+
+      // Update document language attribute
+      document.documentElement.lang = lang;
+
+      // Store current dimensions to prevent layout shifts
+      const elementsToPreserve = document.querySelectorAll('.nav-link, .logo-sub, .section-title, .section-desc, .tour-title, .tour-desc, .event-title, .event-desc, .exclusive-title, .exclusive-desc');
+
+      elementsToPreserve.forEach(el => {
+        el.style.minHeight = el.offsetHeight + 'px';
+      });
+
+      // Translate Text Content
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[lang] && translations[lang][key]) {
+          el.innerHTML = translations[lang][key];
+        }
+      });
+
+      // Translate Placeholders
+      document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+        const key = el.getAttribute('data-i18n-ph');
+        if (translations[lang] && translations[lang][key]) {
+          el.placeholder = translations[lang][key];
+        }
+      });
+
+      // Update Dynamic Destinations Dropdown
+      updateDestinations();
+
+      // Remove temporary min-height after a short delay
+      setTimeout(() => {
+        elementsToPreserve.forEach(el => {
+          el.style.minHeight = '';
+        });
+      }, 300);
+    }
+
+    function updateDestinations() {
+      const categorySelect = document.getElementById('tourCategory');
+      const category = categorySelect ? (categorySelect.value || 'citta') : 'citta';
+      const destSelect = document.getElementById('destination');
+      if (!destSelect) return;
+      destSelect.innerHTML = '';
+
+      const list = (destinationsMap[category] && destinationsMap[category][currentLang])
+        ? destinationsMap[category][currentLang]
+        : destinationsMap.citta[currentLang];
+
+      list.forEach(dest => {
+        const opt = document.createElement('option');
+        opt.value = dest;
+        opt.textContent = dest;
+        destSelect.appendChild(opt);
+      });
+    }
+
+    function selectTourAndScroll(catKey, datePref) {
+      const catSelect = document.getElementById('tourCategory');
+      if (catSelect) {
+        catSelect.value = catKey;
+        updateDestinations();
+      }
+      if (datePref) {
+        const dateInput = document.getElementById('datePref');
+        if (dateInput) {
+          dateInput.value = datePref;
+        }
+      }
+      const bookingSec = document.getElementById('prenota');
+      if (bookingSec) {
+        bookingSec.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    // Modal Control Functions
+    function openModal(modalId) {
+      const m = document.getElementById(modalId);
+      if (m) {
+        m.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeModal(modalId) {
+      const m = document.getElementById(modalId);
+      if (m) {
+        m.classList.remove('active');
+        document.body.style.overflow = 'auto';
+      }
+    }
+
+    function closeModalOnBackdrop(event, modalId) {
+      if (event.target.id === modalId) {
+        closeModal(modalId);
+      }
+    }
+
+    // Handle Booking Form Submit via fetch API (Web3Forms/Formspree)
+    async function handleFormSubmit(e) {
+      e.preventDefault();
+      const form = e.target;
+      const formSuccess = document.getElementById('formSuccess');
+      const formError = document.getElementById('formError');
+      const submitBtn = document.getElementById('submitBtn');
+
+      if (formSuccess) formSuccess.style.display = 'none';
+      if (formError) formError.style.display = 'none';
+
+      // Check if access_key is configured
+      const accessKeyInput = form.querySelector('input[name="access_key"]');
+      const isPlaceholderKey = !accessKeyInput || accessKeyInput.value === 'YOUR_WEB3FORMS_ACCESS_KEY';
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.7';
+      }
+
+      if (isPlaceholderKey) {
+        // Fallback demo mode when access key is not set yet
+        setTimeout(() => {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+          }
+          if (formSuccess) {
+            formSuccess.style.display = 'block';
+            formSuccess.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+          form.reset();
+          updateDestinations();
+        }, 600);
+        return;
+      }
+
+      try {
+        const formData = new FormData(form);
+        const response = await fetch(form.action, {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          if (formSuccess) {
+            formSuccess.style.display = 'block';
+            formSuccess.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+          form.reset();
+          updateDestinations();
+        } else {
+          if (formError) {
+            formError.style.display = 'block';
+            formError.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        }
+      } catch (err) {
+        console.error('Form submission error:', err);
+        if (formError) {
+          formError.style.display = 'block';
+          formError.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.style.opacity = '1';
+        }
+      }
+    }
+
+    // Header Scroll Effect & Mobile Nav Toggle
+    window.addEventListener('DOMContentLoaded', () => {
+      updateDestinations();
+
+      const header = document.getElementById('header');
+      const mobileToggle = document.getElementById('mobile-toggle');
+      const navMenu = document.getElementById('nav-menu');
+      const mobileOverlay = document.getElementById('mobile-overlay');
+      const navLinks = document.querySelectorAll('.nav-link');
+
+      // --- Scroll: header shadow ---
+      window.addEventListener('scroll', () => {
+        if (window.scrollY > 40) {
+          header.classList.add('scrolled');
+        } else {
+          header.classList.remove('scrolled');
+        }
+      });
+
+      // --- Mobile nav toggle with animated hamburger ---
+      function closeMobileMenu() {
+        navMenu.classList.remove('active');
+        mobileToggle.classList.remove('active');
+        if (mobileOverlay) mobileOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+
+      function openMobileMenu() {
+        navMenu.classList.add('active');
+        mobileToggle.classList.add('active');
+        if (mobileOverlay) mobileOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+
+      if (mobileToggle && navMenu) {
+        mobileToggle.addEventListener('click', () => {
+          if (navMenu.classList.contains('active')) {
+            closeMobileMenu();
+          } else {
+            openMobileMenu();
+          }
+        });
+
+        // Close menu on link click
+        navLinks.forEach(link => {
+          link.addEventListener('click', () => {
+            closeMobileMenu();
+          });
+        });
+
+        // Close menu on overlay click
+        if (mobileOverlay) {
+          mobileOverlay.addEventListener('click', closeMobileMenu);
+        }
+
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && navMenu.classList.contains('active')) {
+            closeMobileMenu();
+          }
+        });
+      }
+
+      // --- IntersectionObserver: active nav-link highlighting ---
+      const sectionIds = [];
+      navLinks.forEach(link => {
+        const sectionId = link.getAttribute('data-section');
+        if (sectionId) sectionIds.push(sectionId);
+      });
+
+      const observerOptions = {
+        root: null,
+        rootMargin: '-80px 0px -50% 0px',
+        threshold: 0
+      };
+
+      const sectionObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const id = entry.target.id;
+            navLinks.forEach(link => {
+              link.classList.toggle('active', link.getAttribute('data-section') === id);
+            });
+          }
+        });
+      }, observerOptions);
+
+      sectionIds.forEach(id => {
+        const section = document.getElementById(id);
+        if (section) sectionObserver.observe(section);
+      });
+    });
+  </script>
+</body>
+
+</html>

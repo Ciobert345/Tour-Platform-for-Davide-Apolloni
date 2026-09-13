@@ -1,0 +1,352 @@
+/* ============================================================
+   DESIGN SYSTEM — Davide Apolloni Guida Turistica
+   Palette estratta dai loghi: Cremisi / Bronzo / Azzurro Alpino / Foresta
+   ============================================================ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap");
+
+:root {
+  /* ===== PALETTE UFFICIALE (allineata a index.html L27-L42) ===== */
+  --bg-main: #f9f5ec;
+  --bg-card: #fffdf9;
+  --bg-alt: #ede1ca;
+  --bg-warm: #e4d5bb;
+  --bg-dark: #241a12;
+  --bg-darker: #18100a;
+
+  /* Pietra / Crema */
+  --color-stone: #dec5a5;
+  --color-stone-dark: #a07f55;
+
+  /* Terracotta — cremisi logo */
+  --color-terracotta: #93161a;
+  --color-terracotta-dark: #4d1a10;
+
+  /* Bronzo antico — cordicella e dettagli dorati */
+  --color-gold: #a87e3c;
+  --color-gold-dark: #7a5828;
+
+  /* Oliva — marrone chiaro (nuova palette) */
+  --color-olive: #936f52;
+  --color-olive-dark: #482e21;
+
+  /* Verde foresta Slow Tourism (riservato) */
+  --color-forest: #5d7250;
+  --color-forest-dark: #3e4d34;
+
+  /* Blu Adriatico */
+  --color-blue-adriatic: #537385;
+  --color-blue-dark: #47596a;
+
+  /* Testi */
+  --text-main: #2b2018;
+  --text-muted: #72553f;
+  --text-light: #b18e6d;
+  --text-white: #f7f0e3;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: var(--font-sans, "Plus Jakarta Sans"), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif, "Cormorant Garamond"), "Playfair Display", Georgia, serif;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--text-main);
+}
+
+/* =========================================================
+   COMPONENTS RICORRENTI
+   ========================================================= */
+@layer components {
+  .container-app {
+    @apply w-full max-w-content mx-auto px-4 sm:px-6 md:px-8;
+  }
+  .section {
+    @apply py-8 sm:py-14 md:py-24 relative;
+  }
+  .section-title-wrap {
+    @apply text-center max-w-3xl mx-auto mb-6 sm:mb-12 md:mb-16;
+  }
+  .section-subtitle {
+    @apply inline-flex items-center gap-2 font-sans text-xs uppercase tracking-[0.22em] font-bold text-terracotta mb-2.5 sm:mb-3.5;
+  }
+  .section-title {
+    @apply font-serif text-2xl xs:text-3xl sm:text-4xl md:text-[3.2rem] font-semibold mb-3 sm:mb-5 leading-[1.14] tracking-tight text-balance break-words;
+  }
+  .section-desc {
+    @apply text-sm sm:text-base md:text-lg text-text-muted font-normal leading-relaxed max-w-2xl mx-auto;
+  }
+  .section-divider {
+    @apply flex items-center justify-center gap-2 mx-auto my-3.5 sm:my-6 text-gold;
+  }
+
+  /* ===== Eyebrow Badges ===== */
+  .eyebrow {
+    @apply inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-xs font-bold uppercase tracking-[0.16em] bg-terracotta/10 text-terracotta border border-terracotta/20;
+  }
+  .eyebrow-gold {
+    @apply inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-xs font-bold uppercase tracking-[0.16em] bg-gold/15 text-gold-dark border border-gold/30;
+  }
+  .eyebrow-dark {
+    @apply inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-xs font-bold uppercase tracking-[0.16em] bg-white/10 text-gold-light border border-white/20;
+  }
+
+  /* ===== Buttons ===== */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:px-7 sm:py-3.5 font-sans text-xs sm:text-[0.92rem] font-semibold rounded-xl cursor-pointer transition-all duration-300 ease-out no-underline whitespace-normal sm:whitespace-nowrap text-center select-none;
+  }
+  .btn-primary {
+    @apply bg-terracotta text-text-white shadow-[0_4px_16px_rgba(147,22,26,0.28)] hover:bg-terracotta-dark hover:shadow-[0_6px_20px_rgba(77,26,16,0.35)] border border-terracotta-dark/20;
+  }
+  .btn-gold {
+    @apply bg-gold text-bg-darker shadow-[0_4px_16px_rgba(168,126,60,0.28)] hover:bg-gold-dark hover:text-text-white hover:shadow-[0_6px_20px_rgba(122,88,40,0.35)] border border-gold/40 font-bold;
+  }
+  .btn-secondary {
+    @apply bg-white/80 backdrop-blur-sm text-text-main border border-black/10 shadow-sm hover:bg-white hover:border-terracotta hover:text-terracotta hover:shadow-md;
+  }
+  .btn-outline {
+    @apply bg-transparent text-text-main border border-black/20 hover:bg-black/5 hover:border-black/40;
+  }
+  .btn-outline-terracotta {
+    @apply bg-transparent text-terracotta border border-terracotta/40 hover:bg-terracotta hover:text-text-white hover:shadow-md;
+  }
+  .btn-outline-white {
+    @apply bg-transparent text-text-white border border-white/30 hover:bg-white hover:text-bg-dark;
+  }
+  .btn-sm {
+    @apply px-4 py-2 text-xs uppercase tracking-wider font-bold rounded-lg;
+  }
+
+  /* ===== Chips ===== */
+  .chip {
+    @apply bg-bg-alt text-text-muted px-3 py-1 rounded-lg text-xs font-medium border border-black/5;
+  }
+
+  /* ===== Cards (Uniformate a rounded-2xl) ===== */
+  .card-base {
+    @apply bg-bg-card rounded-2xl border border-black/10 shadow-sm transition-all duration-300 ease-out overflow-hidden;
+  }
+  .card-hover {
+    @apply hover:shadow-md hover:border-terracotta/30;
+  }
+
+  /* ===== Forms (Uniformati a rounded-xl) ===== */
+  .form-group {
+    @apply flex flex-col gap-1.5;
+  }
+  .form-label {
+    @apply text-xs font-bold uppercase tracking-wider text-text-main;
+  }
+  .form-control {
+    @apply px-3.5 py-2.5 sm:px-4 sm:py-3.5 rounded-xl border border-black/15 bg-bg-main/60 font-sans text-xs sm:text-[0.95rem] text-text-main focus:outline-none focus:border-terracotta focus:bg-white focus:ring-4 focus:ring-terracotta/15 transition-all duration-300 placeholder:text-text-light;
+  }
+  .form-textarea {
+    @apply form-control resize-y min-h-[85px] sm:min-h-[110px];
+  }
+  .required {
+    @apply text-terracotta font-bold;
+  }
+
+  /* ===== Language switcher ===== */
+  .lang-switcher {
+    @apply flex items-center bg-bg-alt/80 rounded-full p-[3px] border border-black/10 backdrop-blur-sm;
+  }
+  .lang-btn {
+    @apply border-none bg-transparent px-3 py-1 text-xs font-bold rounded-full cursor-pointer text-text-muted transition-all duration-300;
+  }
+  .lang-btn.active {
+    @apply bg-terracotta text-text-white shadow-[0_2px_8px_rgba(147,22,26,0.35)];
+  }
+}
+
+/* =========================================================
+   SCROLLBAR CUSTOM — Palette Brand (Terracotta / Oro)
+   ========================================================= */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #93161a var(--bg-alt, #ede1ca);
+}
+html.dark {
+  scrollbar-color: #B22A2A #18100a;
+}
+
+/* WebKit / Chromium / Edge / Safari */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-alt, #ede1ca);
+  border-left: 1px solid rgba(0,0,0,0.06);
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #93161a 0%, #B22A2A 50%, #a87e3c 100%);
+  border-radius: 9999px;
+  border: 3px solid var(--bg-alt, #ede1ca);
+  box-shadow: inset 0 1px 2px rgba(255,255,255,0.25);
+  transition: all 0.3s ease;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #4d1a10 0%, #93161a 50%, #7a5828 100%);
+  border-color: var(--bg-warm, #e4d5bb);
+}
+::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(180deg, #4d1a10 0%, #6E1212 100%);
+}
+::-webkit-scrollbar-corner {
+  background: var(--bg-alt, #ede1ca);
+}
+
+/* Dark / Footer sections override */
+.bg-bg-dark::-webkit-scrollbar-track,
+.bg-bg-darker::-webkit-scrollbar-track,
+section.bg-bg-dark::-webkit-scrollbar-track,
+footer::-webkit-scrollbar-track {
+  background: #18100a;
+}
+.bg-bg-dark::-webkit-scrollbar-thumb,
+.bg-bg-darker::-webkit-scrollbar-thumb,
+section.bg-bg-dark::-webkit-scrollbar-thumb,
+footer::-webkit-scrollbar-thumb {
+  border-color: #18100a;
+}
+
+/* Overlay scrollbars inside panels (admin/live-editor) */
+.overflow-x-auto, .overflow-y-auto, .overflow-auto {
+  scrollbar-width: thin;
+}
+
+/* ===== Nascondi scrollbar DEL TUTTO su mobile ===== */
+@media (max-width: 768px) {
+  html, body {
+    scrollbar-width: none;           /* Firefox / standard */
+    -ms-overflow-style: none;        /* IE / Edge legacy */
+  }
+  *::-webkit-scrollbar {
+    display: none !important;        /* WebKit: Chrome, Safari, Edge, Opera */
+  }
+  .overflow-x-auto, .overflow-y-auto, .overflow-auto {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+}
+
+/* =========================================================
+   UTILITÀ CUSTOM
+   ========================================================= */
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+  
+  /* Hero ring frame */
+  .hero-ring {
+    box-shadow: 0 0 0 8px rgba(255, 253, 249, 0.7), 0 0 0 9px rgba(168, 126, 60, 0.4), 0 20px 45px rgba(43, 32, 24, 0.18);
+  }
+
+  /* 3D Coin Rotation Utilities */
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+  .backface-hidden {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+}
+
+@keyframes coin-spin-cycle {
+  0%, 38% {
+    transform: rotateY(0deg);
+  }
+  48%, 88% {
+    transform: rotateY(180deg);
+  }
+  98%, 100% {
+    transform: rotateY(360deg);
+  }
+}
+
+@keyframes coin-shadow-pulse {
+  0%, 38% {
+    transform: translateX(-50%) scaleX(1);
+    opacity: 0.28;
+  }
+  43% {
+    transform: translateX(-50%) scaleX(0.2);
+    opacity: 0.1;
+  }
+  48%, 88% {
+    transform: translateX(-50%) scaleX(1);
+    opacity: 0.28;
+  }
+  93% {
+    transform: translateX(-50%) scaleX(0.2);
+    opacity: 0.1;
+  }
+  98%, 100% {
+    transform: translateX(-50%) scaleX(1);
+    opacity: 0.28;
+  }
+}
+
+.animate-coin-spin {
+  animation: coin-spin-cycle 10s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.animate-coin-spin:hover {
+  animation-play-state: paused;
+}
+
+.animate-coin-shadow {
+  animation: coin-shadow-pulse 10s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Editor live */
+html.live-edit-mode .site-header,
+html.live-edit-mode .site-footer {
+  display: none !important;
+}
+
+html.live-edit-mode #hero {
+  padding-top: 3.5rem !important;
+  min-height: 70vh !important;
+}
+
+html.live-edit-mode .section,
+html.live-edit-mode section {
+  scroll-margin-top: 1rem;
+}
+
+html.live-edit-mode {
+  scroll-padding-bottom: 5rem;
+}
+
+html.live-edit-mode .live-edit-target {
+  outline-offset: 3px;
+  position: relative;
+  z-index: 40;
+}
+
+html.live-edit-mode a:not(.live-edit-target):not([href^="/admin"]) {
+  pointer-events: none;
+}
+
