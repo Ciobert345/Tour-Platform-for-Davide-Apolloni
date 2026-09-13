@@ -49,6 +49,11 @@ export default function ToursSection({
     (tt) => !tt.is_exclusive && !tt.is_custom_tour
   );
 
+  // Filtra fuori i luoghi contrassegnati come esperienze esclusive (mostrati nella sezione ExclusiveSection)
+  const standardPlaces = places.filter(
+    (p) => !p.place_tour_types?.some((pt) => pt.tour_type.is_exclusive)
+  );
+
   return (
     <section id="tour" className="section bg-bg-main">
       <div className="container-app">
@@ -70,11 +75,11 @@ export default function ToursSection({
           hint="Card dei luoghi e itinerari. Le categorie tour si gestiscono in Categorie Tour."
           minHeight="min-h-[420px]"
         >
-          {places.length === 0 ? (
+          {standardPlaces.length === 0 ? (
             <FallbackTourCards t={t} lang={lang} />
           ) : standardTT.length === 0 ? (
             <PlaceCardsCarousel lang={lang}>
-              {places.map((p, idx) => (
+              {standardPlaces.map((p, idx) => (
                 <PlaceCard
                   key={p.id}
                   place={p}
@@ -86,12 +91,14 @@ export default function ToursSection({
             </PlaceCardsCarousel>
           ) : (
             standardTT.map((tt) => {
-              const ttPlaces = places
+              const ttPlaces = standardPlaces
                 .filter((p) =>
                   p.place_tour_types?.some((pt) => pt.tour_type.id === tt.id)
                 )
                 .slice(0, 6);
-              const displayPlaces = ttPlaces.length > 0 ? ttPlaces : places.slice(0, 3);
+
+              // Se questa categoria standard non ha luoghi associati, non mostrare la categoria vuota
+              if (ttPlaces.length === 0) return null;
 
               return (
                 <div key={tt.id} id={`tour-${tt.slug}`} className="mb-12 sm:mb-16 last:mb-0">
@@ -110,7 +117,7 @@ export default function ToursSection({
                     </div>
                   </div>
                   <PlaceCardsCarousel lang={lang}>
-                    {displayPlaces.map((p, idx) => (
+                    {ttPlaces.map((p, idx) => (
                       <PlaceCard
                         key={p.id}
                         place={p}
