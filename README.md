@@ -159,13 +159,6 @@ Il design segue una palette terracotta/pietra ispirata ai colori del paesaggio v
 
 ---
 
-## Autore del sito
-
-Davide Apolloni — Guida Turistica Autorizzata, Veneto e Trentino  
-guidaturistica@davideapolloni.it  
-www.davideapolloni.it  
-+39 3522 351 352
-
 ## Sviluppatore
 
 Sito progettato e sviluppato da **Robert Ciobanu** per conto di Davide Apolloni.
