@@ -100,59 +100,6 @@ types/
 
 ---
 
-## Avvio in sviluppo
-
-**Prerequisiti:** Node.js >= 18, un progetto Supabase attivo.
-
-1. Clona la repository e installa le dipendenze:
-
-```bash
-git clone https://github.com/Ciobert345/Tour-Platform-for-Davide-Apolloni.git
-cd Tour-Platform-for-Davide-Apolloni
-npm install
-```
-
-2. Copia il file di esempio delle variabili d'ambiente e compila con le credenziali Supabase:
-
-```bash
-cp .env.example .env.local
-```
-
-```env
-NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=...
-SUPABASE_SERVICE_ROLE_KEY=...
-GOOGLE_TRANSLATE_API_KEY=...
-```
-
-3. (Opzionale) Rigenera i tipi TypeScript dal database:
-
-```bash
-npm run gen-types
-```
-
-4. Avvia il server di sviluppo:
-
-```bash
-npm run dev
-```
-
-Il sito e disponibile su `http://localhost:3000`. L'area admin si trova su `http://localhost:3000/admin`.
-
----
-
-## Comandi disponibili
-
-| Comando | Descrizione |
-|---|---|
-| `npm run dev` | Avvia il server di sviluppo |
-| `npm run build` | Build di produzione |
-| `npm run start` | Avvia il server di produzione |
-| `npm run typecheck` | Verifica i tipi TypeScript senza compilare |
-| `npm run gen-types` | Rigenera i tipi dal database Supabase |
-
----
-
 ## Note sul design
 
 Il design segue una palette terracotta/pietra ispirata ai colori del paesaggio veneto e trentino. Le scelte tipografiche (serif per i titoli, sans-serif leggero per i testi) richiamano un'estetica editoriale e culturale, coerente con il profilo professionale della guida. Le immagini esterne (Unsplash e CDN) sono ottimizzate automaticamente in WebP/AVIF con placeholder a bassa risoluzione per eliminare il flash di caricamento.
