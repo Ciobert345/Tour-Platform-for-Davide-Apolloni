@@ -10,6 +10,7 @@ import { CalendarDays, Users, MapPin, Sparkles, Flame, CircleDollarSign } from "
 import Image from "next/image";
 import MobileCarousel from "@/components/public/MobileCarousel";
 import type { Database, Lang } from "@/types/database.types";
+import { optimizeImageUrl, BLUR_DATA_URL } from "@/lib/imageUtils";
 
 type EventT = Database["public"]["Tables"]["events"]["Row"] & {
   tour_type: { id: string; slug: string; name_it: string; name_en: string; color: string; icon: string | null } | null;
@@ -78,9 +79,11 @@ function EventCard({
   lang: Lang;
   t: (k: string, f?: string) => string;
 }) {
-  const cover =
+  const cover = optimizeImageUrl(
     event.cover_image_url ??
-    "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=800&q=80";
+    "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=800&q=80",
+    720, 75
+  );
 
   const badgeMap: Record<string, { label: string; label_en: string; cls: string; Icon: typeof Sparkles }> = {
     open: {
@@ -112,6 +115,8 @@ function EventCard({
           alt={tFieldStr(event as any, "title", lang)}
           fill
           sizes="(max-width: 768px) 100vw, 33vw"
+          placeholder="blur"
+          blurDataURL={BLUR_DATA_URL}
           className="object-cover transition-opacity duration-300"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-bg-dark/70 via-transparent to-transparent" />

@@ -11,6 +11,7 @@ import { MapPin, Clock, Info, Calendar, Sparkles } from "lucide-react";
 import Image from "next/image";
 import MobileCarousel from "@/components/public/MobileCarousel";
 import type { Database, Lang } from "@/types/database.types";
+import { optimizeImageUrl, BLUR_DATA_URL } from "@/lib/imageUtils";
 
 type PlaceT = Database["public"]["Tables"]["places"]["Row"] & {
   place_type: { slug: string; name_it: string; name_en: string; icon: string | null } | null;
@@ -24,9 +25,9 @@ type PlaceT = Database["public"]["Tables"]["places"]["Row"] & {
 type TourTypeT = Database["public"]["Tables"]["tour_types"]["Row"];
 
 const DEFAULT_COVERS = [
-  "https://images.unsplash.com/photo-1514890547357-a9ee288728e0?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1514890547357-a9ee288728e0?auto=format&fit=crop&w=720&q=75",
+  "https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&w=720&q=75",
+  "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=720&q=75",
 ];
 
 /**
@@ -189,10 +190,12 @@ function PlaceCard({
     <article className="card-base card-hover flex flex-col bg-white rounded-2xl border border-black/10 shadow-sm overflow-hidden h-full">
       <div className="relative h-44 sm:h-56 bg-stone/30 overflow-hidden">
         <Image
-          src={cover}
+          src={optimizeImageUrl(cover, 720, 75)}
           alt={tFieldStr(place as any, "name", lang) || "Itinerario"}
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 400px"
+          placeholder="blur"
+          blurDataURL={BLUR_DATA_URL}
           className="object-cover transition-opacity duration-300"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-bg-dark/70 via-transparent to-transparent pointer-events-none" />

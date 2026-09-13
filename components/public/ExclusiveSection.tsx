@@ -12,6 +12,7 @@ import { Moon, Calendar, Sparkles, Star, Lock, BookOpen, Users } from "lucide-re
 import Image from "next/image";
 import MobileCarousel from "@/components/public/MobileCarousel";
 import type { Database, Lang } from "@/types/database.types";
+import { optimizeImageUrl, BLUR_DATA_URL } from "@/lib/imageUtils";
 
 type PlaceT = Database["public"]["Tables"]["places"]["Row"] & {
   place_tour_types: {
@@ -465,9 +466,11 @@ function ExclusiveCard({
   lang: Lang;
   t: (k: string, f?: string) => string;
 }) {
-  const cover =
+  const cover = optimizeImageUrl(
     place.cover_image_url ??
-    "https://images.unsplash.com/photo-1514890547357-a9ee288728e0?auto=format&fit=crop&w=1200&q=80";
+    "https://images.unsplash.com/photo-1514890547357-a9ee288728e0?auto=format&fit=crop&w=1200&q=80",
+    820, 75
+  );
 
   return (
     <article
@@ -483,6 +486,8 @@ function ExclusiveCard({
           alt={tFieldStr(place as any, "name", lang)}
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          placeholder="blur"
+          blurDataURL={BLUR_DATA_URL}
           className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
         <div

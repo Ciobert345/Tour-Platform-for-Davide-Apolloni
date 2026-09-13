@@ -58,6 +58,10 @@ export default async function RootLayout({
 
   return (
     <html lang="it" suppressHydrationWarning className="overflow-x-clip">
+      <head>
+        <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://images.unsplash.com" />
+      </head>
       <body className="antialiased bg-bg-main overflow-x-clip w-full max-w-[100vw]">
         <LanguageProvider initialStrings={uiStrings}>
           {children}
