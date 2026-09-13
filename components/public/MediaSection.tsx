@@ -368,17 +368,7 @@ function VideoCard({
           className="w-full h-full"
         >
           {isEmbed ? (
-            <div className="relative w-full h-full aspect-video lg:aspect-auto">
-              <iframe
-                src={embedUrl}
-                title={cap || "Video"}
-                className="absolute inset-0 w-full h-full border-0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowFullScreen
-                referrerPolicy="strict-origin-when-cross-origin"
-                loading="lazy"
-              />
-            </div>
+            <VideoThumbnailPlayer embedUrl={embedUrl} videoType={videoType} cap={cap} />
           ) : (
             <div className="relative w-full h-full">
               <video
@@ -394,12 +384,10 @@ function VideoCard({
         <button
           type="button"
           onClick={onOpen}
-          className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 hover:opacity-100 z-10"
+          className="absolute top-3 right-3 bg-black/50 hover:bg-black/80 transition-colors flex items-center justify-center z-20 rounded-full w-9 h-9"
           aria-label="Apri video a schermo intero"
         >
-          <span className="w-14 h-14 rounded-full bg-[#9C1C1C]/90 text-white flex items-center justify-center shadow-lg ring-2 ring-gold/50 transition-transform hover:scale-110">
-            <Maximize2 className="w-6 h-6" />
-          </span>
+          <Maximize2 className="w-4 h-4 text-white" />
         </button>
       </div>
 
@@ -482,5 +470,70 @@ function VideoCard({
         )}
       </div>
     </article>
+  );
+}
+
+/**
+ * Mostra la thumbnail del video con pulsante play.
+ * L'iframe viene caricato SOLO al click, evitando il box nero.
+ */
+function VideoThumbnailPlayer({
+  embedUrl,
+  videoType,
+  cap,
+}: {
+  embedUrl: string;
+  videoType: "youtube" | "vimeo" | "direct";
+  cap: string | null;
+}) {
+  const [playing, setPlaying] = useState(false);
+
+  const thumbnailUrl = (() => {
+    if (videoType === "youtube") {
+      const videoId = embedUrl.match(/embed\/([a-zA-Z0-9_-]+)/)?.[1];
+      if (videoId) return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+    }
+    return null;
+  })();
+
+  if (playing) {
+    return (
+      <div className="absolute inset-0 w-full h-full">
+        <iframe
+          src={`${embedUrl}&autoplay=1`}
+          title={cap || "Video"}
+          className="w-full h-full border-0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+          referrerPolicy="strict-origin-when-cross-origin"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      className="absolute inset-0 w-full h-full group/thumb flex items-center justify-center bg-black"
+      onClick={() => setPlaying(true)}
+      aria-label={cap ? `Riproduci: ${cap}` : "Riproduci video"}
+    >
+      {thumbnailUrl ? (
+        <Image
+          src={thumbnailUrl}
+          alt={cap || "Copertina video"}
+          fill
+          sizes="(max-width: 768px) 100vw, 60vw"
+          className="object-cover opacity-90 group-hover/thumb:opacity-100 transition-opacity duration-300"
+          unoptimized
+        />
+      ) : (
+        <div className="absolute inset-0 bg-gradient-to-br from-bg-dark to-black/80" />
+      )}
+      <div className="absolute inset-0 bg-black/20 group-hover/thumb:bg-black/35 transition-colors duration-300" />
+      <span className="relative z-10 w-16 h-16 rounded-full bg-[#9C1C1C]/90 text-white flex items-center justify-center shadow-2xl ring-2 ring-gold/60 group-hover/thumb:scale-110 transition-transform duration-300">
+        <Play className="w-7 h-7 ml-1 fill-white" />
+      </span>
+    </button>
   );
 }
