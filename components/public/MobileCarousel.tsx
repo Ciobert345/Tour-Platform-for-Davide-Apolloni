@@ -27,6 +27,7 @@ export default function MobileCarousel({
   hintClassName,
   desktopMode = "grid",
   childWidth,
+  hideArrows = false,
 }: {
   children: ReactNode;
   className?: string;
@@ -34,6 +35,7 @@ export default function MobileCarousel({
   hintClassName?: string;
   desktopMode?: "grid" | "scroll";
   childWidth?: string; // sovrascrive le larghezze default dei figli
+  hideArrows?: boolean;
 }) {
   const count = Children.count(children);
   const isSingle = count === 1;
@@ -75,7 +77,7 @@ export default function MobileCarousel({
   return (
     <>
       {/* Barra frecce — solo desktop, solo in modalità scroll */}
-      {isDesktopScroll && (
+      {isDesktopScroll && !hideArrows && (
         <div className="hidden md:flex items-center justify-end gap-2 mb-3">
           <button
             type="button"
@@ -147,7 +149,7 @@ export default function MobileCarousel({
         <p
           className={cn(
             "mt-2 text-center text-[10.5px] font-medium uppercase tracking-wider",
-            isDesktopScroll ? "" : "md:hidden",
+            isDesktopScroll && !hideArrows ? "" : "md:hidden",
             hintClassName ?? "text-text-muted"
           )}
         >

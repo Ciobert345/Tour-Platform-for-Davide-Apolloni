@@ -117,6 +117,8 @@ export default function MediaSection({ media }: { media: MediaT[] }) {
           <div className="mb-8 sm:mb-16">
             <MobileCarousel
               desktopMode="scroll"
+              hideArrows={images.length <= 3}
+              className={images.length <= 3 ? "md:justify-center" : ""}
               childWidth={
                 images.length === 1
                   ? "w-full max-w-xl mx-auto"

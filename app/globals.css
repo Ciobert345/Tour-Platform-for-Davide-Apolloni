@@ -433,6 +433,15 @@ html.live-edit-mode a:not(.live-edit-target):not([href^="/admin"]) {
 
 
 /* Live Edit: sezione nascosta */
+section.live-section-hidden {
+  background: none !important;
+  background-color: transparent !important;
+  border-color: transparent !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  min-height: 0 !important;
+}
+
 section.live-section-hidden .section-title-wrap,
 section.live-section-hidden .section-divider {
   display: none !important;
