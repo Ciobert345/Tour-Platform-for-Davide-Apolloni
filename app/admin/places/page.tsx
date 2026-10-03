@@ -37,6 +37,8 @@ function AutoTranslateBadge({ state }: { state: "idle" | "loading" | "success" |
   );
 }
 
+const MAX_SHORT_DESC = 220;
+
 const DEF: Row = {
   id: null, slug: "", place_type_id: null,
   name_it: "", name_en: "", subtitle_it: "", subtitle_en: "",
@@ -209,7 +211,7 @@ function PlaceModal({
       try {
         const translated = await translateLongText(valIT.trim(), "it", "en");
         lastSeenShortDescIt.current = valIT;
-        updateField("short_description_en", translated);
+        updateField("short_description_en", translated.slice(0, MAX_SHORT_DESC));
         setTranslatingShortDesc("success");
         setTimeout(() => setTranslatingShortDesc("idle"), 2000);
       } catch {
@@ -349,7 +351,7 @@ function PlaceModal({
                   <button type="button" onClick={() => setShowWarnings(false)} className="px-3 py-1.5 text-xs font-medium bg-white text-[#3D2E1A] border border-[#E9DCC4] rounded-sm hover:bg-[#F9F4EC]">
                     Torna al form
                   </button>
-                  <button type="button" onClick={() => onSubmit({ preventDefault: () => { } } as any, true)} className="px-3 py-1.5 text-xs font-medium bg-[#4A6535] text-white rounded-sm hover:bg-[#3A5228]">
+                  <button type="button" onClick={() => onSubmit({ preventDefault: () => { } } as any, true)} className="px-3 py-1.5 text-xs font-medium bg-[#9C1C1C] text-white rounded-sm hover:bg-[#7A1616]">
                     Salva comunque
                   </button>
                 </div>
@@ -438,33 +440,86 @@ function PlaceModal({
           {/* Sezione: Descrizioni */}
           <CollapsibleSection title="Descrizioni e Contenuti" color="bg-[#4A6535]" defaultOpen={true}>
             <Grid2>
-              <Field label={<>Descrizione breve IT <span className="text-[#C4923A] text-[10px] font-normal normal-case">(consigliato)</span></>}>
-                <textarea rows={3} className={cn(inputClass("short_description_it"), "resize-y")} value={edit.short_description_it || ""} onChange={(e) => updateField("short_description_it", e.target.value)} />
+              <Field
+                label={
+                  <div className="flex items-center justify-between w-full">
+                    <span>
+                      Descrizione breve IT{" "}
+                      <span className="text-[#C4923A] text-[10px] font-normal normal-case">
+                        (max {MAX_SHORT_DESC} car.)
+                      </span>
+                    </span>
+                    <span
+                      className={cn(
+                        "text-[10px] font-mono font-medium",
+                        (edit.short_description_it || "").length >= MAX_SHORT_DESC
+                          ? "text-[#B22A2A] font-bold"
+                          : (edit.short_description_it || "").length >= 200
+                          ? "text-[#C4923A]"
+                          : "text-[#7A6655]"
+                      )}
+                    >
+                      {(edit.short_description_it || "").length}/{MAX_SHORT_DESC}
+                    </span>
+                  </div>
+                }
+                hint="Visibile per intero sulla card del sito. Tienila entro 220 caratteri per non allungare la card."
+                error={errors.short_description_it && touched.short_description_it ? errors.short_description_it : undefined}
+              >
+                <textarea
+                  rows={3}
+                  maxLength={MAX_SHORT_DESC}
+                  className={cn(inputClass("short_description_it"), "resize-y")}
+                  value={edit.short_description_it || ""}
+                  onChange={(e) => updateField("short_description_it", e.target.value)}
+                  placeholder="Descrizione sintetica visibile per intero sulla card del sito (max 220 caratteri)..."
+                />
               </Field>
               <Field
                 label={
                   <div className="flex items-center justify-between w-full">
-                    <span>Descrizione breve EN</span>
+                    <span>
+                      Descrizione breve EN{" "}
+                      <span className="text-[#C4923A] text-[10px] font-normal normal-case">
+                        (max {MAX_SHORT_DESC} car.)
+                      </span>
+                    </span>
                     <div className="flex items-center gap-1.5">
+                      <span
+                        className={cn(
+                          "text-[10px] font-mono font-medium",
+                          (edit.short_description_en || "").length >= MAX_SHORT_DESC
+                            ? "text-[#B22A2A] font-bold"
+                            : (edit.short_description_en || "").length >= 200
+                            ? "text-[#C4923A]"
+                            : "text-[#7A6655]"
+                        )}
+                      >
+                        {(edit.short_description_en || "").length}/{MAX_SHORT_DESC}
+                      </span>
                       <AutoTranslateBadge state={translatingShortDesc} />
                       <TranslateButton
                         sourceText={edit.short_description_it || ""}
                         onTranslated={(t) => {
                           lastSeenShortDescIt.current = edit.short_description_it || "";
-                          updateField("short_description_en", t);
+                          updateField("short_description_en", t.slice(0, MAX_SHORT_DESC));
                         }}
                       />
                     </div>
                   </div>
                 }
+                hint={`Max ${MAX_SHORT_DESC} caratteri`}
+                error={errors.short_description_en && touched.short_description_en ? errors.short_description_en : undefined}
               >
                 <textarea
                   rows={3}
+                  maxLength={MAX_SHORT_DESC}
                   className={cn(inputClass("short_description_en"), "resize-y")}
                   value={edit.short_description_en || ""}
                   onChange={(e) => {
                     updateField("short_description_en", e.target.value);
                   }}
+                  placeholder={`Short description fully visible on site card (max ${MAX_SHORT_DESC} chars)...`}
                 />
               </Field>
             </Grid2>
@@ -535,7 +590,11 @@ function PlaceModal({
           {/* Sezione: Dettagli Operativi */}
           <CollapsibleSection title="Dettagli Operativi" color="bg-[#3D6E90]" defaultOpen={true}>
             <Grid2>
-              <Field label={<>Durata (ore) <span className="text-[#B22A2A]">*</span></>} error={errors.duration_hours && touched.duration_hours ? errors.duration_hours : undefined}>
+              <Field
+                label={<>Durata (ore) <span className="text-[#B22A2A]">*</span></>}
+                hint="≤ 2.5 ore = Mezza giornata, > 2.5 ore = Giornata intera"
+                error={errors.duration_hours && touched.duration_hours ? errors.duration_hours : undefined}
+              >
                 <input type="number" step="0.5" min={0.5} required className={inputClass("duration_hours")} value={edit.duration_hours ?? ""} onChange={(e) => updateField("duration_hours", Number(e.target.value) || null)} onBlur={() => markTouched("duration_hours")} />
               </Field>
               <Field label="Difficoltà">
@@ -682,7 +741,7 @@ function PlaceModal({
           </div>
           <div className="flex gap-2">
             <button type="button" onClick={onClose} className="px-4 py-2 rounded-sm text-sm font-medium text-[#5C4C38] hover:bg-[#E9DCC4]">Annulla</button>
-            <button type="button" onClick={(e) => onSubmit(e as any, false)} disabled={saving} className="inline-flex items-center gap-2 px-5 py-2 bg-[#4A6535] text-white rounded-sm text-sm font-medium hover:bg-[#3A5228] disabled:opacity-60">
+            <button type="button" onClick={(e) => onSubmit(e as any, false)} disabled={saving} className="inline-flex items-center gap-2 px-5 py-2 bg-[#9C1C1C] text-white rounded-sm text-sm font-medium hover:bg-[#7A1616] disabled:opacity-60">
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
               {edit.id ? "Aggiorna luogo" : "Crea luogo"}
             </button>
@@ -749,6 +808,12 @@ export default function PlacesPage() {
       const err = f.validate(data[f.key]);
       if (err) errs[f.key] = err;
     });
+    if (data.short_description_it && String(data.short_description_it).length > MAX_SHORT_DESC) {
+      errs.short_description_it = `La descrizione breve non può superare ${MAX_SHORT_DESC} caratteri`;
+    }
+    if (data.short_description_en && String(data.short_description_en).length > MAX_SHORT_DESC) {
+      errs.short_description_en = `La descrizione breve inglese non può superare ${MAX_SHORT_DESC} caratteri`;
+    }
     return errs;
   };
 
@@ -860,7 +925,10 @@ export default function PlacesPage() {
           { title: "2. Associa Categorie Tour", description: "Collega il luogo ad almeno una Categoria Tour: è obbligatorio per farlo apparire nelle sezioni corrette del sito.", badge: "Collegamento" },
           { title: "3. Difficoltà e Trasporti", description: "Indica se la visita è adatta a famiglie, a piedi, in bici o in moto per aiutare i visitatori a scegliere.", badge: "Dettagli" },
         ]}
-        tips={["Se vuoi che un luogo appaia nella sezione serale 'Esperienze Esclusive', collegalo a una Categoria contrassegnata come 'Esclusiva'."]}
+        tips={[
+          "La descrizione breve ha un limite di 220 caratteri per visualizzare il testo per intero sulla card del sito pubblico senza tagli.",
+          "Se vuoi che un luogo appaia nella sezione serale 'Esperienze Esclusive', collegalo a una Categoria contrassegnata come 'Esclusiva'.",
+        ]}
         defaultOpen={false}
       />
       <div className="bg-white border border-[#E9DCC4] rounded-sm shadow-sm overflow-hidden">

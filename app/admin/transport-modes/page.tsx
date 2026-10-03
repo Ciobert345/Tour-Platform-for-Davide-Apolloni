@@ -216,7 +216,7 @@ function TransportModeModal({
                   <button type="button" onClick={() => setShowWarnings(false)} className="px-3 py-1.5 text-xs font-medium bg-white text-[#3D2E1A] border border-[#E9DCC4] rounded-sm hover:bg-[#F9F4EC]">
                     Torna al form
                   </button>
-                  <button type="button" onClick={() => onSubmit({ preventDefault: () => {} } as any, true)} className="px-3 py-1.5 text-xs font-medium bg-[#4A6535] text-white rounded-sm hover:bg-[#3A5228]">
+                  <button type="button" onClick={() => onSubmit({ preventDefault: () => {} } as any, true)} className="px-3 py-1.5 text-xs font-medium bg-[#9C1C1C] text-white rounded-sm hover:bg-[#7A1616]">
                     Salva comunque
                   </button>
                 </div>
@@ -360,7 +360,7 @@ function TransportModeModal({
           </div>
           <div className="flex gap-2">
             <button type="button" onClick={onClose} className="px-4 py-2 rounded-sm text-sm font-medium text-[#5C4C38] hover:bg-[#E9DCC4]">Annulla</button>
-            <button type="button" onClick={(e) => onSubmit(e as any, false)} disabled={saving} className="inline-flex items-center gap-2 px-5 py-2 bg-[#4A6535] text-white rounded-sm text-sm font-medium hover:bg-[#3A5228] disabled:opacity-60">
+            <button type="button" onClick={(e) => onSubmit(e as any, false)} disabled={saving} className="inline-flex items-center gap-2 px-5 py-2 bg-[#9C1C1C] text-white rounded-sm text-sm font-medium hover:bg-[#7A1616] disabled:opacity-60">
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
               {edit.id ? "Aggiorna mezzo" : "Crea mezzo"}
             </button>

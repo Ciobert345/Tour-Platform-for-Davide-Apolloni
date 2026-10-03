@@ -525,19 +525,11 @@ function ExclusiveCard({
             {name}
           </h3>
           <p
-            className="text-xs sm:text-sm leading-relaxed mb-1.5 font-light line-clamp-3 break-words"
+            className="text-xs sm:text-sm leading-relaxed mb-4 sm:mb-6 font-light min-h-[4.5rem] sm:min-h-[5.25rem] break-words"
             style={{ color: "rgba(247, 240, 227, 0.75)" }}
           >
             {renderWithLinks(shortDesc)}
           </p>
-          <button
-            type="button"
-            onClick={() => setModalOpen(true)}
-            className="text-[11px] sm:text-xs font-semibold mb-4 sm:mb-6 hover:underline underline-offset-2"
-            style={{ color: "var(--color-gold, #C9A227)" }}
-          >
-            {lang === "it" ? "Leggi tutto" : "Read more"}
-          </button>
         </div>
         <button
           onClick={() =>

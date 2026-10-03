@@ -36,6 +36,8 @@ function AutoTranslateBadge({ state }: { state: "idle" | "loading" | "success" |
   );
 }
 
+const MAX_EVENT_DESC = 220;
+
 const DEF: Row = {
   id: null, tour_type_id: null,
   title_it: "", title_en: "", subtitle_it: "", subtitle_en: "",
@@ -297,7 +299,7 @@ function EventModal({
       try {
         const translated = await translateLongText(valIT.trim(), "it", "en");
         lastSeenDescriptionIt.current = valIT;
-        updateField("description_en", translated);
+        updateField("description_en", translated.slice(0, MAX_EVENT_DESC));
         setTranslatingDescription("success");
         setTimeout(() => setTranslatingDescription("idle"), 2000);
       } catch {
@@ -454,7 +456,7 @@ function EventModal({
                   <button
                     type="button"
                     onClick={() => onSubmit({ preventDefault: () => { } } as any, true)}
-                    className="px-3 py-1.5 text-xs font-medium bg-[#4A6535] text-white rounded-sm hover:bg-[#3A5228]"
+                    className="px-3 py-1.5 text-xs font-medium bg-[#9C1C1C] text-white rounded-sm hover:bg-[#7A1616]"
                   >
                     Salva comunque
                   </button>
@@ -801,41 +803,86 @@ function EventModal({
           >
             <Grid2>
               <Field
-                label={<>Descrizione IT <span className="text-[#C4923A] text-[10px] font-normal normal-case">(consigliato, min. 20 caratteri)</span></>}
-                hint={`${(edit.description_it || "").length} caratteri`}
+                label={
+                  <div className="flex items-center justify-between w-full">
+                    <span>
+                      Descrizione IT{" "}
+                      <span className="text-[#C4923A] text-[10px] font-normal normal-case">
+                        (max {MAX_EVENT_DESC} car.)
+                      </span>
+                    </span>
+                    <span
+                      className={cn(
+                        "text-[10px] font-mono font-medium",
+                        (edit.description_it || "").length >= MAX_EVENT_DESC
+                          ? "text-[#B22A2A] font-bold"
+                          : (edit.description_it || "").length >= 200
+                          ? "text-[#C4923A]"
+                          : "text-[#7A6655]"
+                      )}
+                    >
+                      {(edit.description_it || "").length}/{MAX_EVENT_DESC}
+                    </span>
+                  </div>
+                }
+                hint="Visibile per intero sulla card del sito. Tienila entro 220 caratteri per una resa perfetta."
+                error={errors.description_it && touched.description_it ? errors.description_it : undefined}
               >
                 <textarea
                   rows={4}
+                  maxLength={MAX_EVENT_DESC}
                   className={cn(inputClass("description_it"), "resize-y")}
                   value={edit.description_it || ""}
                   onChange={(e) => updateField("description_it", e.target.value)}
-                  placeholder="Descrivi l'esperienza, cosa vedranno i partecipanti..."
+                  placeholder="Descrivi l'esperienza (max 220 caratteri per visualizzazione completa nella card)..."
                 />
               </Field>
               <Field
                 label={
-                  <span className="flex items-center justify-between w-full">
-                    <span>Descrizione EN</span>
-                    <AutoTranslateBadge state={translatingDescription} />
-                  </span>
+                  <div className="flex items-center justify-between w-full">
+                    <span>
+                      Descrizione EN{" "}
+                      <span className="text-[#C4923A] text-[10px] font-normal normal-case">
+                        (max {MAX_EVENT_DESC} car.)
+                      </span>
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={cn(
+                          "text-[10px] font-mono font-medium",
+                          (edit.description_en || "").length >= MAX_EVENT_DESC
+                            ? "text-[#B22A2A] font-bold"
+                            : (edit.description_en || "").length >= 200
+                            ? "text-[#C4923A]"
+                            : "text-[#7A6655]"
+                        )}
+                      >
+                        {(edit.description_en || "").length}/{MAX_EVENT_DESC}
+                      </span>
+                      <AutoTranslateBadge state={translatingDescription} />
+                    </div>
+                  </div>
                 }
+                hint={`Max ${MAX_EVENT_DESC} caratteri`}
+                error={errors.description_en && touched.description_en ? errors.description_en : undefined}
               >
                 <div className="space-y-1.5">
                   <textarea
                     rows={4}
+                    maxLength={MAX_EVENT_DESC}
                     className={cn(inputClass("description_en"), "resize-y")}
                     value={edit.description_en || ""}
                     onChange={(e) => {
                       updateField("description_en", e.target.value);
                     }}
-                    placeholder="Describe the experience..."
+                    placeholder={`Describe the experience (max ${MAX_EVENT_DESC} chars)...`}
                   />
                   <div className="flex justify-end">
                     <TranslateButton
                       sourceText={edit.description_it}
                       onTranslated={(t) => {
                         lastSeenDescriptionIt.current = edit.description_it || "";
-                        updateField("description_en", t);
+                        updateField("description_en", t.slice(0, MAX_EVENT_DESC));
                       }}
                       size="sm"
                     />
@@ -1011,7 +1058,7 @@ function EventModal({
               type="button"
               onClick={(e) => onSubmit(e as any, false)}
               disabled={saving}
-              className="inline-flex items-center gap-2 px-5 py-2 bg-[#4A6535] text-white rounded-sm text-sm font-medium hover:bg-[#3A5228] disabled:opacity-60"
+              className="inline-flex items-center gap-2 px-5 py-2 bg-[#9C1C1C] text-white rounded-sm text-sm font-medium hover:bg-[#7A1616] disabled:opacity-60"
             >
               {saving ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -1120,6 +1167,13 @@ const load = async () => {
       Number(data.booked_seats) > Number(data.max_seats)
     ) {
       errs.booked_seats = "I posti prenotati non possono superare i posti totali";
+    }
+
+    if (data.description_it && String(data.description_it).length > MAX_EVENT_DESC) {
+      errs.description_it = `La descrizione italiana non può superare ${MAX_EVENT_DESC} caratteri`;
+    }
+    if (data.description_en && String(data.description_en).length > MAX_EVENT_DESC) {
+      errs.description_en = `La descrizione inglese non può superare ${MAX_EVENT_DESC} caratteri`;
     }
 
     return errs;
@@ -1282,6 +1336,7 @@ const load = async () => {
         ]}
         tips={[
           "Quando rimangono meno di 3 posti, imposta lo stato su 'Ultimi posti' per incentivare le iscrizioni.",
+          "La descrizione è limitata a 220 caratteri per visualizzare il testo per intero sulla card del sito senza tagli.",
           "I campi contrassegnati con * sono obbligatori per creare un evento.",
         ]}
         defaultOpen={false}

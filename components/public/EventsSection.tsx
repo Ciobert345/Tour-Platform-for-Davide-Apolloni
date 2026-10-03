@@ -9,8 +9,6 @@ import { triggerBookingPrefill } from "@/lib/bookingPrefill";
 import { CalendarDays, Users, MapPin, Sparkles, Flame, CircleDollarSign } from "lucide-react";
 import Image from "next/image";
 import MobileCarousel from "@/components/public/MobileCarousel";
-import ReadMoreModal from "@/components/public/ReadMoreModal";
-import { useState } from "react";
 import type { Database, Lang } from "@/types/database.types";
 import { optimizeImageUrl, BLUR_DATA_URL } from "@/lib/imageUtils";
 
@@ -114,7 +112,6 @@ function EventCard({
     typeof event.total_seats === "number" && typeof event.booked_seats === "number"
       ? Math.max(0, event.total_seats - event.booked_seats)
       : null;
-  const [modalOpen, setModalOpen] = useState(false);
   const title = tFieldStr(event as any, "title", lang);
   const description = tFieldStr(event as any, "description", lang);
 
@@ -192,18 +189,9 @@ function EventCard({
           </div>
         )}
 
-        <p className="text-xs sm:text-sm text-text-muted leading-relaxed mb-1 min-h-0 sm:min-h-[4.5rem] grow font-light line-clamp-3">
+        <p className="text-xs sm:text-sm text-text-muted leading-relaxed mb-4 sm:mb-5 min-h-0 sm:min-h-[5.25rem] font-light">
           {renderWithLinks(description)}
         </p>
-        {description.trim() && (
-          <button
-            type="button"
-            onClick={() => setModalOpen(true)}
-            className="self-start mb-3.5 sm:mb-5 text-[11px] sm:text-xs font-semibold text-terracotta hover:underline underline-offset-2"
-          >
-            {lang === "it" ? "Leggi tutto" : "Read more"}
-          </button>
-        )}
 
         <button
           onClick={() =>
@@ -219,31 +207,6 @@ function EventCard({
           {t("events.btnBook")}
         </button>
       </div>
-      <ReadMoreModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title={title}
-        body={description}
-        cover={cover}
-        closeLabel={lang === "it" ? "Chiudi" : "Close"}
-        footer={
-          <button
-            type="button"
-            onClick={() => {
-              setModalOpen(false);
-              triggerBookingPrefill({
-                tourTypeId: event.tour_type?.id ?? undefined,
-                preferredDate: event.start_date ?? undefined,
-                destination: title,
-              });
-            }}
-            className="btn btn-primary w-full justify-center gap-2"
-          >
-            <CalendarDays className="w-4 h-4" />
-            {t("events.btnBook")}
-          </button>
-        }
-      />
     </article>
   );
 }

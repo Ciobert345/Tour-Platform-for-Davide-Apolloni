@@ -216,7 +216,7 @@ function TourTypeModal({
                   <button type="button" onClick={() => setShowWarnings(false)} className="px-3 py-1.5 text-xs font-medium bg-white text-[#3D2E1A] border border-[#E9DCC4] rounded-sm hover:bg-[#F9F4EC]">
                     Torna al form
                   </button>
-                  <button type="button" onClick={() => onSubmit({ preventDefault: () => {} } as any, true)} className="px-3 py-1.5 text-xs font-medium bg-[#4A6535] text-white rounded-sm hover:bg-[#3A5228]">
+                  <button type="button" onClick={() => onSubmit({ preventDefault: () => {} } as any, true)} className="px-3 py-1.5 text-xs font-medium bg-[#9C1C1C] text-white rounded-sm hover:bg-[#7A1616]">
                     Salva comunque
                   </button>
                 </div>
@@ -263,28 +263,77 @@ function TourTypeModal({
               <input className={inputClass("slug")} value={edit.slug || ""} onChange={(e) => updateField("slug", e.target.value)} placeholder="generato automaticamente se vuoto" />
             </Field>
             <Grid2>
-              <Field label={<>Descrizione IT <span className="text-[#C4923A] text-[10px] font-normal normal-case">(consigliato)</span></>}>
-                <textarea rows={3} className={cn(inputClass("description_it"), "resize-y")} value={edit.description_it || ""} onChange={(e) => updateField("description_it", e.target.value)} />
+              <Field
+                label={
+                  <div className="flex items-center justify-between w-full">
+                    <span>
+                      Descrizione IT{" "}
+                      <span className="text-[#C4923A] text-[10px] font-normal normal-case">
+                        (max 220 car.)
+                      </span>
+                    </span>
+                    <span
+                      className={cn(
+                        "text-[10px] font-mono font-medium",
+                        (edit.description_it || "").length >= 220
+                          ? "text-[#B22A2A] font-bold"
+                          : (edit.description_it || "").length >= 200
+                          ? "text-[#C4923A]"
+                          : "text-[#7A6655]"
+                      )}
+                    >
+                      {(edit.description_it || "").length}/220
+                    </span>
+                  </div>
+                }
+                hint="Breve descrizione sintetica della categoria (max 220 caratteri)."
+              >
+                <textarea
+                  rows={3}
+                  maxLength={220}
+                  className={cn(inputClass("description_it"), "resize-y")}
+                  value={edit.description_it || ""}
+                  onChange={(e) => updateField("description_it", e.target.value)}
+                />
               </Field>
               <Field
                 label={
                   <div className="flex items-center justify-between w-full">
-                    <span>Descrizione EN</span>
+                    <span>
+                      Descrizione EN{" "}
+                      <span className="text-[#C4923A] text-[10px] font-normal normal-case">
+                        (max 220 car.)
+                      </span>
+                    </span>
                     <div className="flex items-center gap-1.5">
+                      <span
+                        className={cn(
+                          "text-[10px] font-mono font-medium",
+                          (edit.description_en || "").length >= 220
+                            ? "text-[#B22A2A] font-bold"
+                            : (edit.description_en || "").length >= 200
+                            ? "text-[#C4923A]"
+                            : "text-[#7A6655]"
+                        )}
+                      >
+                        {(edit.description_en || "").length}/220
+                      </span>
                       <AutoTranslateBadge state={translatingDesc} />
                       <TranslateButton
                         sourceText={edit.description_it || ""}
                         onTranslated={(t) => {
                           lastSeenDescIt.current = edit.description_it || "";
-                          updateField("description_en", t);
+                          updateField("description_en", t.slice(0, 220));
                         }}
                       />
                     </div>
                   </div>
                 }
+                hint="Max 220 caratteri"
               >
                 <textarea
                   rows={3}
+                  maxLength={220}
                   className={cn(inputClass("description_en"), "resize-y")}
                   value={edit.description_en || ""}
                   onChange={(e) => {
@@ -347,7 +396,7 @@ function TourTypeModal({
           </div>
           <div className="flex gap-2">
             <button type="button" onClick={onClose} className="px-4 py-2 rounded-sm text-sm font-medium text-[#5C4C38] hover:bg-[#E9DCC4]">Annulla</button>
-            <button type="button" onClick={(e) => onSubmit(e as any, false)} disabled={saving} className="inline-flex items-center gap-2 px-5 py-2 bg-[#4A6535] text-white rounded-sm text-sm font-medium hover:bg-[#3A5228] disabled:opacity-60">
+            <button type="button" onClick={(e) => onSubmit(e as any, false)} disabled={saving} className="inline-flex items-center gap-2 px-5 py-2 bg-[#9C1C1C] text-white rounded-sm text-sm font-medium hover:bg-[#7A1616] disabled:opacity-60">
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
               {edit.id ? "Aggiorna categoria" : "Crea categoria"}
             </button>

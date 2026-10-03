@@ -157,7 +157,7 @@ function PlaceCard({
       : "";
   const durationLabel =
     durationHours !== null
-      ? `${durationHours <= 4.5
+      ? `${durationHours <= 2.5
         ? lang === "it" ? "Mezza giornata" : "Half day"
         : lang === "it" ? "Giornata intera" : "Full day"
       } · ${hoursText}`
@@ -297,7 +297,7 @@ function CardShell({
   durationLabel: string | null;
   lang: Lang;
   t: TFn;
-  onMore: () => void;
+  onMore?: () => void;
   onBook: () => void;
   children?: ReactNode;
 }) {
@@ -329,15 +329,10 @@ function CardShell({
           {name}
         </h3>
 
-        {/* Descrizione — 3 righe esatte con sfumatura */}
-        <DescFade>{descNode}</DescFade>
-        <button
-          type="button"
-          onClick={onMore}
-          className="self-start mt-2 text-[11px] sm:text-xs font-semibold text-terracotta hover:underline underline-offset-2"
-        >
-          {lang === "it" ? "Leggi tutto" : "Read more"}
-        </button>
+        {/* Descrizione — visibile per intero senza tagli */}
+        <div className="text-xs sm:text-sm text-text-muted leading-relaxed font-light min-h-[4.5rem] sm:min-h-[5.25rem]">
+          {descNode}
+        </div>
 
         {/* Tag — spazio riservato per 3 righe, tutti visibili */}
         <div className="flex flex-wrap content-start gap-1.5 sm:gap-2 mt-3 sm:mt-4 mb-2.5 sm:mb-3 min-h-[6.75rem] sm:min-h-[7.5rem]">
