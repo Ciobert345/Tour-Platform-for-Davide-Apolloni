@@ -487,8 +487,16 @@ function toEditorHtml(value: string): string {
       "font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif; font-style: italic; font-weight: 500"
     )
     .replace(
+      /font-family\s*:\s*serif-bold\b/gi,
+      "font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif; font-style: normal; font-weight: 700"
+    )
+    .replace(
       /font-family\s*:\s*serif\b/gi,
-      "font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif; font-style: normal; font-weight: 400"
+      "font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif; font-style: normal; font-weight: 600"
+    )
+    .replace(
+      /font-family\s*:\s*sans\b/gi,
+      "font-family: 'Plus Jakarta Sans', sans-serif; font-style: normal; font-weight: 600"
     );
 
   for (let pass = 0; pass < 3; pass++) {
@@ -701,14 +709,25 @@ function VisualTabContent({
       fontStyle?: string;
       fontWeight?: string;
       color?: string;
+      textTransform?: string;
     }
   ) {
     const ref = getTextareaRef(lang);
     const el = ref.current;
     if (!el) return;
-    const selection = getRememberedSelection(lang);
+    let selection = getRememberedSelection(lang);
     if (!selection || !selection.text.trim()) {
-      setMsg({ type: "err", text: "Seleziona prima una porzione di testo a cui applicare lo stile." });
+      // Se l'utente non ha evidenziato manualmente una parola, seleziona l'intero campo
+      const nextRange = document.createRange();
+      nextRange.selectNodeContents(el);
+      const browserSelection = window.getSelection();
+      browserSelection?.removeAllRanges();
+      browserSelection?.addRange(nextRange);
+      selection = { range: nextRange.cloneRange(), text: el.textContent ?? "" };
+      selectionRef.current[lang] = selection;
+    }
+    if (!selection.text.trim()) {
+      setMsg({ type: "err", text: "Nessun testo presente su cui applicare lo stile." });
       setTimeout(() => setMsg(null), 2500);
       return;
     }
@@ -731,6 +750,7 @@ function VisualTabContent({
       if (styleChanges.fontStyle !== undefined) targetSpan.style.fontStyle = styleChanges.fontStyle;
       if (styleChanges.fontWeight !== undefined) targetSpan.style.fontWeight = styleChanges.fontWeight;
       if (styleChanges.color !== undefined) targetSpan.style.color = styleChanges.color;
+      if (styleChanges.textTransform !== undefined) targetSpan.style.textTransform = styleChanges.textTransform;
 
       appliedStyle = targetSpan.getAttribute("style") ?? "";
       el.normalize();
@@ -755,6 +775,7 @@ function VisualTabContent({
     if (styleChanges.fontStyle) styleParts.push(`font-style:${styleChanges.fontStyle}`);
     if (styleChanges.fontWeight) styleParts.push(`font-weight:${styleChanges.fontWeight}`);
     if (styleChanges.color) styleParts.push(`color:${styleChanges.color}`);
+    if (styleChanges.textTransform) styleParts.push(`text-transform:${styleChanges.textTransform}`);
 
     if (styleParts.length > 0) {
       wrapper.setAttribute("style", styleParts.join(";"));
@@ -830,6 +851,22 @@ function VisualTabContent({
             rememberSelection(lang);
             applyInlineStyle(lang, {
               fontFamily: "'Cormorant Garamond','Playfair Display',Georgia,serif",
+              fontStyle: "normal",
+              fontWeight: "700",
+            });
+          }}
+          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-serif font-bold text-[#7A5828] bg-white hover:bg-[#A87E3C]/15 border border-[#A87E3C]/40 shadow-xs transition-all active:scale-95 cursor-pointer"
+          title="Applica Font Titolo (Cormorant Garamond Grassetto come sotto)"
+        >
+          <span style={{ fontFamily: "'Cormorant Garamond','Playfair Display',Georgia,serif" }}>Font Titolo</span>
+        </button>
+        <button
+          type="button"
+          onMouseDown={(e) => {
+            e.preventDefault();
+            rememberSelection(lang);
+            applyInlineStyle(lang, {
+              fontFamily: "'Cormorant Garamond','Playfair Display',Georgia,serif",
               fontStyle: "italic",
               fontWeight: "500",
             });
@@ -855,6 +892,36 @@ function VisualTabContent({
           title="Applica Cormorant Garamond Regolare (1 click)"
         >
           <span style={{ fontFamily: "'Cormorant Garamond','Playfair Display',Georgia,serif" }}>Serif</span>
+        </button>
+        <button
+          type="button"
+          onMouseDown={(e) => {
+            e.preventDefault();
+            rememberSelection(lang);
+            applyInlineStyle(lang, {
+              fontFamily: "'Plus Jakarta Sans',sans-serif",
+              fontStyle: "normal",
+              fontWeight: "600",
+            });
+          }}
+          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-sans font-bold text-[#5C4C38] bg-white hover:bg-[#A87E3C]/15 border border-[#A87E3C]/40 shadow-xs transition-all active:scale-95 cursor-pointer"
+          title="Ripristina Font Sans predefinito (1 click)"
+        >
+          <span>Sans</span>
+        </button>
+        <button
+          type="button"
+          onMouseDown={(e) => {
+            e.preventDefault();
+            rememberSelection(lang);
+            applyInlineStyle(lang, {
+              textTransform: "none",
+            });
+          }}
+          className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[11px] font-semibold text-[#5C4C38] bg-white hover:bg-[#A87E3C]/15 border border-[#A87E3C]/40 shadow-xs transition-all active:scale-95 cursor-pointer"
+          title="Conserva Maiuscole/Minuscole normali (senza forzare TUTTO MAIUSCOLO)"
+        >
+          <span>Aa</span>
         </button>
       </div>
 

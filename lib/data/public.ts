@@ -23,6 +23,24 @@ export async function fetchUiStrings(
 }
 
 // -----------------------------------------------------------------------------
+// SECTION VISIBILITY — sezioni nascoste (stored in ui_strings)
+// -----------------------------------------------------------------------------
+export async function fetchHiddenSections(
+  sb: Supabase = createClient()
+): Promise<Record<string, boolean>> {
+  const { data } = await sb
+    .from("ui_strings")
+    .select("key, it")
+    .like("key", "section.hidden.%");
+  const result: Record<string, boolean> = {};
+  for (const row of (data ?? []) as any[]) {
+    const sectionId = (row.key as string).replace("section.hidden.", "");
+    if (row.it === "true") result[sectionId] = true;
+  }
+  return result;
+}
+
+// -----------------------------------------------------------------------------
 // PROFILO (con join a contatti e credenziali)
 // -----------------------------------------------------------------------------
 export async function fetchProfile(
@@ -251,6 +269,7 @@ export async function fetchPublicHomeData(
     infoItems,
     quote,
     media,
+    hiddenSections,
   ] = await Promise.all([
     fetchUiStrings(sb),
     fetchProfile(sb),
@@ -262,6 +281,7 @@ export async function fetchPublicHomeData(
     fetchInfoItems(sb),
     fetchActiveQuote(sb),
     fetchMedia(sb, { limit: 20 }),
+    fetchHiddenSections(sb),
   ]);
 
   return {
@@ -275,5 +295,6 @@ export async function fetchPublicHomeData(
     infoItems,
     quote,
     media,
+    hiddenSections,
   };
 }

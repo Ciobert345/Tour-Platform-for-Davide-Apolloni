@@ -9,6 +9,8 @@ import { triggerBookingPrefill } from "@/lib/bookingPrefill";
 import { CalendarDays, Users, MapPin, Sparkles, Flame, CircleDollarSign } from "lucide-react";
 import Image from "next/image";
 import MobileCarousel from "@/components/public/MobileCarousel";
+import ReadMoreModal from "@/components/public/ReadMoreModal";
+import { useState } from "react";
 import type { Database, Lang } from "@/types/database.types";
 import { optimizeImageUrl, BLUR_DATA_URL } from "@/lib/imageUtils";
 
@@ -22,12 +24,16 @@ type EventT = Database["public"]["Tables"]["events"]["Row"] & {
  * Su mobile: carosello orizzontale con scroll-snap
  * Su tablet/desktop: griglia responsive (o scroll orizzontale se > 3 eventi)
  */
-export default function EventsSection({ events }: { events: EventT[] }) {
+export default function EventsSection({ events, defaultHidden = false }: { events: EventT[]; defaultHidden?: boolean }) {
   const t = useT();
   const { lang } = useLang();
 
   return (
-    <section id="prossime-visite" className="section bg-bg-alt/50 border-b border-black/5">
+    <section
+      id="prossime-visite"
+      className="section bg-bg-alt/50 border-b border-black/5"
+      style={defaultHidden ? { display: "none" } : undefined}
+    >
       <div className="container-app">
         <EditableSectionHeading
           section="Eventi"
@@ -42,10 +48,12 @@ export default function EventsSection({ events }: { events: EventT[] }) {
         </div>
 
         <LiveEditSectionMask
+          sectionId="prossime-visite"
           adminHref="/admin/events"
           adminLabel="Eventi / Calendario"
           hint="Date, titoli, posti disponibili e luoghi collegati agli eventi."
           minHeight="min-h-[360px]"
+          defaultHidden={defaultHidden}
         >
           <div id="grande-guerra">
             {events.length === 0 ? (
@@ -106,13 +114,16 @@ function EventCard({
     typeof event.total_seats === "number" && typeof event.booked_seats === "number"
       ? Math.max(0, event.total_seats - event.booked_seats)
       : null;
+  const [modalOpen, setModalOpen] = useState(false);
+  const title = tFieldStr(event as any, "title", lang);
+  const description = tFieldStr(event as any, "description", lang);
 
   return (
     <article className="card-base card-hover flex flex-col bg-white h-full">
       <div className="relative h-44 sm:h-52 overflow-hidden">
         <Image
           src={cover}
-          alt={tFieldStr(event as any, "title", lang)}
+          alt={title}
           fill
           sizes="(max-width: 768px) 100vw, 33vw"
           placeholder="blur"
@@ -147,7 +158,7 @@ function EventCard({
         </div>
 
         <h3 className="font-serif text-lg sm:text-2xl font-bold text-text-main mb-2 leading-tight line-clamp-2 min-h-0 sm:min-h-[3rem]">
-          {tFieldStr(event as any, "title", lang)}
+          {title}
         </h3>
 
         {(event.tour_type || event.event_places?.[0]?.place) && (
@@ -181,16 +192,25 @@ function EventCard({
           </div>
         )}
 
-        <p className="text-xs sm:text-sm text-text-muted leading-relaxed mb-3.5 sm:mb-5 line-clamp-3 min-h-0 sm:min-h-[4.5rem] grow font-light">
-          {renderWithLinks(tFieldStr(event as any, "description", lang))}
+        <p className="text-xs sm:text-sm text-text-muted leading-relaxed mb-1 min-h-0 sm:min-h-[4.5rem] grow font-light line-clamp-3">
+          {renderWithLinks(description)}
         </p>
+        {description.trim() && (
+          <button
+            type="button"
+            onClick={() => setModalOpen(true)}
+            className="self-start mb-3.5 sm:mb-5 text-[11px] sm:text-xs font-semibold text-terracotta hover:underline underline-offset-2"
+          >
+            {lang === "it" ? "Leggi tutto" : "Read more"}
+          </button>
+        )}
 
         <button
           onClick={() =>
             triggerBookingPrefill({
               tourTypeId: event.tour_type?.id ?? undefined,
               preferredDate: event.start_date ?? undefined,
-              destination: tFieldStr(event as any, "title", lang),
+              destination: title,
             })
           }
           className="btn btn-primary w-full mt-auto shadow-xs whitespace-nowrap"
@@ -199,6 +219,31 @@ function EventCard({
           {t("events.btnBook")}
         </button>
       </div>
+      <ReadMoreModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={title}
+        body={description}
+        cover={cover}
+        closeLabel={lang === "it" ? "Chiudi" : "Close"}
+        footer={
+          <button
+            type="button"
+            onClick={() => {
+              setModalOpen(false);
+              triggerBookingPrefill({
+                tourTypeId: event.tour_type?.id ?? undefined,
+                preferredDate: event.start_date ?? undefined,
+                destination: title,
+              });
+            }}
+            className="btn btn-primary w-full justify-center gap-2"
+          >
+            <CalendarDays className="w-4 h-4" />
+            {t("events.btnBook")}
+          </button>
+        }
+      />
     </article>
   );
 }

@@ -39,6 +39,18 @@ export function tFieldStr<T extends Record<string, any>, K extends string>(
   return String(tField(row, baseKey, lang) ?? "");
 }
 
+/** Testo completo di un luogo: descrizione lunga, poi eventuale campo legacy, poi breve. */
+export function placeFullDescription<T extends Record<string, any>>(
+  place: T,
+  lang: Lang
+): string {
+  const long = tFieldStr(place, "long_description", lang).trim();
+  if (long) return tFieldStr(place, "long_description", lang);
+  const full = tFieldStr(place, "full_description", lang).trim();
+  if (full) return tFieldStr(place, "full_description", lang);
+  return tFieldStr(place, "short_description", lang);
+}
+
 /**
  * Tags bilingui (array `tags_it`, `tags_en`)
  */

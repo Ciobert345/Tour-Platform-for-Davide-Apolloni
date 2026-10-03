@@ -116,6 +116,12 @@ export default function MediaSection({ media }: { media: MediaT[] }) {
         {images.length > 0 && (
           <div className="mb-8 sm:mb-16">
             <MobileCarousel
+              desktopMode="scroll"
+              childWidth={
+                images.length === 1
+                  ? "w-full max-w-xl mx-auto"
+                  : "w-[min(80vw,300px)] xs:w-[min(80vw,330px)] md:w-[340px] lg:w-[380px] shrink-0"
+              }
               hint={lang === "it" ? "← Scorri per vedere tutte le immagini →" : "← Swipe to see all photos →"}
             >
               {images.map((m, i) => (
@@ -133,38 +139,51 @@ export default function MediaSection({ media }: { media: MediaT[] }) {
 
         {videos.length > 0 && (
           <div className="mb-8 sm:mb-16">
-            <div className="hidden md:flex items-center justify-end gap-2 mb-3">
-              <button
-                type="button"
-                onClick={() => {
-                  const container = document.getElementById('video-carousel');
-                  if (container) container.scrollBy({ left: -400, behavior: 'smooth' });
-                }}
-                className="flex items-center justify-center w-9 h-9 rounded-full border border-current/15 text-current transition-colors duration-200 hover:bg-current/10"
-                aria-label="Scorri a sinistra"
-              >
-                <ChevronLeft className="w-4.5 h-4.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  const container = document.getElementById('video-carousel');
-                  if (container) container.scrollBy({ left: 400, behavior: 'smooth' });
-                }}
-                className="flex items-center justify-center w-9 h-9 rounded-full border border-current/15 text-current transition-colors duration-200 hover:bg-current/10"
-                aria-label="Scorri a destra"
-              >
-                <ChevronRight className="w-4.5 h-4.5" />
-              </button>
-            </div>
+            {videos.length > 1 && (
+              <div className="hidden md:flex items-center justify-end gap-2 mb-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const container = document.getElementById('video-carousel');
+                    if (container) container.scrollBy({ left: -400, behavior: 'smooth' });
+                  }}
+                  className="flex items-center justify-center w-9 h-9 rounded-full border border-current/15 text-current transition-colors duration-200 hover:bg-current/10"
+                  aria-label="Scorri a sinistra"
+                >
+                  <ChevronLeft className="w-4.5 h-4.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const container = document.getElementById('video-carousel');
+                    if (container) container.scrollBy({ left: 400, behavior: 'smooth' });
+                  }}
+                  className="flex items-center justify-center w-9 h-9 rounded-full border border-current/15 text-current transition-colors duration-200 hover:bg-current/10"
+                  aria-label="Scorri a destra"
+                >
+                  <ChevronRight className="w-4.5 h-4.5" />
+                </button>
+              </div>
+            )}
 
             <div
               id="video-carousel"
-              className="flex gap-7 overflow-x-auto snap-x snap-mandatory scrollbar-hide touch-pan-x -mx-5 px-5 pb-3 md:mx-0 md:px-0"
+              className={
+                videos.length === 1
+                  ? "flex justify-center -mx-5 px-5 pb-3 md:mx-0 md:px-0"
+                  : "flex gap-7 overflow-x-auto snap-x snap-mandatory scrollbar-hide touch-pan-x -mx-5 px-5 pb-3 md:mx-0 md:px-0"
+              }
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
               {videos.map((m, i) => (
-                <div key={m.id} className="shrink-0 snap-start w-[min(90vw,800px)] md:w-[min(85vw,900px)] lg:w-[min(75vw,1000px)]">
+                <div
+                  key={m.id}
+                  className={
+                    videos.length === 1
+                      ? "w-full max-w-4xl lg:max-w-5xl mx-auto"
+                      : "shrink-0 snap-start w-[min(90vw,800px)] md:w-[min(85vw,900px)] lg:w-[min(75vw,1000px)]"
+                  }
+                >
                   <VideoCard
                     m={m}
                     i={i}
@@ -175,9 +194,11 @@ export default function MediaSection({ media }: { media: MediaT[] }) {
               ))}
             </div>
 
-            <p className="mt-2 text-center text-[10.5px] font-medium uppercase tracking-wider text-text-muted md:hidden">
-              {lang === "it" ? "← Scorri per vedere tutti i video →" : "← Swipe to see all videos →"}
-            </p>
+            {videos.length > 1 && (
+              <p className="mt-2 text-center text-[10.5px] font-medium uppercase tracking-wider text-text-muted md:hidden">
+                {lang === "it" ? "← Scorri per vedere tutti i video →" : "← Swipe to see all videos →"}
+              </p>
+            )}
           </div>
         )}
 

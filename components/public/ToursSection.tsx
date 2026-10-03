@@ -3,13 +3,14 @@
 import EditableSectionHeading from "@/components/live-edit/EditableSectionHeading";
 import LiveEditSectionMask from "@/components/live-edit/LiveEditSectionMask";
 import { useLang, useT } from "@/lib/i18n/LanguageProvider";
-import { Children, type ReactNode } from "react";
-import { tFieldStr, tArrField } from "@/lib/utils";
+import { Children, useEffect, useRef, useState, type ReactNode } from "react";
+import { tFieldStr, tArrField, placeFullDescription } from "@/lib/utils";
 import { renderWithLinks } from "@/lib/renderWithLinks";
 import { triggerBookingPrefill } from "@/lib/bookingPrefill";
-import { MapPin, Clock, Info, Calendar, Sparkles } from "lucide-react";
+import { Clock, Calendar, Sparkles } from "lucide-react";
 import Image from "next/image";
 import MobileCarousel from "@/components/public/MobileCarousel";
+import ReadMoreModal from "@/components/public/ReadMoreModal";
 import type { Database, Lang } from "@/types/database.types";
 import { optimizeImageUrl, BLUR_DATA_URL } from "@/lib/imageUtils";
 
@@ -23,6 +24,7 @@ type PlaceT = Database["public"]["Tables"]["places"]["Row"] & {
   }[];
 };
 type TourTypeT = Database["public"]["Tables"]["tour_types"]["Row"];
+type TFn = (k: string, f?: string) => string;
 
 const DEFAULT_COVERS = [
   "https://images.unsplash.com/photo-1514890547357-a9ee288728e0?auto=format&fit=crop&w=720&q=75",
@@ -30,33 +32,37 @@ const DEFAULT_COVERS = [
   "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=720&q=75",
 ];
 
+/* Altezza identica per tutte le card: ogni blocco ha altezza riservata */
+const CARD_CLASS =
+  "card-base card-hover flex flex-col bg-white rounded-2xl border border-black/10 shadow-sm overflow-hidden h-full grow min-h-[560px] sm:min-h-[660px]";
+
 /**
  * Tours section
  * - Mostra i "place card" (luoghi) raggruppati per tour type
  * - Filtra fuori i luoghi delle "esperienze esclusive" (mostrati nella sezione apposita)
  */
 export default function ToursSection({
-  places,
-  tourTypes,
+  places = [],
+  tourTypes = [],
+  defaultHidden = false,
 }: {
-  places: PlaceT[];
-  tourTypes: TourTypeT[];
+  places?: PlaceT[] | null;
+  tourTypes?: TourTypeT[] | null;
+  defaultHidden?: boolean;
 }) {
   const t = useT();
   const { lang } = useLang();
 
-  // Tour types standard
-  const standardTT = tourTypes.filter(
-    (tt) => !tt.is_exclusive && !tt.is_custom_tour
-  );
+  // Guardia difensiva: places potrebbe arrivare undefined in edge case
+  const safePlaces = Array.isArray(places) ? places : [];
 
-  // Filtra fuori i luoghi contrassegnati come esperienze esclusive (mostrati nella sezione ExclusiveSection)
-  const standardPlaces = places.filter(
+  // Filtra fuori i luoghi contrassegnati come esperienze esclusive
+  const standardPlaces = safePlaces.filter(
     (p) => !p.place_tour_types?.some((pt) => pt.tour_type.is_exclusive)
   );
 
   return (
-    <section id="tour" className="section bg-bg-main">
+    <section id="tour" className="section bg-bg-main" style={defaultHidden ? { display: "none" } : undefined}>
       <div className="container-app">
         <EditableSectionHeading
           section="Tour"
@@ -71,69 +77,28 @@ export default function ToursSection({
         </div>
 
         <LiveEditSectionMask
+          sectionId="tour"
           adminHref="/admin/places"
           adminLabel="Luoghi"
           hint="Card dei luoghi e itinerari. Le categorie tour si gestiscono in Categorie Tour."
           minHeight="min-h-[420px]"
+          defaultHidden={defaultHidden}
         >
           {standardPlaces.length === 0 ? (
             <FallbackTourCards t={t} lang={lang} />
-          ) : standardTT.length === 0 ? (
+          ) : (
             <PlaceCardsCarousel lang={lang}>
-              {standardPlaces.map((p, idx) => (
+              {standardPlaces.slice(0, 12).map((p, idx) => (
                 <PlaceCard
                   key={p.id}
                   place={p}
                   lang={lang}
                   t={t}
+                  ttId={p.place_tour_types?.[0]?.tour_type?.id}
                   fallbackIdx={idx}
                 />
               ))}
             </PlaceCardsCarousel>
-          ) : (
-            standardTT.map((tt) => {
-              const ttPlaces = standardPlaces
-                .filter((p) =>
-                  p.place_tour_types?.some((pt) => pt.tour_type.id === tt.id)
-                )
-                .slice(0, 6);
-
-              // Se questa categoria standard non ha luoghi associati, non mostrare la categoria vuota
-              if (ttPlaces.length === 0) return null;
-
-              return (
-                <div key={tt.id} id={`tour-${tt.slug}`} className="mb-12 sm:mb-16 last:mb-0">
-                  <div className="flex items-center gap-3 sm:gap-3.5 mb-6 sm:mb-8">
-                    <div
-                      className="w-1.5 h-8 sm:h-10 rounded-full"
-                      style={{ backgroundColor: tt.color || "#9C1C1C" }}
-                    />
-                    <div>
-                      <h3 className="font-serif text-xl sm:text-2xl md:text-3xl font-bold text-text-main">
-                        {tFieldStr(tt as any, "name", lang)}
-                      </h3>
-                      <p className="text-xs text-text-muted mt-0.5 font-light">
-                        {tFieldStr(tt as any, "description", lang)}
-                      </p>
-                    </div>
-                  </div>
-                  <PlaceCardsCarousel lang={lang}>
-                    {ttPlaces.map((p, idx) => (
-                      <PlaceCard
-                        key={p.id}
-                        place={p}
-                        lang={lang}
-                        t={t}
-                        ttColor={tt.color}
-                        ttTag={tFieldStr(tt as any, "name", lang)}
-                        ttId={tt.id}
-                        fallbackIdx={idx}
-                      />
-                    ))}
-                  </PlaceCardsCarousel>
-                </div>
-              );
-            })
           )}
         </LiveEditSectionMask>
       </div>
@@ -158,40 +123,192 @@ function PlaceCardsCarousel({
     </MobileCarousel>
   );
 }
+
+/* =========================================================
+   PlaceCard — card da DB
+   ========================================================= */
 function PlaceCard({
   place,
   lang,
   t,
-  ttColor,
-  ttTag,
   ttId,
   fallbackIdx = 0,
 }: {
   place: PlaceT;
   lang: Lang;
-  t: (k: string, f?: string) => string;
-  ttColor?: string;
-  ttTag?: string;
+  t: TFn;
   ttId?: string;
   fallbackIdx?: number;
 }) {
   const rawCover = place.cover_image_url?.trim();
-  const cover = (rawCover && rawCover.length > 0)
-    ? rawCover
-    : DEFAULT_COVERS[fallbackIdx % DEFAULT_COVERS.length];
+  const cover =
+    rawCover && rawCover.length > 0
+      ? rawCover
+      : DEFAULT_COVERS[fallbackIdx % DEFAULT_COVERS.length];
 
   const tags = tArrField(place as any, "tags", lang);
   const placeTypeName = tFieldStr((place.place_type ?? {}) as any, "name", lang);
-  const duration = place.duration_hours
-    ? `${place.duration_hours} ${lang === "it" ? "ore" : "hours"}`
-    : null;
+  const durationHours = place.duration_hours ?? null;
+  const hoursText =
+    durationHours !== null
+      ? lang === "it"
+        ? `${String(durationHours).replace(".", ",")} ${durationHours === 1 ? "ora" : "ore"}`
+        : `${durationHours} ${durationHours === 1 ? "hour" : "hours"}`
+      : "";
+  const durationLabel =
+    durationHours !== null
+      ? `${durationHours <= 4.5
+        ? lang === "it" ? "Mezza giornata" : "Half day"
+        : lang === "it" ? "Giornata intera" : "Full day"
+      } · ${hoursText}`
+      : null;
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const descText = tFieldStr(place as any, "short_description", lang);
+  const fullText = placeFullDescription(place as any, lang);
+  const itinerary = tFieldStr(place as any, "itinerary", lang);
+  const name = tFieldStr(place as any, "name", lang);
+  const resolvedTtId = ttId ?? place.place_tour_types?.[0]?.tour_type?.id;
+  const closeLabel = lang === "it" ? "Chiudi" : "Close";
 
   return (
-    <article className="card-base card-hover flex flex-col bg-white rounded-2xl border border-black/10 shadow-sm overflow-hidden h-full">
-      <div className="relative h-44 sm:h-56 bg-stone/30 overflow-hidden">
+    <CardShell
+      cover={cover}
+      alt={name || "Itinerario"}
+      placeTypeName={placeTypeName}
+      name={name}
+      descNode={renderWithLinks(descText)}
+      tags={tags}
+      durationLabel={durationLabel}
+      lang={lang}
+      t={t}
+      onMore={() => setModalOpen(true)}
+      onBook={() => triggerBookingPrefill({ tourTypeId: resolvedTtId, destination: name })}
+    >
+      <ReadMoreModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={name}
+        body={fullText}
+        cover={cover}
+        badge={placeTypeName}
+        closeLabel={closeLabel}
+        footer={
+          <button
+            type="button"
+            onClick={() => {
+              setModalOpen(false);
+              triggerBookingPrefill({ tourTypeId: resolvedTtId, destination: name });
+            }}
+            className="btn btn-primary w-full justify-center gap-2"
+          >
+            <Calendar className="w-4 h-4" />
+            {t("tours.btnBook", lang === "it" ? "Prenota" : "Book")}
+          </button>
+        }
+      >
+        {durationLabel && (
+          <span className="chip inline-flex items-center gap-1 font-semibold text-terracotta bg-terracotta/10 border-terracotta/20 text-xs w-fit">
+            <Clock className="w-3 h-3" />
+            {durationLabel}
+          </span>
+        )}
+        {itinerary.trim() && (
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-text-muted/60 mb-2">
+              {lang === "it" ? "Itinerario" : "Itinerary"}
+            </p>
+            <p className="text-sm text-text-muted leading-relaxed font-light whitespace-pre-wrap">
+              {renderWithLinks(itinerary)}
+            </p>
+          </div>
+        )}
+        {tags.length > 0 && (
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-text-muted/60 mb-2">
+              {lang === "it" ? "Luoghi inclusi" : "Places included"}
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {tags.map((tag, i) => (
+                <span key={i} className="chip text-xs">{tag}</span>
+              ))}
+            </div>
+          </div>
+        )}
+      </ReadMoreModal>
+    </CardShell>
+  );
+}
+
+/* =========================================================
+   DescFade — descrizione di esattamente 3 righe (4.875em = 3 × line-height 1.625)
+   con sfumatura al posto del taglio, visibile solo se il testo è più lungo
+   ========================================================= */
+function DescFade({ children }: { children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [overflowing, setOverflowing] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const check = () => setOverflowing(el.scrollHeight > el.clientHeight + 1);
+    check();
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+    document.fonts?.ready.then(check);
+    return () => ro.disconnect();
+  }, [children]);
+
+  return (
+    <div className="relative text-xs sm:text-sm text-text-muted leading-relaxed font-light">
+      <div ref={ref} className="h-[4.875em] overflow-hidden">
+        {children}
+      </div>
+      {overflowing && (
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[2.6em] bg-gradient-to-t from-white via-white/80 to-transparent" />
+      )}
+    </div>
+  );
+}
+
+/* =========================================================
+   CardShell — layout condiviso (DB + fallback): stessa altezza sempre
+   ========================================================= */
+function CardShell({
+  cover,
+  alt,
+  placeTypeName,
+  name,
+  descNode,
+  tags,
+  durationLabel,
+  lang,
+  t,
+  onMore,
+  onBook,
+  children,
+}: {
+  cover: string;
+  alt: string;
+  placeTypeName: string;
+  name: string;
+  descNode: ReactNode;
+  tags: string[];
+  durationLabel: string | null;
+  lang: Lang;
+  t: TFn;
+  onMore: () => void;
+  onBook: () => void;
+  children?: ReactNode;
+}) {
+  const bookLabel = t("tours.btnBook", lang === "it" ? "Prenota" : "Book");
+
+  return (
+    <article className={CARD_CLASS}>
+      <div className="relative h-44 sm:h-56 bg-stone/30 overflow-hidden shrink-0">
         <Image
           src={optimizeImageUrl(cover, 720, 75)}
-          alt={tFieldStr(place as any, "name", lang) || "Itinerario"}
+          alt={alt}
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 400px"
           placeholder="blur"
@@ -199,184 +316,176 @@ function PlaceCard({
           className="object-cover transition-opacity duration-300"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-bg-dark/70 via-transparent to-transparent pointer-events-none" />
-        {ttTag && (
-          <span
-            className="absolute top-3 left-3 sm:top-3.5 sm:left-3.5 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-sm text-text-white backdrop-blur-md shadow-xs z-10"
-            style={{ backgroundColor: (ttColor ?? "#9C1C1C") + "F0" }}
-          >
-            {ttTag}
-          </span>
-        )}
         {placeTypeName && (
           <span className="absolute top-3 right-3 sm:top-3.5 sm:right-3.5 bg-bg-dark/80 backdrop-blur-md text-text-white text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-sm border border-white/10 z-10">
             {placeTypeName}
           </span>
         )}
       </div>
+
       <div className="p-4 sm:p-6 flex flex-col grow">
-        <h3 className="font-serif text-lg sm:text-2xl font-bold text-text-main mb-1.5 sm:mb-2 leading-tight line-clamp-2 min-h-0 sm:min-h-[3.25rem]">
-          {tFieldStr(place as any, "name", lang)}
+        {/* Titolo — altezza fissa */}
+        <h3 className="font-serif text-lg sm:text-2xl font-bold text-text-main mb-1.5 sm:mb-2 leading-tight line-clamp-2 min-h-[2.6rem] sm:min-h-[3.75rem]">
+          {name}
         </h3>
 
-        <p className="text-xs sm:text-sm text-text-muted leading-relaxed mb-3 sm:mb-5 grow line-clamp-3 min-h-0 sm:min-h-[4.5rem] font-light">
-          {renderWithLinks(tFieldStr(place as any, "short_description", lang))}
-        </p>
+        {/* Descrizione — 3 righe esatte con sfumatura */}
+        <DescFade>{descNode}</DescFade>
+        <button
+          type="button"
+          onClick={onMore}
+          className="self-start mt-2 text-[11px] sm:text-xs font-semibold text-terracotta hover:underline underline-offset-2"
+        >
+          {lang === "it" ? "Leggi tutto" : "Read more"}
+        </button>
 
-        {tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-2.5 sm:mb-3 pb-2.5 sm:pb-3 border-b border-black/5">
-            {tags.slice(0, 12).map((tag, i) => (
-              <span key={i} className="chip text-[11px] sm:text-xs">
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {duration && (
-          <div className="mb-2.5 sm:mb-3.5">
-            <span className="chip inline-flex items-center gap-1 font-semibold text-terracotta bg-terracotta/10 border-terracotta/20 text-[11px] sm:text-xs">
-              <Clock className="w-3 h-3" />
-              {duration}
+        {/* Tag — spazio riservato per 3 righe, tutti visibili */}
+        <div className="flex flex-wrap content-start gap-1.5 sm:gap-2 mt-3 sm:mt-4 mb-2.5 sm:mb-3 min-h-[6.75rem] sm:min-h-[7.5rem]">
+          {tags.map((tag, i) => (
+            <span key={i} className="chip text-[11px] sm:text-xs">
+              {tag}
             </span>
-          </div>
-        )}
+          ))}
+        </div>
 
+        {/* Spacer — spinge durata e pulsante sul fondo */}
+        <div className="grow" />
 
+        {/* Durata — ancorata al fondo, subito sopra il pulsante (spazio sempre riservato) */}
+        <div className="mb-2.5 sm:mb-3 h-6">
+          {durationLabel && (
+            <span className="chip flex w-full items-center justify-center gap-1 font-semibold text-terracotta bg-terracotta/10 border-terracotta/20 text-[11px] sm:text-xs">
+              <Clock className="w-3 h-3" />
+              {durationLabel}
+            </span>
+          )}
+        </div>
 
-        <div className="flex flex-wrap gap-2 sm:gap-2.5 mt-auto pt-2 border-t border-black/5">
+        <div className="pt-2 border-t border-black/5">
           <button
-            onClick={() =>
-              triggerBookingPrefill({
-                tourTypeId: ttId ?? place.place_tour_types?.[0]?.tour_type?.id,
-                destination: tFieldStr(place as any, "name", lang),
-              })
-            }
-            className="btn btn-secondary btn-sm grow basis-[45%] min-w-fit whitespace-nowrap"
-          >
-            <Info className="w-3.5 h-3.5 shrink-0" />
-            {t("tours.btnMore")}
-          </button>
-          <button
-            onClick={() =>
-              triggerBookingPrefill({
-                tourTypeId: ttId ?? place.place_tour_types?.[0]?.tour_type?.id,
-                destination: tFieldStr(place as any, "name", lang),
-              })
-            }
-            className="btn btn-primary btn-sm grow basis-[45%] min-w-fit whitespace-nowrap shadow-xs"
+            type="button"
+            onClick={onBook}
+            className="btn btn-primary btn-sm w-full justify-center whitespace-nowrap shadow-xs"
           >
             <Calendar className="w-3.5 h-3.5 shrink-0" />
-            {t("tours.btnBook")}
+            {bookLabel}
           </button>
         </div>
       </div>
+
+      {/* Modale renderizzato nel <body> (portal) per evitare problemi di overflow/stacking */}
+      {children}
     </article>
   );
 }
 
 /* =========================================================
-   Fallback (se DB non ha dati)
+   Fallback (se il DB non ha dati) — con modale come le card vere
    ========================================================= */
-function FallbackTourCards({
-  t,
-  lang,
-  simple,
-}: {
-  t: (k: string, f?: string) => string;
-  lang: Lang;
-  simple?: boolean;
-}) {
+function FallbackTourCards({ t, lang }: { t: TFn; lang: Lang }) {
+  const it = lang === "it";
   const cards = [
     {
       slug: "citta-arte",
-      tag: lang === "it" ? "Cultura & Storia" : "Culture & History",
-      name: lang === "it" ? "Città d'Arte (Veneto & Trentino)" : "Art Cities (Veneto & Trentino)",
-      desc:
-        lang === "it"
-          ? "Visite guidate nei centri storici più affascinanti: Venezia, Padova, Vicenza, Treviso, Verona, Trento, Rovereto, Bolzano, Merano e Bressanone."
-          : "Guided walking tours in captivating historic centers: Venice, Padua, Vicenza, Treviso, Verona, Trent, Rovereto, Bolzano, Merano and Brixen.",
+      tag: it ? "Cultura & Storia" : "Culture & History",
+      name: it ? "Città d'Arte (Veneto & Trentino)" : "Art Cities (Veneto & Trentino)",
+      desc: it
+        ? "Visite guidate nei centri storici più affascinanti: Venezia, Padova, Vicenza, Treviso, Verona, Trento, Rovereto, Bolzano, Merano e Bressanone."
+        : "Guided walking tours in captivating historic centers: Venice, Padua, Vicenza, Treviso, Verona, Trent, Rovereto, Bolzano, Merano and Brixen.",
+      tags: ["Venezia", "Padova", "Vicenza", "Verona", "Trento", "Bolzano"],
       img: "https://images.unsplash.com/photo-1514890547357-a9ee288728e0?auto=format&fit=crop&w=1200&q=80",
-      color: "#3D6E90",
     },
     {
       slug: "ville-castelli",
-      tag: lang === "it" ? "Architettura & Nobiltà" : "Architecture & Castles",
-      name:
-        lang === "it"
-          ? "Ville Venete & Castelli Trentini"
-          : "Venetian Villas & Trentino Castles",
-      desc:
-        lang === "it"
-          ? "Un viaggio tra i capolavori di Andrea Palladio (La Rotonda, Villa Maser, Villa Emo, Villa Pisani, Riviera del Brenta) e i maestosi castelli del Trentino (Buonconsiglio, Castel Beseno, Thun)."
-          : "A journey through Andrea Palladio's masterpieces and majestic Alpine castles.",
+      tag: it ? "Architettura & Nobiltà" : "Architecture & Castles",
+      name: it ? "Ville Venete & Castelli Trentini" : "Venetian Villas & Trentino Castles",
+      desc: it
+        ? "Un viaggio tra i capolavori di Andrea Palladio (La Rotonda, Villa Maser, Villa Emo, Villa Pisani, Riviera del Brenta) e i maestosi castelli del Trentino (Buonconsiglio, Castel Beseno, Thun)."
+        : "A journey through Andrea Palladio's masterpieces and majestic Alpine castles.",
+      tags: ["La Rotonda", "Villa Maser", "Villa Emo", "Buonconsiglio", "Castel Beseno", "Castel Thun"],
       img: "https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&w=1200&q=80",
-      color: "#4A6535",
     },
     {
       slug: "grande-guerra",
       tag: "1915 - 1918",
-      name:
-        lang === "it"
-          ? "La Grande Guerra 1915-1918"
-          : "World War I (1915-1918)",
-      desc:
-        lang === "it"
-          ? "Itinerari storico-letterari sui forti, le trincee e i campi di battaglia degli Altipiani di Asiago, Lavarone e Luserna. Sacrario Militare e Musei storici."
-          : "Historical-literary itineraries exploring forts, trenches and battlefields across Asiago, Lavarone and Luserna plateaus.",
+      name: it ? "La Grande Guerra 1915-1918" : "World War I (1915-1918)",
+      desc: it
+        ? "Itinerari storico-letterari sui forti, le trincee e i campi di battaglia degli Altipiani di Asiago, Lavarone e Luserna. Sacrario Militare e Musei storici."
+        : "Historical-literary itineraries exploring forts, trenches and battlefields across Asiago, Lavarone and Luserna plateaus.",
+      tags: ["Asiago", "Lavarone", "Luserna", "Sacrario Militare"],
       img: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80",
-      color: "#9C1C1C",
     },
   ];
-
-  if (simple) {
-    return (
-      <div className="text-center py-10 text-text-muted">
-        <MapPin className="w-10 h-10 mx-auto mb-3 opacity-40 text-terracotta" />
-        <p className="font-light">{lang === "it" ? "Percorsi in aggiornamento..." : "Itineraries coming soon..."}</p>
-      </div>
-    );
-  }
 
   return (
     <PlaceCardsCarousel lang={lang}>
       {cards.map((c) => (
-        <article key={c.slug} className="card-base card-hover flex flex-col bg-white rounded-2xl border border-black/10 shadow-sm overflow-hidden h-full">
-          <div className="relative h-56 bg-stone/30 overflow-hidden">
-            <Image
-              src={c.img}
-              alt={c.name}
-              fill
-              sizes="(max-width: 768px) 86vw, 33vw"
-              className="object-cover transition-opacity duration-300"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-bg-dark/70 via-transparent to-transparent pointer-events-none" />
-            <span
-              className="absolute top-3.5 left-3.5 text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-sm text-text-white backdrop-blur-md shadow-xs z-10"
-              style={{ backgroundColor: c.color + "F0" }}
-            >
-              {c.tag}
-            </span>
-          </div>
-          <div className="p-6 flex flex-col grow">
-            <h3 className="font-serif text-2xl font-bold text-text-main mb-2 leading-tight line-clamp-2 min-h-[3.25rem]">
-              {c.name}
-            </h3>
-            <p className="text-sm text-text-muted leading-relaxed mb-5 line-clamp-3 min-h-[4.5rem] font-light">
-              {c.desc}
-            </p>
-            <div className="flex gap-2.5 mt-auto pt-2 border-t border-black/5">
-              <a href="#prenota" className="btn btn-secondary btn-sm grow">
-                <Info className="w-3.5 h-3.5" />
-                {t("tours.btnMore")}
-              </a>
-              <a href="#prenota" className="btn btn-primary btn-sm grow shadow-xs">
-                <Calendar className="w-3.5 h-3.5" />
-                {t("tours.btnBook")}
-              </a>
-            </div>
-          </div>
-        </article>
+        <FallbackCard key={c.slug} card={c} lang={lang} t={t} />
       ))}
     </PlaceCardsCarousel>
+  );
+}
+
+function FallbackCard({
+  card,
+  lang,
+  t,
+}: {
+  card: { slug: string; tag: string; name: string; desc: string; tags: string[]; img: string };
+  lang: Lang;
+  t: TFn;
+}) {
+  const [modalOpen, setModalOpen] = useState(false);
+
+  return (
+    <CardShell
+      cover={card.img}
+      alt={card.name}
+      placeTypeName={card.tag}
+      name={card.name}
+      descNode={card.desc}
+      tags={card.tags}
+      durationLabel={null}
+      lang={lang}
+      t={t}
+      onMore={() => setModalOpen(true)}
+      onBook={() => triggerBookingPrefill({ tourTypeId: undefined, destination: card.name })}
+    >
+      <ReadMoreModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={card.name}
+        body={card.desc}
+        cover={card.img}
+        badge={card.tag}
+        closeLabel={lang === "it" ? "Chiudi" : "Close"}
+        footer={
+          <button
+            type="button"
+            onClick={() => {
+              setModalOpen(false);
+              triggerBookingPrefill({ tourTypeId: undefined, destination: card.name });
+            }}
+            className="btn btn-primary w-full justify-center gap-2"
+          >
+            <Calendar className="w-4 h-4" />
+            {t("tours.btnBook", lang === "it" ? "Prenota" : "Book")}
+          </button>
+        }
+      >
+        {card.tags.length > 0 && (
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-text-muted/60 mb-2">
+              {lang === "it" ? "Luoghi inclusi" : "Places included"}
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {card.tags.map((tag, i) => (
+                <span key={i} className="chip text-xs">{tag}</span>
+              ))}
+            </div>
+          </div>
+        )}
+      </ReadMoreModal>
+    </CardShell>
   );
 }

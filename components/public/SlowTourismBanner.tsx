@@ -5,6 +5,7 @@ import { useLanguage, useT } from "@/lib/i18n/LanguageProvider";
 import Editable from "@/components/live-edit/Editable";
 import EditableIcon from "@/components/live-edit/EditableIcon";
 import { imageValue, stringValues } from "@/lib/live-edit/helpers";
+import { renderWithLinks } from "@/lib/renderWithLinks";
 import { Footprints } from "lucide-react";
 
 function colorWithOpacity(color: string, opacity: number): string {
@@ -112,7 +113,7 @@ export default function SlowTourismBanner() {
               >
                 <span className="eyebrow-gold" style={{ color: foreground, borderColor: isDark ? "rgba(255,255,255,.4)" : undefined }}>
                   <Footprints className="w-3 h-3" style={{ color: foreground }} />
-                  {t("slow.tag")}
+                  {renderWithLinks(t("slow.tag"))}
                 </span>
               </Editable>
             </div>
@@ -127,7 +128,7 @@ export default function SlowTourismBanner() {
                 values={stringValues(strings, "slow.title")}
                 as="block"
               >
-                <span>{t("slow.title")}</span>
+                <span>{renderWithLinks(t("slow.title"))}</span>
               </Editable>
             </h3>
 
@@ -140,7 +141,7 @@ export default function SlowTourismBanner() {
               values={stringValues(strings, "slow.text")}
               as="block"
             >
-              <p className="text-sm sm:text-base leading-relaxed font-light" style={{ color: secondary }}>{t("slow.text")}</p>
+              <p className="text-sm sm:text-base leading-relaxed font-light" style={{ color: secondary }}>{renderWithLinks(t("slow.text"))}</p>
             </Editable>
           </div>
         </div>

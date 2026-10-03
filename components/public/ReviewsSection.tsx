@@ -10,12 +10,12 @@ import type { Database, Lang } from "@/types/database.types";
 
 type ReviewT = Database["public"]["Tables"]["reviews"]["Row"];
 
-export default function ReviewsSection({ reviews }: { reviews: ReviewT[] }) {
+export default function ReviewsSection({ reviews, defaultHidden = false }: { reviews: ReviewT[]; defaultHidden?: boolean }) {
   const t = useT();
   const { lang } = useLang();
 
   return (
-    <section id="recensioni" className="section bg-[#F9F4EC] border-b border-black/5">
+    <section id="recensioni" className="section bg-[#F9F4EC] border-b border-black/5" style={defaultHidden ? { display: "none" } : undefined}>
       <div className="container-app">
         <EditableSectionHeading
           section="Recensioni"
@@ -29,10 +29,12 @@ export default function ReviewsSection({ reviews }: { reviews: ReviewT[] }) {
         </div>
 
         <LiveEditSectionMask
+          sectionId="recensioni"
           adminHref="/admin/reviews"
           adminLabel="Recensioni"
           hint="Testimonianze pubblicate e moderazione. Il form a destra è per i visitatori."
           minHeight="min-h-[360px]"
+          defaultHidden={defaultHidden}
         >
           <div className="grid lg:grid-cols-[1.15fr_0.85fr] gap-8 items-start">
             {/* COLONNA SINISTRA: Recensioni */}

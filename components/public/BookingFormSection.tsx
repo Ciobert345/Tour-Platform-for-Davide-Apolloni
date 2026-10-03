@@ -34,8 +34,10 @@ type TransportModeT = Database["public"]["Tables"]["transport_modes"]["Row"];
 
 export default function BookingFormSection({
   tourTypes,
+  defaultHidden = false,
 }: {
   tourTypes: TourTypeT[];
+  defaultHidden?: boolean;
 }) {
   const t = useT();
   const { lang } = useLang();
@@ -153,7 +155,7 @@ export default function BookingFormSection({
   };
 
   return (
-    <section id="prenota" className="section scroll-mt-24 bg-[#F9F4EC] border-t border-black/5">
+    <section id="prenota" className="section scroll-mt-24 bg-[#F9F4EC] border-t border-black/5" style={defaultHidden ? { display: "none" } : undefined}>
       <div className="container-app max-w-6xl">
         <EditableSectionHeading
           section="Prenotazioni"
@@ -168,9 +170,11 @@ export default function BookingFormSection({
         </div>
 
         <LiveEditSectionMask
+          sectionId="prenota"
           adminHref="/admin/bookings"
           adminLabel="Prenotazioni"
           hint="Le richieste inviate dai clienti vengono ricevute e gestite in Prenotazioni nella Dashboard."
+          defaultHidden={defaultHidden}
         >
           {/* Card Orizzontale Compatta */}
           <div className="bg-white rounded-2xl shadow-sm border border-black/10 overflow-hidden grid lg:grid-cols-12">

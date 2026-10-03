@@ -32,13 +32,8 @@ export default function MobileCarousel({
   className?: string;
   hint?: string;
   hintClassName?: string;
-  /*
-  "grid" (default): da md in su gli elementi vanno in griglia a 2/3 colonne.
-  "scroll": anche da md in su restano in scroll orizzontale invece di
-  andare a capo su più righe — mostra anche le frecce di navigazione.
-  */
   desktopMode?: "grid" | "scroll";
-  childWidth?: string; // ← NUOVA PROP: sovrascrive le larghezze default dei figli
+  childWidth?: string; // sovrascrive le larghezze default dei figli
 }) {
   const count = Children.count(children);
   const isSingle = count === 1;
@@ -115,10 +110,12 @@ export default function MobileCarousel({
         ref={scrollerRef}
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         className={cn(
-          "flex gap-3.5 md:gap-7",
+          "flex gap-3.5 md:gap-7 items-stretch",
           isDesktopScroll ? "md:flex" : "md:grid md:grid-cols-2 lg:grid-cols-3",
           "overflow-x-auto snap-x snap-mandatory",
-          isDesktopScroll ? "md:overflow-x-auto md:snap-x md:snap-mandatory" : "md:overflow-visible md:snap-none",
+          isDesktopScroll
+            ? "md:overflow-x-auto md:snap-x md:snap-mandatory"
+            : "md:overflow-visible md:snap-none",
           "[&::-webkit-scrollbar]:hidden scrollbar-hide overscroll-x-contain touch-pan-x",
           isDesktopScroll ? "md:touch-pan-x" : "md:touch-auto",
           "-mx-4 px-4 sm:-mx-5 sm:px-5",
@@ -131,8 +128,8 @@ export default function MobileCarousel({
         {Children.map(children, (child) => (
           <div
             className={cn(
-              "shrink-0 snap-start",
-              // ← Se childWidth è passata, usa quella; altrimenti le classi default
+              // flex flex-col: la card figlia si stira fino all'altezza della riga
+              "shrink-0 snap-start self-stretch flex flex-col",
               childWidth
                 ? childWidth
                 : isSingle

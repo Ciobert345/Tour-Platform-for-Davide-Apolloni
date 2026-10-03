@@ -29,6 +29,7 @@ export default async function HomePage() {
   });
 
   const profileId = (data?.profile as { id?: string } | null | undefined)?.id ?? null;
+  const hidden = data?.hiddenSections ?? {};
 
   return (
     <Suspense fallback={null}>
@@ -38,12 +39,12 @@ export default async function HomePage() {
           <HeroSection profile={data?.profile ?? null} />
           <AboutSection profile={data?.profile ?? null} cvItems={data?.cvItems ?? []} />
           <SlowTourismBanner />
-          <ToursSection places={data?.places ?? []} tourTypes={data?.tourTypes ?? []} />
-          <EventsSection events={data?.events ?? []} />
+          <ToursSection places={data?.places ?? []} tourTypes={data?.tourTypes ?? []} defaultHidden={!!hidden["tour"]} />
+          <EventsSection events={data?.events ?? []} defaultHidden={!!hidden["prossime-visite"]} />
           <ExclusiveSection places={data?.places ?? []} tourTypes={data?.tourTypes ?? []} />
-          <ReviewsSection reviews={data?.reviews ?? []} />
+          <ReviewsSection reviews={data?.reviews ?? []} defaultHidden={!!hidden["recensioni"]} />
           <MediaSection media={data?.media ?? []} />
-          <BookingFormSection tourTypes={data?.tourTypes ?? []} />
+          <BookingFormSection tourTypes={data?.tourTypes ?? []} defaultHidden={!!hidden["prenota"]} />
           <InfoSection items={data?.infoItems ?? []} />
           <QuoteSection quote={data?.quote ?? null} />
           <ContactsSection

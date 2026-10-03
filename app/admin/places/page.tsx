@@ -41,7 +41,7 @@ const DEF: Row = {
   id: null, slug: "", place_type_id: null,
   name_it: "", name_en: "", subtitle_it: "", subtitle_en: "",
   short_description_it: "", short_description_en: "",
-  full_description_it: "", full_description_en: "",
+  long_description_it: "", long_description_en: "",
   cover_image_url: "", duration_hours: 2,
   difficulty: "easy", location_address: "", gps_lat: null, gps_lng: null,
   highlights_it: [], highlights_en: [], tags_it: [], tags_en: [],
@@ -153,7 +153,7 @@ function PlaceModal({
       lastSeenNameIt.current = edit?.name_it || "";
       lastSeenSubtitleIt.current = edit?.subtitle_it || "";
       lastSeenShortDescIt.current = edit?.short_description_it || "";
-      lastSeenFullDescIt.current = edit?.full_description_it || "";
+      lastSeenFullDescIt.current = edit?.long_description_it || "";
       lastSeenHighlightsIt.current = toTextarea(edit?.highlights_it);
     }
   }, [open, edit?.id]);
@@ -222,7 +222,7 @@ function PlaceModal({
   }, [edit?.short_description_it, open]);
 
   useEffect(() => {
-    const valIT = edit?.full_description_it;
+    const valIT = edit?.long_description_it;
     if (!open || !valIT || valIT.trim().length < 8 || valIT === lastSeenFullDescIt.current) return;
 
     const timer = setTimeout(async () => {
@@ -230,7 +230,7 @@ function PlaceModal({
       try {
         const translated = await translateLongText(valIT.trim(), "it", "en");
         lastSeenFullDescIt.current = valIT;
-        updateField("full_description_en", translated);
+        updateField("long_description_en", translated);
         setTranslatingFullDesc("success");
         setTimeout(() => setTranslatingFullDesc("idle"), 2000);
       } catch {
@@ -240,7 +240,7 @@ function PlaceModal({
     }, 2000);
 
     return () => clearTimeout(timer);
-  }, [edit?.full_description_it, open]);
+  }, [edit?.long_description_it, open]);
 
   useEffect(() => {
     const valIT = toTextarea(edit?.highlights_it);
@@ -470,7 +470,7 @@ function PlaceModal({
             </Grid2>
             <Grid2>
               <Field label="Descrizione completa IT">
-                <textarea rows={5} className={cn(inputClass("full_description_it"), "resize-y")} value={edit.full_description_it || ""} onChange={(e) => updateField("full_description_it", e.target.value)} />
+                <textarea rows={5} className={cn(inputClass("long_description_it"), "resize-y")} value={edit.long_description_it || ""} onChange={(e) => updateField("long_description_it", e.target.value)} />
               </Field>
               <Field
                 label={
@@ -479,10 +479,10 @@ function PlaceModal({
                     <div className="flex items-center gap-1.5">
                       <AutoTranslateBadge state={translatingFullDesc} />
                       <TranslateButton
-                        sourceText={edit.full_description_it || ""}
+                        sourceText={edit.long_description_it || ""}
                         onTranslated={(t) => {
-                          lastSeenFullDescIt.current = edit.full_description_it || "";
-                          updateField("full_description_en", t);
+                          lastSeenFullDescIt.current = edit.long_description_it || "";
+                          updateField("long_description_en", t);
                         }}
                       />
                     </div>
@@ -491,10 +491,10 @@ function PlaceModal({
               >
                 <textarea
                   rows={5}
-                  className={cn(inputClass("full_description_en"), "resize-y")}
-                  value={edit.full_description_en || ""}
+                  className={cn(inputClass("long_description_en"), "resize-y")}
+                  value={edit.long_description_en || ""}
                   onChange={(e) => {
-                    updateField("full_description_en", e.target.value);
+                    updateField("long_description_en", e.target.value);
                   }}
                 />
               </Field>

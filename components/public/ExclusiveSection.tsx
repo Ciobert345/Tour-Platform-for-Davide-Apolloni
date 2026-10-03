@@ -1,14 +1,16 @@
 "use client";
 
+import { useState } from "react";
 import LiveEditSectionMask from "@/components/live-edit/LiveEditSectionMask";
 import { useLang, useT, useLanguage } from "@/lib/i18n/LanguageProvider";
 import Editable from "@/components/live-edit/Editable";
 import EditableIcon from "@/components/live-edit/EditableIcon";
 import { stringValues } from "@/lib/live-edit/helpers";
-import { tFieldStr } from "@/lib/utils";
+import { placeFullDescription, tFieldStr } from "@/lib/utils";
 import { renderWithLinks } from "@/lib/renderWithLinks";
 import { triggerBookingPrefill } from "@/lib/bookingPrefill";
 import { Moon, Calendar, Sparkles, Star, Lock, BookOpen, Users } from "lucide-react";
+import ReadMoreModal from "@/components/public/ReadMoreModal";
 import Image from "next/image";
 import MobileCarousel from "@/components/public/MobileCarousel";
 import type { Database, Lang } from "@/types/database.types";
@@ -466,11 +468,16 @@ function ExclusiveCard({
   lang: Lang;
   t: (k: string, f?: string) => string;
 }) {
+  const [modalOpen, setModalOpen] = useState(false);
   const cover = optimizeImageUrl(
     place.cover_image_url ??
     "https://images.unsplash.com/photo-1514890547357-a9ee288728e0?auto=format&fit=crop&w=1200&q=80",
     820, 75
   );
+  const name = tFieldStr(place as any, "name", lang);
+  const shortDesc = tFieldStr(place as any, "short_description", lang);
+  const fullDesc = placeFullDescription(place as any, lang);
+  const exclusiveTtId = place.place_tour_types?.find((pt) => pt.tour_type.is_exclusive)?.tour_type.id;
 
   return (
     <article
@@ -483,7 +490,7 @@ function ExclusiveCard({
       <div className="relative h-48 sm:h-60 overflow-hidden shrink-0">
         <Image
           src={cover}
-          alt={tFieldStr(place as any, "name", lang)}
+          alt={name}
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           placeholder="blur"
@@ -515,20 +522,28 @@ function ExclusiveCard({
             className="font-serif text-lg sm:text-2xl font-bold mb-1.5 sm:mb-2 leading-snug break-words"
             style={{ color: "var(--text-white)" }}
           >
-            {tFieldStr(place as any, "name", lang)}
+            {name}
           </h3>
           <p
-            className="text-xs sm:text-sm leading-relaxed mb-4 sm:mb-6 font-light line-clamp-3 break-words"
+            className="text-xs sm:text-sm leading-relaxed mb-1.5 font-light line-clamp-3 break-words"
             style={{ color: "rgba(247, 240, 227, 0.75)" }}
           >
-            {renderWithLinks(tFieldStr(place as any, "short_description", lang))}
+            {renderWithLinks(shortDesc)}
           </p>
+          <button
+            type="button"
+            onClick={() => setModalOpen(true)}
+            className="text-[11px] sm:text-xs font-semibold mb-4 sm:mb-6 hover:underline underline-offset-2"
+            style={{ color: "var(--color-gold, #C9A227)" }}
+          >
+            {lang === "it" ? "Leggi tutto" : "Read more"}
+          </button>
         </div>
         <button
           onClick={() =>
             triggerBookingPrefill({
-              tourTypeId: place.place_tour_types?.find((pt) => pt.tour_type.is_exclusive)?.tour_type.id,
-              destination: tFieldStr(place as any, "name", lang),
+              tourTypeId: exclusiveTtId,
+              destination: name,
             })
           }
           className="w-full text-xs sm:text-sm py-2.5 sm:py-3 rounded-lg font-semibold flex items-center justify-center gap-2 shadow-md whitespace-nowrap transition-all duration-300 hover:-translate-y-0.5"
@@ -541,6 +556,31 @@ function ExclusiveCard({
           {t("exclusive.btn")}
         </button>
       </div>
+      <ReadMoreModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={name}
+        body={fullDesc}
+        cover={cover}
+        badge={lang === "it" ? "Esperienza Esclusiva" : "Exclusive"}
+        closeLabel={lang === "it" ? "Chiudi" : "Close"}
+        footer={
+          <button
+            type="button"
+            onClick={() => {
+              setModalOpen(false);
+              triggerBookingPrefill({
+                tourTypeId: exclusiveTtId,
+                destination: name,
+              });
+            }}
+            className="btn btn-primary w-full justify-center gap-2"
+          >
+            <Calendar className="w-4 h-4" />
+            {t("exclusive.btn")}
+          </button>
+        }
+      />
     </article>
   );
 }

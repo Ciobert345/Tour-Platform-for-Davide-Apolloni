@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 const MARKDOWN_LINK_RE =
   /\[([^\]]+)\]\(((?:https?:\/\/|mailto:|tel:|\/|#)[^\s)]*)\)/gi;
 
-const SPAN_OPEN_RE = /<span\s+style\s*=\s*(["'])(.*?)\1\s*>/is;
+const SPAN_OPEN_RE = /<span\b[^>]*\bstyle\s*=\s*(["'])(.*?)\1[^>]*>/is;
 const SPAN_OPEN_LOOSE_RE = /<span\b[^>]*>/i;
 const SPAN_CLOSE_RE = /<\/span\s*>/i;
 const BR_RE = /<br\s*\/?>/i;
@@ -36,8 +36,10 @@ function decodeHtmlEntities(value: string): string {
 const FONT_MAP: Record<string, string> = {
   "serif-italic":
     "font-family: var(--font-serif, 'Cormorant Garamond'), 'Playfair Display', Georgia, serif; font-style: italic; font-weight: 500;",
+  "serif-bold":
+    "font-family: var(--font-serif, 'Cormorant Garamond'), 'Playfair Display', Georgia, serif; font-style: normal; font-weight: 700;",
   "serif":
-    "font-family: var(--font-serif, 'Cormorant Garamond'), 'Playfair Display', Georgia, serif; font-style: normal; font-weight: 400;",
+    "font-family: var(--font-serif, 'Cormorant Garamond'), 'Playfair Display', Georgia, serif; font-style: normal; font-weight: 600;",
   "sans":
     "font-family: var(--font-sans, 'Plus Jakarta Sans'), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;",
 };
@@ -56,7 +58,8 @@ function parseSpanStyle(styleAttr: string): {
   let extraCls = "";
   if (!styleAttr) return { style: styleObj, className: extraCls };
 
-  const declarations = styleAttr.split(";").filter((d) => d.trim());
+  const decoded = decodeHtmlEntities(styleAttr);
+  const declarations = decoded.split(";").filter((d) => d.trim());
   for (const decl of declarations) {
     const idx = decl.indexOf(":");
     if (idx === -1) continue;
@@ -64,16 +67,28 @@ function parseSpanStyle(styleAttr: string): {
     let val = decl.slice(idx + 1).trim();
     if (!prop || !val) continue;
 
+    val = val.replace(/^['"](.*)['"]$/, "$1").trim();
+
     if (prop === "font-family" || prop === "font") {
       const resolved = resolveFontKeyword(val);
-      const subDecls = resolved.split(";").filter((d) => d.trim());
-      for (const sd of subDecls) {
-        const si = sd.indexOf(":");
-        if (si === -1) continue;
-        const sp = sd.slice(0, si).trim().toLowerCase();
-        const sv = sd.slice(si + 1).trim();
-        const camel = sp.replace(/-([a-z])/g, (_, c) => c.toUpperCase()) as any;
-        (styleObj as any)[camel] = sv;
+      if (resolved.includes(":") && resolved.includes(";")) {
+        const subDecls = resolved.split(";").filter((d) => d.trim());
+        for (const sd of subDecls) {
+          const si = sd.indexOf(":");
+          if (si === -1) continue;
+          const sp = sd.slice(0, si).trim().toLowerCase();
+          const sv = sd.slice(si + 1).trim();
+          const camel = sp.replace(/-([a-z])/g, (_, c) => c.toUpperCase()) as any;
+          (styleObj as any)[camel] = sv;
+        }
+      } else {
+        if (/cormorant|playfair|serif/i.test(resolved) && !/sans/i.test(resolved)) {
+          styleObj.fontFamily = "var(--font-serif, 'Cormorant Garamond'), 'Playfair Display', Georgia, serif";
+        } else if (/jakarta|sans/i.test(resolved)) {
+          styleObj.fontFamily = "var(--font-sans, 'Plus Jakarta Sans'), sans-serif";
+        } else {
+          styleObj.fontFamily = resolved;
+        }
       }
     } else {
       const camel = prop.replace(/-([a-z])/g, (_, c) => c.toUpperCase()) as any;
