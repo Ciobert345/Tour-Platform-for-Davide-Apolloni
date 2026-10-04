@@ -118,9 +118,9 @@ export default function MobileCarousel({
           isDesktopScroll
             ? "md:overflow-x-auto md:snap-x md:snap-mandatory"
             : "md:overflow-visible md:snap-none",
-          "[&::-webkit-scrollbar]:hidden scrollbar-hide overscroll-x-contain touch-pan-x",
-          isDesktopScroll ? "md:touch-pan-x" : "md:touch-auto",
-          "-mx-4 px-4 sm:-mx-5 sm:px-5",
+          "[&::-webkit-scrollbar]:hidden scrollbar-hide overscroll-x-contain",
+          isDesktopScroll ? "md:overscroll-x-contain" : "md:touch-auto",
+          "-mx-4 px-4 sm:-mx-5 sm:px-5 scroll-pl-4 sm:scroll-pl-5",
           isDesktopScroll ? "" : "md:mx-0 md:px-0",
           "pb-3 md:pb-0",
           isSingle && "justify-center",

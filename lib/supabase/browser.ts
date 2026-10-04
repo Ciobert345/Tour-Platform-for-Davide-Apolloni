@@ -34,5 +34,19 @@ export function createClient() {
   return singleton;
 }
 
-const defaultClient = createClient();
-export default defaultClient;
+/**
+ * Lazy getter — il client viene istanziato solo al primo utilizzo effettivo,
+ * mai durante SSR / rendering server-side.
+ */
+export function getClient() {
+  return createClient();
+}
+
+// Default export come getter lazy per compatibilità con i componenti esistenti
+const clientProxy = new Proxy({} as ReturnType<typeof createBrowserClient<Database>>, {
+  get(_target, prop) {
+    return (getClient() as any)[prop];
+  },
+});
+
+export default clientProxy;
