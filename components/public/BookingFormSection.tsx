@@ -35,6 +35,12 @@ import { renderIconByName } from "@/lib/icons";
 type TourTypeT = Database["public"]["Tables"]["tour_types"]["Row"];
 type TransportModeT = Database["public"]["Tables"]["transport_modes"]["Row"];
 
+/* Classi condivise: etichette e input più bassi su mobile per compattare il form */
+const LABEL_CLS =
+  "text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-[#7A6655] h-4 sm:h-5 flex items-center mb-0.5 sm:mb-1";
+const INPUT_CLS =
+  "w-full h-9 sm:h-10 text-xs pl-8 sm:pl-9 pr-2.5 bg-[#F9F4EC]/60 border border-[#E9DCC4] rounded-lg focus:bg-white focus:border-[#9C1C1C] focus:outline-none transition-colors";
+
 function formatDateDisplay(dateStr: string, lang: "it" | "en") {
   if (!dateStr) return "";
   try {
@@ -380,7 +386,7 @@ export default function BookingFormSection({
               {/* Banner Interattivo di Notifica Pre-selezione Tour/Esperienza */}
               {prefillBadge && (
                 <div
-                  className="mb-3 animate-fade-in-up border rounded-lg p-2.5 sm:p-3 flex items-center justify-between gap-2 shadow-xs"
+                  className="mb-3 animate-fade-in-up border rounded-lg p-2 sm:p-3 flex items-center justify-between gap-2 shadow-xs"
                   style={{
                     backgroundColor: "rgba(156, 28, 28, 0.06)",
                     borderColor: "rgba(156, 28, 28, 0.2)",
@@ -426,15 +432,17 @@ export default function BookingFormSection({
                 onSubmit={onSubmit}
                 noValidate
                 className={cn(
-                  "space-y-3 sm:space-y-4 transition-all duration-500 rounded-xl relative",
+                  "space-y-2.5 sm:space-y-4 transition-all duration-500 rounded-xl relative",
                   prefillFlash && "ring-4 ring-[#9C1C1C]/40 shadow-2xl scale-[1.01] bg-[#9C1C1C]/5 p-2"
                 )}
               >
 
-                {/* RIGA 1: Dati Personali */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 items-start">
-                  <div className="flex flex-col">
-                    <label className="text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-[#7A6655] h-5 flex items-center mb-1">
+                {/* RIGA 1: Dati Personali
+                    Mobile: Nome + Telefono affiancati, Email a tutta larghezza (le email sono lunghe).
+                    Desktop: 3 colonne nell'ordine Nome / Email / Telefono. */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-2 gap-y-2.5 sm:gap-3 items-start">
+                  <div className="flex flex-col order-1 sm:order-none">
+                    <label className={LABEL_CLS}>
                       {t("form.name")} <span className="text-[#9C1C1C] ml-0.5">*</span>
                     </label>
                     <div className="relative">
@@ -444,14 +452,14 @@ export default function BookingFormSection({
                         name="full_name"
                         type="text"
                         placeholder={t("form.phName")}
-                        className="w-full h-9 sm:h-10 text-xs pl-8 sm:pl-9 pr-2.5 bg-[#F9F4EC]/60 border border-[#E9DCC4] rounded-lg focus:bg-white focus:border-[#9C1C1C] focus:outline-none transition-colors"
+                        className={INPUT_CLS}
                         minLength={2}
                       />
                     </div>
                   </div>
 
-                  <div className="flex flex-col">
-                    <label className="text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-[#7A6655] h-5 flex items-center mb-1">
+                  <div className="flex flex-col col-span-2 order-3 sm:order-none sm:col-span-1">
+                    <label className={LABEL_CLS}>
                       {t("form.email")} <span className="text-[#9C1C1C] ml-0.5">*</span>
                     </label>
                     <div className="relative">
@@ -461,13 +469,13 @@ export default function BookingFormSection({
                         name="email"
                         type="email"
                         placeholder={t("form.phEmail")}
-                        className="w-full h-9 sm:h-10 text-xs pl-8 sm:pl-9 pr-2.5 bg-[#F9F4EC]/60 border border-[#E9DCC4] rounded-lg focus:bg-white focus:border-[#9C1C1C] focus:outline-none transition-colors"
+                        className={INPUT_CLS}
                       />
                     </div>
                   </div>
 
-                  <div className="flex flex-col">
-                    <label className="text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-[#7A6655] h-5 flex items-center mb-1">
+                  <div className="flex flex-col order-2 sm:order-none">
+                    <label className={LABEL_CLS}>
                       {t("form.phone")}
                     </label>
                     <div className="relative">
@@ -476,17 +484,19 @@ export default function BookingFormSection({
                         name="phone"
                         type="tel"
                         placeholder={t("form.phPhone")}
-                        className="w-full h-9 sm:h-10 text-xs pl-8 sm:pl-9 pr-2.5 bg-[#F9F4EC]/60 border border-[#E9DCC4] rounded-lg focus:bg-white focus:border-[#9C1C1C] focus:outline-none transition-colors"
+                        className={INPUT_CLS}
                       />
                     </div>
                   </div>
                 </div>
 
-                {/* RIGA 2: Scelta Itinerario */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 items-start">
+                {/* RIGA 2: Scelta Itinerario
+                    Mobile: Tipologia + Destinazione affiancate, Lingua a tutta larghezza.
+                    Desktop: 3 colonne. */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-2 gap-y-2.5 sm:gap-3 items-start">
                   {/* Tipologia di Tour con Dropdown personalizzato ed esaustivo */}
                   <div className={cn("flex flex-col relative", isTourTypeOpen ? "z-30" : "z-20")} ref={tourTypeRef}>
-                    <label className="text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-[#7A6655] h-5 flex items-center mb-1">
+                    <label className={LABEL_CLS}>
                       {t("form.category")} <span className="text-[#9C1C1C] ml-0.5">*</span>
                     </label>
                     <div className="relative">
@@ -517,9 +527,9 @@ export default function BookingFormSection({
                       {/* Hidden input per submit del form con validazione */}
                       <input type="hidden" name="tour_type_id" value={tourTypeId} required />
 
-                      {/* Dropdown Popover (rounded-xl: 12px - p-1.5 6px - bordo 1px ≈ 5px, vicino ai rounded-md interni) */}
+                      {/* Dropdown Popover (rounded-2xl come la card del form; le voci interne usano rounded-lg per restare concentriche) */}
                       {isTourTypeOpen && (
-                        <div className="absolute top-full left-0 w-[280px] sm:w-[320px] max-w-[calc(100vw-36px)] mt-1.5 z-50 bg-white border border-[#E9DCC4] rounded-xl shadow-xl p-1.5 max-h-72 overflow-y-auto space-y-1 animate-dropdown">
+                        <div className="absolute top-full left-0 w-[280px] sm:w-[320px] max-w-[calc(100vw-36px)] mt-1.5 z-50 bg-white border border-[#E9DCC4] rounded-2xl shadow-xl p-1.5 max-h-72 overflow-y-auto space-y-1 animate-dropdown">
                           <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-[#92816A] border-b border-black/5">
                             {lang === "it" ? "Seleziona tipologia tour" : "Select tour type"}
                           </div>
@@ -535,7 +545,7 @@ export default function BookingFormSection({
                                   setIsTourTypeOpen(false);
                                 }}
                                 className={cn(
-                                  "w-full text-left p-2 rounded-md transition-all flex items-start gap-2.5 cursor-pointer",
+                                  "w-full text-left p-2 rounded-lg transition-all flex items-start gap-2.5 cursor-pointer",
                                   isSelected
                                     ? "bg-[#9C1C1C]/8 border border-[#9C1C1C]/25"
                                     : "hover:bg-[#F9F4EC] border border-transparent"
@@ -573,7 +583,7 @@ export default function BookingFormSection({
 
                   {/* Destinazione Preferita */}
                   <div className="flex flex-col">
-                    <label className="text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-[#7A6655] h-5 flex items-center mb-1">
+                    <label className={LABEL_CLS}>
                       {t("form.destination")}
                     </label>
                     <div className="relative">
@@ -583,15 +593,15 @@ export default function BookingFormSection({
                         type="text"
                         value={destination}
                         onChange={(e) => setDestination(e.target.value)}
-                        className="w-full h-9 sm:h-10 text-xs pl-8 sm:pl-9 pr-2.5 bg-[#F9F4EC]/60 border border-[#E9DCC4] rounded-lg focus:bg-white focus:border-[#9C1C1C] focus:outline-none transition-colors"
+                        className={INPUT_CLS}
                         placeholder={lang === "it" ? "es. Venezia, Asiago..." : "e.g. Venice, Asiago..."}
                       />
                     </div>
                   </div>
 
                   {/* Lingua della visita (Segmented Selector moderno) */}
-                  <div className="flex flex-col">
-                    <label className="text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-[#7A6655] h-5 flex items-center justify-between mb-1">
+                  <div className="flex flex-col col-span-2 sm:col-span-1">
+                    <label className={cn(LABEL_CLS, "justify-between")}>
                       <span>{t("form.visitLang")}</span>
                       <span className="text-[9.5px] font-normal text-[#92816A] lowercase">
                         {visitLang === "it" ? "in italiano" : "in english"}
@@ -619,11 +629,11 @@ export default function BookingFormSection({
                   </div>
                 </div>
 
-                {/* RIGA 3: Date, Partecipanti & Modalità di Spostamento - Allineamento perfetto */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 items-start">
+                {/* RIGA 3: Date, Partecipanti & Modalità di Spostamento - 2x2 su mobile, 4 colonne su desktop */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-2 gap-y-2.5 sm:gap-3 items-start">
                   {/* Data Preferita */}
                   <div className="flex flex-col">
-                    <label className="text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-[#7A6655] h-5 flex items-center mb-1 truncate">
+                    <label className={cn(LABEL_CLS, "truncate")}>
                       {t("form.datePref")}
                     </label>
                     <div className="relative flex items-center w-full h-9 sm:h-10 pl-2.5 sm:pl-3 pr-2 bg-[#F9F4EC]/60 border border-[#E9DCC4] rounded-lg focus-within:border-[#9C1C1C] focus-within:bg-white hover:border-[#9C1C1C]/40 transition-colors cursor-pointer group">
@@ -671,7 +681,7 @@ export default function BookingFormSection({
 
                   {/* Data Alternativa */}
                   <div className="flex flex-col">
-                    <label className="text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-[#7A6655] h-5 flex items-center mb-1 truncate">
+                    <label className={cn(LABEL_CLS, "truncate")}>
                       {lang === "it" ? "Data Alt." : "Alt. Date"}
                     </label>
                     <div className="relative flex items-center w-full h-9 sm:h-10 pl-2.5 sm:pl-3 pr-2 bg-[#F9F4EC]/60 border border-[#E9DCC4] rounded-lg focus-within:border-[#9C1C1C] focus-within:bg-white hover:border-[#9C1C1C]/40 transition-colors cursor-pointer group">
@@ -719,7 +729,7 @@ export default function BookingFormSection({
 
                   {/* Partecipanti con stepper compatto */}
                   <div className="flex flex-col">
-                    <label className="text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-[#7A6655] h-5 flex items-center mb-1 truncate">
+                    <label className={cn(LABEL_CLS, "truncate")}>
                       {t("form.participants")}
                     </label>
                     <div className="flex items-center bg-[#F9F4EC]/60 border border-[#E9DCC4] rounded-lg overflow-hidden focus-within:border-[#9C1C1C] focus-within:bg-white transition-colors h-9 sm:h-10 px-1">
@@ -753,7 +763,7 @@ export default function BookingFormSection({
 
                   {/* Modalità di Spostamento con spiegazione e slug visibili */}
                   <div className={cn("flex flex-col relative", isTransportOpen ? "z-30" : "z-20")} ref={transportRef}>
-                    <label className="text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-[#7A6655] h-5 flex items-center mb-1 truncate">
+                    <label className={cn(LABEL_CLS, "truncate")}>
                       {lang === "it" ? "Spostamento" : "Transport"}
                     </label>
                     <div className="relative">
@@ -795,7 +805,7 @@ export default function BookingFormSection({
 
                       {/* Dropdown Popover con spiegazione e slug per ogni modalità */}
                       {isTransportOpen && (
-                        <div className="absolute top-full right-0 w-[285px] sm:w-[340px] md:w-[370px] max-w-[calc(100vw-36px)] mt-1.5 z-50 bg-white border border-[#E9DCC4] rounded-xl shadow-xl p-1.5 max-h-80 overflow-y-auto space-y-1 animate-dropdown">
+                        <div className="absolute top-full right-0 w-[285px] sm:w-[340px] md:w-[370px] max-w-[calc(100vw-36px)] mt-1.5 z-50 bg-white border border-[#E9DCC4] rounded-2xl shadow-xl p-1.5 max-h-80 overflow-y-auto space-y-1 animate-dropdown">
                           <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-[#92816A] border-b border-black/5 flex items-center justify-between">
                             <span>{lang === "it" ? "Modalità di spostamento" : "Transport mode"}</span>
                             <span className="font-mono text-[9px] lowercase bg-black/5 px-1.5 py-0.5 rounded-md text-[#7A6655]">slug</span>
@@ -813,7 +823,7 @@ export default function BookingFormSection({
                                   setIsTransportOpen(false);
                                 }}
                                 className={cn(
-                                  "w-full text-left p-2 rounded-md transition-all flex items-start gap-2.5 cursor-pointer",
+                                  "w-full text-left p-2 rounded-lg transition-all flex items-start gap-2.5 cursor-pointer",
                                   isSelected
                                     ? "bg-[#9C1C1C]/8 border border-[#9C1C1C]/25"
                                     : "hover:bg-[#F9F4EC] border border-transparent"
@@ -872,7 +882,7 @@ export default function BookingFormSection({
 
                 {/* RIGA 4: Note / Richieste particolari */}
                 <div>
-                  <label className="text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-[#7A6655] mb-1 flex items-center gap-1.5">
+                  <label className={cn(LABEL_CLS, "gap-1.5")}>
                     <FileText className="w-3.5 h-3.5 text-[#9C1C1C]" />
                     {t("form.notes")}
                   </label>
@@ -887,7 +897,7 @@ export default function BookingFormSection({
                 </div>
 
                 {/* GDPR Checkbox */}
-                <div className="flex items-start gap-2.5 pt-1">
+                <div className="flex items-start gap-2.5 pt-0.5 sm:pt-1">
                   <input
                     id="gdpr-check"
                     type="checkbox"
@@ -921,7 +931,7 @@ export default function BookingFormSection({
                 )}
 
                 {/* RIGA SUBMIT FOOTER */}
-                <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-black/5">
+                <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 border-t border-black/5">
                   <p className="text-[11px] text-[#92816A] flex items-center gap-1.5 font-light">
                     <ShieldCheck className="w-3.5 h-3.5 text-[#4A6535]" />
                     {lang === "it" ? "Dati protetti e riservati." : "Your data is strictly confidential."}

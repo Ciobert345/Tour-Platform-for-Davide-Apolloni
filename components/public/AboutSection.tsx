@@ -293,12 +293,26 @@ export default function AboutSection({
               </div>
             </Editable>
 
-            {/* CREDENZIALI: Striscia Orizzontale a Scorrimento su Mobile (NON impilate!) / 2x2 su Desktop */}
+            {/* CREDENZIALI: carosello con scroll-snap su mobile (stesso comportamento di MobileCarousel) / 2x2 su Desktop.
+                Niente touch-pan-x: il browser decide da solo se il gesto è verticale (scroll pagina) o orizzontale (carosello). */}
             {creds.length > 0 && (
-              <div className="w-full max-w-full overflow-hidden mb-4 sm:mb-8">
-                <div className="flex md:grid md:grid-cols-2 gap-2.5 overflow-x-auto pb-2 scrollbar-hide snap-x touch-pan-x w-full max-w-full">
+              <div className="w-full max-w-full mb-4 sm:mb-8">
+                <div
+                  style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+                  className={cn(
+                    "flex md:grid md:grid-cols-2 gap-2.5 items-stretch",
+                    "overflow-x-auto md:overflow-visible",
+                    "snap-x snap-mandatory md:snap-none",
+                    "[&::-webkit-scrollbar]:hidden scrollbar-hide overscroll-x-contain",
+                    "-mx-4 px-4 sm:-mx-5 sm:px-5 scroll-pl-4 sm:scroll-pl-5 md:mx-0 md:px-0",
+                    "pb-2 md:pb-0"
+                  )}
+                >
                   {creds.slice(0, 4).map((c) => (
-                    <div key={c.id} className="w-[220px] xs:w-[240px] shrink-0 snap-start md:w-auto">
+                    <div
+                      key={c.id}
+                      className="w-[min(76vw,240px)] shrink-0 snap-start self-stretch flex flex-col md:w-auto md:min-w-0 md:shrink"
+                    >
                       <CredentialCard credential={c} lang={lang} />
                     </div>
                   ))}

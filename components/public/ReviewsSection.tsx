@@ -38,7 +38,7 @@ export default function ReviewsSection({ reviews, defaultHidden = false }: { rev
         >
           <div className="grid lg:grid-cols-[1.15fr_0.85fr] gap-8 items-start">
             {/* COLONNA SINISTRA: Recensioni */}
-            <div className="space-y-4">
+            <div className="space-y-4 min-w-0">
               <div className="flex items-center justify-between pb-2 border-b border-black/5">
                 <span className="text-xs font-bold uppercase tracking-wider text-gold-dark">
                   {lang === "it" ? "Esperienze dei Viaggiatori" : "Traveler Experiences"}
@@ -54,35 +54,58 @@ export default function ReviewsSection({ reviews, defaultHidden = false }: { rev
                   <p className="font-light">{t("reviews.empty")}</p>
                 </div>
               ) : (
-                <div className="space-y-4 max-h-[580px] overflow-y-auto pr-1">
-                  {reviews.map((r) => {
-                    const loc =
-                      lang === "it"
-                        ? r.author_location_it
-                        : r.author_location_en ?? r.author_location_it;
-                    return (
-                      <blockquote
-                        key={r.id}
-                        className="bg-white p-3.5 sm:p-5 rounded-2xl border border-black/10 shadow-xs hover:border-gold/40 hover:shadow-sm transition-all duration-300 relative"
-                      >
-                        <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-                          <div className="text-gold text-xs sm:text-sm tracking-wider font-semibold">
-                            {renderStars(r.rating)}
-                          </div>
-                          <span className="text-[9.5px] sm:text-[10px] uppercase tracking-wider text-gold-dark font-bold bg-gold/10 px-2 py-0.5 rounded-full">
-                            {lang === "it" ? "Verificata" : "Verified"}
-                          </span>
+                <div>
+                  {/* Mobile: carosello orizzontale con scroll-snap (niente touch-pan-x: il browser decide
+                      da solo se il gesto è verticale o orizzontale).
+                      Da md in su: lista verticale scrollabile come prima. */}
+                  <div
+                    style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+                    className={cn(
+                      "flex items-stretch gap-3.5",
+                      "overflow-x-auto snap-x snap-mandatory",
+                      "[&::-webkit-scrollbar]:hidden scrollbar-hide overscroll-x-contain",
+                      "-mx-4 px-4 sm:-mx-5 sm:px-5 scroll-pl-4 sm:scroll-pl-5",
+                      "pb-3",
+                      "md:flex-col md:gap-4 md:items-stretch md:mx-0 md:px-0 md:pr-1 md:pb-0",
+                      "md:overflow-x-visible md:overflow-y-auto md:snap-none md:max-h-[580px]"
+                    )}
+                  >
+                    {reviews.map((r) => {
+                      const loc =
+                        lang === "it"
+                          ? r.author_location_it
+                          : r.author_location_en ?? r.author_location_it;
+                      return (
+                        <div
+                          key={r.id}
+                          className="w-[min(80vw,300px)] xs:w-[min(82vw,320px)] shrink-0 snap-start self-stretch flex flex-col md:w-auto md:shrink md:self-auto"
+                        >
+                          <blockquote className="bg-white p-3.5 sm:p-5 rounded-2xl border border-black/10 shadow-xs hover:border-gold/40 hover:shadow-sm transition-all duration-300 relative flex flex-col h-full md:h-auto grow md:grow-0">
+                            <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+                              <div className="text-gold text-xs sm:text-sm tracking-wider font-semibold">
+                                {renderStars(r.rating)}
+                              </div>
+                              <span className="text-[9.5px] sm:text-[10px] uppercase tracking-wider text-gold-dark font-bold bg-gold/10 px-2 py-0.5 rounded-full">
+                                {lang === "it" ? "Verificata" : "Verified"}
+                              </span>
+                            </div>
+                            <p className="text-xs sm:text-[0.92rem] text-text-muted italic leading-relaxed font-serif mb-2 sm:mb-3">
+                              "{r.review_text}"
+                            </p>
+                            <div className="mt-auto pt-2 border-t border-black/5 flex items-center justify-between gap-2 text-[11px] sm:text-xs">
+                              <p className="font-bold text-text-main">{r.author_name}</p>
+                              {loc && <p className="text-text-light font-light text-right">{loc}</p>}
+                            </div>
+                          </blockquote>
                         </div>
-                        <p className="text-xs sm:text-[0.92rem] text-text-muted italic leading-relaxed font-serif mb-2 sm:mb-3">
-                          "{r.review_text}"
-                        </p>
-                        <div className="pt-2 border-t border-black/5 flex items-center justify-between text-[11px] sm:text-xs">
-                          <p className="font-bold text-text-main">{r.author_name}</p>
-                          {loc && <p className="text-text-light font-light">{loc}</p>}
-                        </div>
-                      </blockquote>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
+                  {reviews.length > 1 && (
+                    <p className="md:hidden text-center text-[10.5px] text-text-muted font-medium uppercase tracking-wider mt-2">
+                      {lang === "it" ? "← Scorri per vedere tutte le recensioni →" : "← Swipe to see all reviews →"}
+                    </p>
+                  )}
                 </div>
               )}
             </div>
@@ -274,6 +297,3 @@ function ReviewForm() {
     </form>
   );
 }
-
-
-
