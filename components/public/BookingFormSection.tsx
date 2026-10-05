@@ -24,13 +24,36 @@ import {
   Clock,
   Award,
   Check,
+  ChevronDown,
+  Compass,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Database } from "@/types/database.types";
 import supabase from "@/lib/supabase/browser";
+import { renderIconByName } from "@/lib/icons";
 
 type TourTypeT = Database["public"]["Tables"]["tour_types"]["Row"];
 type TransportModeT = Database["public"]["Tables"]["transport_modes"]["Row"];
+
+function formatDateDisplay(dateStr: string, lang: "it" | "en") {
+  if (!dateStr) return "";
+  try {
+    const parts = dateStr.split("-");
+    if (parts.length !== 3) return dateStr;
+    const y = Number(parts[0]);
+    const m = Number(parts[1]);
+    const d = Number(parts[2]);
+    if (!y || !m || !d) return dateStr;
+    const date = new Date(y, m - 1, d);
+    return date.toLocaleDateString(lang === "it" ? "it-IT" : "en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  } catch {
+    return dateStr;
+  }
+}
 
 export default function BookingFormSection({
   tourTypes,
@@ -46,12 +69,50 @@ export default function BookingFormSection({
   const [checked, setChecked] = useState(false);
   const [transportModes, setTransportModes] = useState<TransportModeT[] | null>(null);
 
-  // Controlled fields for prefill support
+  // Controlled fields for prefill & state support
   const [tourTypeId, setTourTypeId] = useState("");
   const [destination, setDestination] = useState("");
   const [preferredDate, setPreferredDate] = useState("");
+  const [altDate, setAltDate] = useState("");
   const [participants, setParticipants] = useState("");
+  const [transport, setTransport] = useState("");
+  const [visitLang, setVisitLang] = useState<"it" | "en">(lang);
   const [notes, setNotes] = useState("");
+
+  // Dropdown open states
+  const [isTourTypeOpen, setIsTourTypeOpen] = useState(false);
+  const [isTransportOpen, setIsTransportOpen] = useState(false);
+  const tourTypeRef = useRef<HTMLDivElement>(null);
+  const transportRef = useRef<HTMLDivElement>(null);
+
+  // Sincronizza lingua della visita con la lingua attiva se l'utente non ha ancora interagito
+  useEffect(() => {
+    setVisitLang(lang);
+  }, [lang]);
+
+  // Chiudi dropdown al click esterno o ESC
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (tourTypeRef.current && !tourTypeRef.current.contains(e.target as Node)) {
+        setIsTourTypeOpen(false);
+      }
+      if (transportRef.current && !transportRef.current.contains(e.target as Node)) {
+        setIsTransportOpen(false);
+      }
+    };
+    const keyHandler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsTourTypeOpen(false);
+        setIsTransportOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    document.addEventListener("keydown", keyHandler);
+    return () => {
+      document.removeEventListener("mousedown", handler);
+      document.removeEventListener("keydown", keyHandler);
+    };
+  }, []);
 
   // Flag per animazione "flash" sul form dopo prefill
   const [prefillFlash, setPrefillFlash] = useState(false);
@@ -66,6 +127,7 @@ export default function BookingFormSection({
       if (data.destination !== undefined) setDestination(data.destination);
       if (data.preferredDate !== undefined) setPreferredDate(data.preferredDate);
       if (data.participants !== undefined) setParticipants(String(data.participants));
+      if (data.transport !== undefined) setTransport(data.transport);
       if (data.notes !== undefined) setNotes(data.notes);
 
       // Salva badge di conferma visivo
@@ -119,11 +181,11 @@ export default function BookingFormSection({
       phone: String(fd.get("phone") ?? "") || null,
       tour_type_id: tourTypeId || null,
       preferred_destination: destination || null,
-      visit_language: fd.get("visit_language") ?? null,
+      visit_language: visitLang || fd.get("visit_language") || null,
       preferred_date: preferredDate || null,
-      alternative_date: String(fd.get("alternative_date") ?? "") || null,
+      alternative_date: altDate || String(fd.get("alternative_date") ?? "") || null,
       participants: participants ? Number(participants) : null,
-      transport: fd.get("transport") ?? null,
+      transport: transport || fd.get("transport") || null,
       notes: notes || null,
       gdpr_consent: true,
     };
@@ -145,7 +207,10 @@ export default function BookingFormSection({
       setTourTypeId("");
       setDestination("");
       setPreferredDate("");
+      setAltDate("");
       setParticipants("");
+      setTransport("");
+      setVisitLang(lang);
       setNotes("");
     } catch (e: any) {
       console.error(e);
@@ -153,6 +218,20 @@ export default function BookingFormSection({
       setState("error");
     }
   };
+
+  const selectedTT = displayTT.find((tt) => tt.id === tourTypeId);
+  const selectedTM = displayTransport.find((tm) => tm.slug === transport);
+  const todayStr = new Date().toISOString().split("T")[0];
+
+  // Il contenitore è a pillola (come gli altri campi): i bottoni interni usano rounded-full
+  // così restano concentrici qualunque sia il raggio effettivo di rounded-lg nel tema
+  const langBtn = (active: boolean) =>
+    cn(
+      "flex-1 h-full rounded-full text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer select-none",
+      active
+        ? "bg-[#9C1C1C] text-white shadow-xs font-bold"
+        : "text-[#7A6655] hover:text-[#3D2B1F] hover:bg-black/5"
+    );
 
   return (
     <section id="prenota" className="section scroll-mt-24 bg-[#F9F4EC] border-t border-black/5" style={defaultHidden ? { display: "none" } : undefined}>
@@ -176,12 +255,12 @@ export default function BookingFormSection({
           hint="Le richieste inviate dai clienti vengono ricevute e gestite in Prenotazioni nella Dashboard."
           defaultHidden={defaultHidden}
         >
-          {/* Card Orizzontale Compatta */}
-          <div className="bg-white rounded-2xl shadow-sm border border-black/10 overflow-hidden grid lg:grid-cols-12">
+          {/* Card Orizzontale Compatta - rounded-2xl uniforme con FAQ e resto del sito, senza overflow-hidden per evitare clipping dei dropdown */}
+          <div className="bg-white rounded-2xl shadow-sm border border-black/10 grid lg:grid-cols-12 relative">
 
-            {/* Pannello Sinistro: Sfondo Rosso Profondo Harmonized */}
+            {/* Pannello Sinistro: Sfondo Rosso Profondo Harmonized con overflow-hidden per i blur interni */}
             <div
-              className="lg:col-span-4 p-3.5 sm:p-8 flex flex-col justify-between relative overflow-hidden shadow-xl"
+              className="lg:col-span-4 p-3.5 sm:p-8 flex flex-col justify-between relative overflow-hidden shadow-xl rounded-t-2xl lg:rounded-tr-none lg:rounded-bl-2xl"
               style={{
                 background: "linear-gradient(135deg, #7E191B 0%, #4A0E10 100%)",
                 color: "var(--text-white)",
@@ -200,7 +279,7 @@ export default function BookingFormSection({
               <div className="relative z-10">
                 <div className="flex items-center justify-between lg:block mb-2 sm:mb-4">
                   <span
-                    className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wider border"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:py-1 rounded-md text-[10px] sm:text-[11px] font-bold uppercase tracking-wider border"
                     style={{
                       backgroundColor: "rgba(255, 255, 255, 0.12)",
                       color: "#F2E3D5",
@@ -240,7 +319,7 @@ export default function BookingFormSection({
                 <div className="flex flex-wrap sm:flex-col gap-2 sm:gap-3 pt-1.5 sm:pt-2 border-t border-white/15">
                   <div className="flex items-center gap-1.5 sm:gap-2 text-[10.5px] sm:text-xs" style={{ color: "rgba(255, 255, 255, 0.9)" }}>
                     <div
-                      className="w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center shrink-0 border"
+                      className="w-4 h-4 sm:w-5 sm:h-5 rounded-md flex items-center justify-center shrink-0 border"
                       style={{
                         backgroundColor: "rgba(255, 255, 255, 0.15)",
                         borderColor: "rgba(255, 255, 255, 0.25)",
@@ -254,7 +333,7 @@ export default function BookingFormSection({
 
                   <div className="flex items-center gap-1.5 sm:gap-2 text-[10.5px] sm:text-xs" style={{ color: "rgba(255, 255, 255, 0.9)" }}>
                     <div
-                      className="w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center shrink-0 border"
+                      className="w-4 h-4 sm:w-5 sm:h-5 rounded-md flex items-center justify-center shrink-0 border"
                       style={{
                         backgroundColor: "rgba(255, 255, 255, 0.15)",
                         borderColor: "rgba(255, 255, 255, 0.25)",
@@ -268,7 +347,7 @@ export default function BookingFormSection({
 
                   <div className="hidden sm:flex items-center gap-2 text-xs" style={{ color: "rgba(255, 255, 255, 0.9)" }}>
                     <div
-                      className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 border"
+                      className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 border"
                       style={{
                         backgroundColor: "rgba(255, 255, 255, 0.15)",
                         borderColor: "rgba(255, 255, 255, 0.25)",
@@ -296,12 +375,12 @@ export default function BookingFormSection({
               </div>
             </div>
 
-            {/* Pannello Destro: Form Orizzontale Compatto */}
-            <div className="lg:col-span-8 p-3 sm:p-7 md:p-10 flex flex-col justify-center">
+            {/* Pannello Destro: Form Orizzontale Compatto - nessun overflow-hidden per permettere ai popover di fluttuare */}
+            <div className="lg:col-span-8 p-3 sm:p-7 md:p-10 flex flex-col justify-center rounded-b-2xl lg:rounded-bl-none lg:rounded-tr-2xl bg-white relative">
               {/* Banner Interattivo di Notifica Pre-selezione Tour/Esperienza */}
               {prefillBadge && (
                 <div
-                  className="mb-3 animate-fade-in-up border rounded-xl p-2.5 sm:p-3 flex items-center justify-between gap-2 shadow-xs"
+                  className="mb-3 animate-fade-in-up border rounded-lg p-2.5 sm:p-3 flex items-center justify-between gap-2 shadow-xs"
                   style={{
                     backgroundColor: "rgba(156, 28, 28, 0.06)",
                     borderColor: "rgba(156, 28, 28, 0.2)",
@@ -309,7 +388,7 @@ export default function BookingFormSection({
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <span
-                      className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 border"
+                      className="w-6 h-6 rounded-md flex items-center justify-center shrink-0 border"
                       style={{
                         backgroundColor: "rgba(156, 28, 28, 0.1)",
                         borderColor: "rgba(156, 28, 28, 0.3)",
@@ -334,7 +413,7 @@ export default function BookingFormSection({
                       setDestination("");
                       setTourTypeId("");
                     }}
-                    className="text-[#72553F] hover:text-[#93161A] text-xs px-2 py-1 rounded-lg hover:bg-black/5 transition-colors shrink-0 font-bold cursor-pointer"
+                    className="text-[#72553F] hover:text-[#93161A] text-xs px-2 py-1 rounded-md hover:bg-black/5 transition-colors shrink-0 font-bold cursor-pointer"
                     title={lang === "it" ? "Rimuovi pre-selezione" : "Clear selection"}
                   >
                     ✕
@@ -347,16 +426,16 @@ export default function BookingFormSection({
                 onSubmit={onSubmit}
                 noValidate
                 className={cn(
-                  "space-y-2.5 sm:space-y-4 transition-all duration-500 rounded-2xl",
+                  "space-y-3 sm:space-y-4 transition-all duration-500 rounded-xl relative",
                   prefillFlash && "ring-4 ring-[#9C1C1C]/40 shadow-2xl scale-[1.01] bg-[#9C1C1C]/5 p-2"
                 )}
               >
 
                 {/* RIGA 1: Dati Personali */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 items-end">
-                  <div className="col-span-1 flex flex-col">
-                    <label className="text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-[#7A6655] mb-0.5 sm:mb-1">
-                      {t("form.name")} <span className="text-[#9C1C1C]">*</span>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 items-start">
+                  <div className="flex flex-col">
+                    <label className="text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-[#7A6655] h-5 flex items-center mb-1">
+                      {t("form.name")} <span className="text-[#9C1C1C] ml-0.5">*</span>
                     </label>
                     <div className="relative">
                       <User className="w-3.5 h-3.5 text-[#92816A] absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -365,15 +444,15 @@ export default function BookingFormSection({
                         name="full_name"
                         type="text"
                         placeholder={t("form.phName")}
-                        className="w-full text-xs py-1.5 sm:py-2 pl-8 sm:pl-9 pr-2.5 bg-[#F9F4EC]/60 border border-[#E9DCC4] rounded-xl focus:bg-white focus:border-[#9C1C1C] focus:outline-none transition-colors"
+                        className="w-full h-9 sm:h-10 text-xs pl-8 sm:pl-9 pr-2.5 bg-[#F9F4EC]/60 border border-[#E9DCC4] rounded-lg focus:bg-white focus:border-[#9C1C1C] focus:outline-none transition-colors"
                         minLength={2}
                       />
                     </div>
                   </div>
 
-                  <div className="col-span-1 flex flex-col">
-                    <label className="text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-[#7A6655] mb-0.5 sm:mb-1">
-                      {t("form.email")} <span className="text-[#9C1C1C]">*</span>
+                  <div className="flex flex-col">
+                    <label className="text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-[#7A6655] h-5 flex items-center mb-1">
+                      {t("form.email")} <span className="text-[#9C1C1C] ml-0.5">*</span>
                     </label>
                     <div className="relative">
                       <Mail className="w-3.5 h-3.5 text-[#92816A] absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -382,13 +461,13 @@ export default function BookingFormSection({
                         name="email"
                         type="email"
                         placeholder={t("form.phEmail")}
-                        className="w-full text-xs py-1.5 sm:py-2 pl-8 sm:pl-9 pr-2.5 bg-[#F9F4EC]/60 border border-[#E9DCC4] rounded-xl focus:bg-white focus:border-[#9C1C1C] focus:outline-none transition-colors"
+                        className="w-full h-9 sm:h-10 text-xs pl-8 sm:pl-9 pr-2.5 bg-[#F9F4EC]/60 border border-[#E9DCC4] rounded-lg focus:bg-white focus:border-[#9C1C1C] focus:outline-none transition-colors"
                       />
                     </div>
                   </div>
 
-                  <div className="col-span-2 sm:col-span-1 flex flex-col">
-                    <label className="text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-[#7A6655] mb-0.5 sm:mb-1">
+                  <div className="flex flex-col">
+                    <label className="text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-[#7A6655] h-5 flex items-center mb-1">
                       {t("form.phone")}
                     </label>
                     <div className="relative">
@@ -397,41 +476,104 @@ export default function BookingFormSection({
                         name="phone"
                         type="tel"
                         placeholder={t("form.phPhone")}
-                        className="w-full text-xs py-1.5 sm:py-2 pl-8 sm:pl-9 pr-2.5 bg-[#F9F4EC]/60 border border-[#E9DCC4] rounded-xl focus:bg-white focus:border-[#9C1C1C] focus:outline-none transition-colors"
+                        className="w-full h-9 sm:h-10 text-xs pl-8 sm:pl-9 pr-2.5 bg-[#F9F4EC]/60 border border-[#E9DCC4] rounded-lg focus:bg-white focus:border-[#9C1C1C] focus:outline-none transition-colors"
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* RIGA 2: Scelta Itinerario */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 items-end">
-                  <div className="col-span-1 flex flex-col">
-                    <label className="text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-[#7A6655] mb-0.5 sm:mb-1">
-                      {t("form.category")} <span className="text-[#9C1C1C]">*</span>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 items-start">
+                  {/* Tipologia di Tour con Dropdown personalizzato ed esaustivo */}
+                  <div className={cn("flex flex-col relative", isTourTypeOpen ? "z-30" : "z-20")} ref={tourTypeRef}>
+                    <label className="text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-[#7A6655] h-5 flex items-center mb-1">
+                      {t("form.category")} <span className="text-[#9C1C1C] ml-0.5">*</span>
                     </label>
                     <div className="relative">
-                      <MapPin className="w-3.5 h-3.5 text-[#92816A] absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                      <select
-                        required
-                        name="tour_type_id"
-                        value={tourTypeId}
-                        onChange={(e) => setTourTypeId(e.target.value)}
-                        className="w-full text-xs py-1.5 sm:py-2 pl-8 sm:pl-9 pr-5 sm:pr-6 bg-[#F9F4EC]/60 border border-[#E9DCC4] rounded-xl focus:bg-white focus:border-[#9C1C1C] focus:outline-none transition-colors appearance-none"
+                      <div className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 pointer-events-none z-10">
+                        {selectedTT ? (
+                          renderIconByName(selectedTT.icon, { className: "w-3.5 h-3.5 text-[#9C1C1C]" }, Compass)
+                        ) : (
+                          <Compass className="w-3.5 h-3.5 text-[#92816A]" />
+                        )}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsTourTypeOpen((v) => !v);
+                          setIsTransportOpen(false);
+                        }}
+                        className="w-full h-9 sm:h-10 text-xs pl-8 sm:pl-9 pr-6 bg-[#F9F4EC]/60 border border-[#E9DCC4] rounded-lg focus:bg-white focus:border-[#9C1C1C] focus:outline-none transition-colors text-left flex items-center justify-between cursor-pointer"
+                        aria-haspopup="listbox"
+                        aria-expanded={isTourTypeOpen}
                       >
-                        <option value="" disabled>
-                          — {lang === "it" ? "Tipologia" : "Tour type"} —
-                        </option>
-                        {displayTT.map((tt) => (
-                          <option key={tt.id} value={tt.id}>
-                            {tFieldStr(tt as any, "name", lang)}
-                          </option>
-                        ))}
-                      </select>
+                        <span className={cn("truncate", selectedTT ? "font-semibold text-[#3D2B1F]" : "text-[#92816A]")}>
+                          {selectedTT ? tFieldStr(selectedTT as any, "name", lang) : `— ${lang === "it" ? "Tipologia" : "Tour type"} —`}
+                        </span>
+                        <ChevronDown className={cn("w-3.5 h-3.5 text-[#92816A] shrink-0 transition-transform duration-200", isTourTypeOpen && "rotate-180")} />
+                      </button>
+
+                      {/* Hidden input per submit del form con validazione */}
+                      <input type="hidden" name="tour_type_id" value={tourTypeId} required />
+
+                      {/* Dropdown Popover (rounded-xl: 12px - p-1.5 6px - bordo 1px ≈ 5px, vicino ai rounded-md interni) */}
+                      {isTourTypeOpen && (
+                        <div className="absolute top-full left-0 w-[280px] sm:w-[320px] max-w-[calc(100vw-36px)] mt-1.5 z-50 bg-white border border-[#E9DCC4] rounded-xl shadow-xl p-1.5 max-h-72 overflow-y-auto space-y-1 animate-dropdown">
+                          <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-[#92816A] border-b border-black/5">
+                            {lang === "it" ? "Seleziona tipologia tour" : "Select tour type"}
+                          </div>
+                          {displayTT.map((tt) => {
+                            const isSelected = tt.id === tourTypeId;
+                            const desc = tFieldStr(tt as any, "description", lang);
+                            return (
+                              <button
+                                key={tt.id}
+                                type="button"
+                                onClick={() => {
+                                  setTourTypeId(tt.id);
+                                  setIsTourTypeOpen(false);
+                                }}
+                                className={cn(
+                                  "w-full text-left p-2 rounded-md transition-all flex items-start gap-2.5 cursor-pointer",
+                                  isSelected
+                                    ? "bg-[#9C1C1C]/8 border border-[#9C1C1C]/25"
+                                    : "hover:bg-[#F9F4EC] border border-transparent"
+                                )}
+                              >
+                                <span
+                                  className="w-7 h-7 rounded-md flex items-center justify-center shrink-0 mt-0.5"
+                                  style={{
+                                    backgroundColor: `${tt.color || "#9C1C1C"}15`,
+                                    color: tt.color || "#9C1C1C",
+                                  }}
+                                >
+                                  {renderIconByName(tt.icon, { className: "w-3.5 h-3.5" }, Compass)}
+                                </span>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center justify-between gap-1">
+                                    <span className={cn("text-xs font-bold truncate", isSelected ? "text-[#9C1C1C]" : "text-[#3D2B1F]")}>
+                                      {tFieldStr(tt as any, "name", lang)}
+                                    </span>
+                                    {isSelected && <Check className="w-3.5 h-3.5 text-[#9C1C1C] shrink-0" />}
+                                  </div>
+                                  {desc && (
+                                    <p className="text-[10.5px] text-[#7A6655] leading-snug mt-0.5">
+                                      {desc}
+                                    </p>
+                                  )}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   </div>
 
-                  <div className="col-span-1 flex flex-col">
-                    <label className="text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-[#7A6655] mb-0.5 sm:mb-1">
+                  {/* Destinazione Preferita */}
+                  <div className="flex flex-col">
+                    <label className="text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-[#7A6655] h-5 flex items-center mb-1">
                       {t("form.destination")}
                     </label>
                     <div className="relative">
@@ -441,102 +583,292 @@ export default function BookingFormSection({
                         type="text"
                         value={destination}
                         onChange={(e) => setDestination(e.target.value)}
-                        className="w-full text-xs py-1.5 sm:py-2 pl-8 sm:pl-9 pr-2.5 bg-[#F9F4EC]/60 border border-[#E9DCC4] rounded-xl focus:bg-white focus:border-[#9C1C1C] focus:outline-none transition-colors"
+                        className="w-full h-9 sm:h-10 text-xs pl-8 sm:pl-9 pr-2.5 bg-[#F9F4EC]/60 border border-[#E9DCC4] rounded-lg focus:bg-white focus:border-[#9C1C1C] focus:outline-none transition-colors"
                         placeholder={lang === "it" ? "es. Venezia, Asiago..." : "e.g. Venice, Asiago..."}
                       />
                     </div>
                   </div>
 
-                  <div className="col-span-2 sm:col-span-1 flex flex-col">
-                    <label className="text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-[#7A6655] mb-0.5 sm:mb-1">
-                      {t("form.visitLang")}
+                  {/* Lingua della visita (Segmented Selector moderno) */}
+                  <div className="flex flex-col">
+                    <label className="text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-[#7A6655] h-5 flex items-center justify-between mb-1">
+                      <span>{t("form.visitLang")}</span>
+                      <span className="text-[9.5px] font-normal text-[#92816A] lowercase">
+                        {visitLang === "it" ? "in italiano" : "in english"}
+                      </span>
                     </label>
-                    <div className="relative">
-                      <Languages className="w-3.5 h-3.5 text-[#92816A] absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                      <select
-                        name="visit_language"
-                        defaultValue={lang}
-                        className="w-full text-xs py-1.5 sm:py-2 pl-8 sm:pl-9 pr-5 sm:pr-6 bg-[#F9F4EC]/60 border border-[#E9DCC4] rounded-xl focus:bg-white focus:border-[#9C1C1C] focus:outline-none transition-colors appearance-none"
+                    <div className="flex items-center p-1 bg-[#F9F4EC]/60 border border-[#E9DCC4] rounded-lg h-9 sm:h-10 gap-1 transition-colors">
+                      <button
+                        type="button"
+                        onClick={() => setVisitLang("it")}
+                        className={langBtn(visitLang === "it")}
                       >
-                        <option value="it">{t("form.langIt")}</option>
-                        <option value="en">{t("form.langEn")}</option>
-                      </select>
+                        <span className="text-xs leading-none">🇮🇹</span>
+                        <span>Italiano</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setVisitLang("en")}
+                        className={langBtn(visitLang === "en")}
+                      >
+                        <span className="text-xs leading-none">🇬🇧</span>
+                        <span>English</span>
+                      </button>
                     </div>
+                    <input type="hidden" name="visit_language" value={visitLang} />
                   </div>
                 </div>
 
-                {/* RIGA 3: Date, Partecipanti & Mezzo */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 items-end">
+                {/* RIGA 3: Date, Partecipanti & Modalità di Spostamento - Allineamento perfetto */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 items-start">
+                  {/* Data Preferita */}
                   <div className="flex flex-col">
-                    <label className="text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-[#7A6655] mb-1">
+                    <label className="text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-[#7A6655] h-5 flex items-center mb-1 truncate">
                       {t("form.datePref")}
                     </label>
-                    <div className="relative">
-                      <Calendar className="w-3.5 h-3.5 text-[#92816A] absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <div className="relative flex items-center w-full h-9 sm:h-10 pl-2.5 sm:pl-3 pr-2 bg-[#F9F4EC]/60 border border-[#E9DCC4] rounded-lg focus-within:border-[#9C1C1C] focus-within:bg-white hover:border-[#9C1C1C]/40 transition-colors cursor-pointer group">
+                      <Calendar className="w-3.5 h-3.5 text-[#92816A] group-hover:text-[#9C1C1C] transition-colors shrink-0 mr-2 pointer-events-none" />
+                      <span
+                        className={cn(
+                          "text-xs font-sans truncate flex-1 select-none pointer-events-none",
+                          preferredDate ? "font-semibold text-[#3D2B1F]" : "text-[#92816A]"
+                        )}
+                      >
+                        {preferredDate ? formatDateDisplay(preferredDate, lang) : (lang === "it" ? "gg/mm/aaaa" : "dd/mm/yyyy")}
+                      </span>
+
+                      {preferredDate && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            setPreferredDate("");
+                          }}
+                          className="relative z-20 w-5 h-5 rounded-full hover:bg-black/10 flex items-center justify-center text-[#92816A] hover:text-[#9C1C1C] transition-colors cursor-pointer text-xs leading-none shrink-0"
+                          title={lang === "it" ? "Cancella data" : "Clear date"}
+                        >
+                          ✕
+                        </button>
+                      )}
+
                       <input
                         name="preferred_date"
                         type="date"
+                        min={todayStr}
                         value={preferredDate}
                         onChange={(e) => setPreferredDate(e.target.value)}
-                        className="w-full text-xs py-1.5 sm:py-2 pl-8 sm:pl-9 pr-1 bg-[#F9F4EC]/60 border border-[#E9DCC4] rounded-xl focus:bg-white focus:border-[#9C1C1C] focus:outline-none transition-colors font-mono"
+                        onClick={(e) => {
+                          try {
+                            (e.currentTarget as any).showPicker?.();
+                          } catch { }
+                        }}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                        aria-label={t("form.datePref")}
                       />
                     </div>
                   </div>
 
+                  {/* Data Alternativa */}
                   <div className="flex flex-col">
-                    <label className="text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-[#7A6655] mb-1">
+                    <label className="text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-[#7A6655] h-5 flex items-center mb-1 truncate">
                       {lang === "it" ? "Data Alt." : "Alt. Date"}
                     </label>
-                    <div className="relative">
-                      <Calendar className="w-3.5 h-3.5 text-[#92816A] absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <div className="relative flex items-center w-full h-9 sm:h-10 pl-2.5 sm:pl-3 pr-2 bg-[#F9F4EC]/60 border border-[#E9DCC4] rounded-lg focus-within:border-[#9C1C1C] focus-within:bg-white hover:border-[#9C1C1C]/40 transition-colors cursor-pointer group">
+                      <Calendar className="w-3.5 h-3.5 text-[#92816A] group-hover:text-[#9C1C1C] transition-colors shrink-0 mr-2 pointer-events-none" />
+                      <span
+                        className={cn(
+                          "text-xs font-sans truncate flex-1 select-none pointer-events-none",
+                          altDate ? "font-semibold text-[#3D2B1F]" : "text-[#92816A]"
+                        )}
+                      >
+                        {altDate ? formatDateDisplay(altDate, lang) : (lang === "it" ? "gg/mm/aaaa" : "dd/mm/yyyy")}
+                      </span>
+
+                      {altDate && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            setAltDate("");
+                          }}
+                          className="relative z-20 w-5 h-5 rounded-full hover:bg-black/10 flex items-center justify-center text-[#92816A] hover:text-[#9C1C1C] transition-colors cursor-pointer text-xs leading-none shrink-0"
+                          title={lang === "it" ? "Cancella data" : "Clear date"}
+                        >
+                          ✕
+                        </button>
+                      )}
+
                       <input
                         name="alternative_date"
                         type="date"
-                        className="w-full text-xs py-1.5 sm:py-2 pl-8 sm:pl-9 pr-1 bg-[#F9F4EC]/60 border border-[#E9DCC4] rounded-xl focus:bg-white focus:border-[#9C1C1C] focus:outline-none transition-colors font-mono"
+                        min={preferredDate || todayStr}
+                        value={altDate}
+                        onChange={(e) => setAltDate(e.target.value)}
+                        onClick={(e) => {
+                          try {
+                            (e.currentTarget as any).showPicker?.();
+                          } catch { }
+                        }}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                        aria-label={lang === "it" ? "Data Alternativa" : "Alternative Date"}
                       />
                     </div>
                   </div>
 
+                  {/* Partecipanti con stepper compatto */}
                   <div className="flex flex-col">
-                    <label className="text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-[#7A6655] mb-1">
+                    <label className="text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-[#7A6655] h-5 flex items-center mb-1 truncate">
                       {t("form.participants")}
                     </label>
-                    <div className="relative">
-                      <Users className="w-3.5 h-3.5 text-[#92816A] absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <div className="flex items-center bg-[#F9F4EC]/60 border border-[#E9DCC4] rounded-lg overflow-hidden focus-within:border-[#9C1C1C] focus-within:bg-white transition-colors h-9 sm:h-10 px-1">
+                      <Users className="w-3.5 h-3.5 text-[#92816A] shrink-0 ml-1.5 pointer-events-none" />
                       <input
                         name="participants"
-                        type="number"
-                        min={1}
-                        max={100}
+                        type="hidden"
                         value={participants}
-                        onChange={(e) => setParticipants(e.target.value)}
-                        placeholder="es. 4"
-                        className="w-full text-xs py-1.5 sm:py-2 pl-8 sm:pl-9 pr-2 bg-[#F9F4EC]/60 border border-[#E9DCC4] rounded-xl focus:bg-white focus:border-[#9C1C1C] focus:outline-none transition-colors"
                       />
+                      <button
+                        type="button"
+                        aria-label="Diminuisci partecipanti"
+                        onClick={() => setParticipants((v) => String(Math.max(1, Number(v || 1) - 1)))}
+                        className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 ml-1 rounded-md text-[#9C1C1C] bg-[#9C1C1C]/8 hover:bg-[#9C1C1C]/15 active:bg-[#9C1C1C]/25 transition-colors text-base font-bold leading-none select-none shrink-0 cursor-pointer"
+                      >
+                        −
+                      </button>
+                      <span className="flex-1 text-center text-xs font-sans font-semibold text-[#3D2B1F] select-none min-w-[2ch]">
+                        {participants || "1"}
+                      </span>
+                      <button
+                        type="button"
+                        aria-label="Aumenta partecipanti"
+                        onClick={() => setParticipants((v) => String(Math.min(100, Number(v || 1) + 1)))}
+                        className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 mr-1 rounded-md text-[#9C1C1C] bg-[#9C1C1C]/8 hover:bg-[#9C1C1C]/15 active:bg-[#9C1C1C]/25 transition-colors text-base font-bold leading-none select-none shrink-0 cursor-pointer"
+                      >
+                        +
+                      </button>
                     </div>
                   </div>
 
-                  <div className="flex flex-col">
-                    <label className="text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-[#7A6655] mb-1">
-                      {t("form.transport")}
+                  {/* Modalità di Spostamento con spiegazione e slug visibili */}
+                  <div className={cn("flex flex-col relative", isTransportOpen ? "z-30" : "z-20")} ref={transportRef}>
+                    <label className="text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider text-[#7A6655] h-5 flex items-center mb-1 truncate">
+                      {lang === "it" ? "Spostamento" : "Transport"}
                     </label>
                     <div className="relative">
-                      <Footprints className="w-3.5 h-3.5 text-[#92816A] absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                      <select
-                        name="transport"
-                        defaultValue=""
-                        className="w-full text-xs py-1.5 sm:py-2 pl-8 sm:pl-9 pr-5 sm:pr-6 bg-[#F9F4EC]/60 border border-[#E9DCC4] rounded-xl focus:bg-white focus:border-[#9C1C1C] focus:outline-none transition-colors appearance-none"
+                      <div className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 pointer-events-none z-10">
+                        {selectedTM ? (
+                          <span style={{ color: selectedTM.color || "#9C1C1C" }}>
+                            {renderIconByName(selectedTM.icon_name, { className: "w-3.5 h-3.5" }, Footprints)}
+                          </span>
+                        ) : (
+                          <Footprints className="w-3.5 h-3.5 text-[#92816A]" />
+                        )}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsTransportOpen((v) => !v);
+                          setIsTourTypeOpen(false);
+                        }}
+                        className="w-full h-9 sm:h-10 text-xs pl-8 sm:pl-9 pr-6 bg-[#F9F4EC]/60 border border-[#E9DCC4] rounded-lg focus:bg-white focus:border-[#9C1C1C] focus:outline-none transition-colors text-left flex items-center justify-between cursor-pointer"
+                        aria-haspopup="listbox"
+                        aria-expanded={isTransportOpen}
                       >
-                        <option value="" disabled>— {lang === "it" ? "Mezzo" : "Mode"} —</option>
-                        {displayTransport.map((tm) => (
-                          <option key={tm.slug} value={tm.slug}>
-                            {lang === "it" ? tm.name_it : tm.name_en}
-                          </option>
-                        ))}
-                      </select>
+                        <span className={cn("truncate", selectedTM ? "font-semibold text-[#3D2B1F]" : "text-[#92816A]")}>
+                          {selectedTM ? (lang === "it" ? selectedTM.name_it : selectedTM.name_en) : `— ${lang === "it" ? "Mezzo" : "Mode"} —`}
+                        </span>
+                        <div className="flex items-center gap-1 shrink-0 ml-1">
+                          {selectedTM && (
+                            <span className="font-mono text-[9px] uppercase px-1 py-0.2 rounded bg-black/5 text-[#7A6655] hidden xs:inline-block">
+                              {selectedTM.slug}
+                            </span>
+                          )}
+                          <ChevronDown className={cn("w-3.5 h-3.5 text-[#92816A] shrink-0 transition-transform duration-200", isTransportOpen && "rotate-180")} />
+                        </div>
+                      </button>
+
+                      {/* Hidden input per submit del form */}
+                      <input type="hidden" name="transport" value={transport} />
+
+                      {/* Dropdown Popover con spiegazione e slug per ogni modalità */}
+                      {isTransportOpen && (
+                        <div className="absolute top-full right-0 w-[285px] sm:w-[340px] md:w-[370px] max-w-[calc(100vw-36px)] mt-1.5 z-50 bg-white border border-[#E9DCC4] rounded-xl shadow-xl p-1.5 max-h-80 overflow-y-auto space-y-1 animate-dropdown">
+                          <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-[#92816A] border-b border-black/5 flex items-center justify-between">
+                            <span>{lang === "it" ? "Modalità di spostamento" : "Transport mode"}</span>
+                            <span className="font-mono text-[9px] lowercase bg-black/5 px-1.5 py-0.5 rounded-md text-[#7A6655]">slug</span>
+                          </div>
+
+                          {displayTransport.map((tm) => {
+                            const isSelected = tm.slug === transport;
+                            const desc = getTransportDescription(tm, lang);
+                            return (
+                              <button
+                                key={tm.slug}
+                                type="button"
+                                onClick={() => {
+                                  setTransport(tm.slug);
+                                  setIsTransportOpen(false);
+                                }}
+                                className={cn(
+                                  "w-full text-left p-2 rounded-md transition-all flex items-start gap-2.5 cursor-pointer",
+                                  isSelected
+                                    ? "bg-[#9C1C1C]/8 border border-[#9C1C1C]/25"
+                                    : "hover:bg-[#F9F4EC] border border-transparent"
+                                )}
+                              >
+                                <span
+                                  className="w-7 h-7 rounded-md flex items-center justify-center shrink-0 mt-0.5"
+                                  style={{
+                                    backgroundColor: `${tm.color || "#9C1C1C"}15`,
+                                    color: tm.color || "#9C1C1C",
+                                  }}
+                                >
+                                  {renderIconByName(tm.icon_name, { className: "w-3.5 h-3.5" }, Footprints)}
+                                </span>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center justify-between gap-1.5">
+                                    <span className={cn("text-xs font-bold truncate", isSelected ? "text-[#9C1C1C]" : "text-[#3D2B1F]")}>
+                                      {lang === "it" ? tm.name_it : tm.name_en}
+                                    </span>
+                                    <span className="text-[9.5px] font-mono px-1.5 py-0.5 rounded-md bg-black/5 text-[#7A6655] shrink-0">
+                                      {tm.slug}
+                                    </span>
+                                  </div>
+                                  {desc && (
+                                    <p className="text-[11px] text-[#7A6655] leading-snug mt-0.5">
+                                      {desc}
+                                    </p>
+                                  )}
+                                </div>
+                                {isSelected && (
+                                  <Check className="w-3.5 h-3.5 text-[#9C1C1C] shrink-0 mt-1" />
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
+
+                {/* Info strip della modalità selezionata - posizionata sotto la riga senza disallineare i campi */}
+                {selectedTM && (
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#F9F4EC] border border-[#E9DCC4] text-[11px] text-[#7A6655] animate-dropdown">
+                    <span className="font-mono text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-[#9C1C1C]/10 text-[#9C1C1C] shrink-0">
+                      {selectedTM.slug}
+                    </span>
+                    <span className="font-semibold text-[#3D2B1F] shrink-0">
+                      {lang === "it" ? selectedTM.name_it : selectedTM.name_en}:
+                    </span>
+                    <span className="truncate">
+                      {getTransportDescription(selectedTM, lang)}
+                    </span>
+                  </div>
+                )}
 
                 {/* RIGA 4: Note / Richieste particolari */}
                 <div>
@@ -549,7 +881,7 @@ export default function BookingFormSection({
                     rows={2}
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    className="w-full text-xs p-2 sm:p-2.5 bg-[#F9F4EC]/60 border border-[#E9DCC4] rounded-xl focus:bg-white focus:border-[#9C1C1C] focus:outline-none transition-colors resize-y leading-relaxed"
+                    className="w-full text-xs p-2 sm:p-2.5 bg-[#F9F4EC]/60 border border-[#E9DCC4] rounded-lg focus:bg-white focus:border-[#9C1C1C] focus:outline-none transition-colors resize-y leading-relaxed"
                     placeholder={t("form.phNotes")}
                   />
                 </div>
@@ -576,13 +908,13 @@ export default function BookingFormSection({
 
                 {/* Messaggi di Stato */}
                 {state === "success" && (
-                  <div className="bg-[#4A6535]/15 border border-[#4A6535]/40 text-[#2F4220] p-3 rounded-xl text-xs font-semibold flex items-center gap-2">
+                  <div className="bg-[#4A6535]/15 border border-[#4A6535]/40 text-[#2F4220] p-3 rounded-lg text-xs font-semibold flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-[#4A6535] shrink-0" />
                     <span>{t("form.success")}</span>
                   </div>
                 )}
                 {state === "error" && (
-                  <div className="bg-[#9C1C1C]/15 border border-[#9C1C1C]/40 text-[#9C1C1C] p-3 rounded-xl text-xs font-semibold flex items-center gap-2">
+                  <div className="bg-[#9C1C1C]/15 border border-[#9C1C1C]/40 text-[#9C1C1C] p-3 rounded-lg text-xs font-semibold flex items-center gap-2">
                     <AlertTriangle className="w-4 h-4 text-[#9C1C1C] shrink-0" />
                     <span>{err || t("form.error")}</span>
                   </div>
@@ -599,7 +931,7 @@ export default function BookingFormSection({
                     type="submit"
                     disabled={state === "loading"}
                     className={cn(
-                      "inline-flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-2.5 bg-[#9C1C1C] text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-[#6E1212] shadow-sm transition-all cursor-pointer",
+                      "inline-flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-2.5 bg-[#9C1C1C] text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-[#6E1212] shadow-sm transition-all cursor-pointer",
                       state === "loading" && "opacity-70 cursor-not-allowed"
                     )}
                   >
@@ -683,11 +1015,19 @@ const FALLBACK_TT: TourTypeT[] = [
   },
 ];
 
+function getTransportDescription(tm: TransportModeT, currentLang: "it" | "en"): string {
+  const fromDb = currentLang === "it" ? tm.description_it : tm.description_en;
+  if (fromDb && fromDb.trim()) return fromDb;
+  const fallback = FALLBACK_TRANSPORT.find((f) => f.slug === tm.slug);
+  return fallback ? (currentLang === "it" ? fallback.description_it || "" : fallback.description_en || "") : "";
+}
+
 const FALLBACK_TRANSPORT: TransportModeT[] = [
   {
     id: "tm_walk", slug: "walk",
     name_it: "A piedi", name_en: "On foot",
-    description_it: "", description_en: "",
+    description_it: "Tour pedonali nel centro storico, monumenti e passeggiate a passo lento",
+    description_en: "Walking tours in historic centers, monuments and slow-paced strolls",
     icon_name: "Footprints", color: "#4A6535",
     sort_order: 0, is_active: true,
     is_available_for_booking: true, is_available_for_places: true,
@@ -696,7 +1036,8 @@ const FALLBACK_TRANSPORT: TransportModeT[] = [
   {
     id: "tm_bike", slug: "bike",
     name_it: "In Bicicletta / E-Bike", name_en: "Bicycle / E-Bike",
-    description_it: "", description_en: "",
+    description_it: "Itinerari cicloturistici su due ruote tra natura, colline e ciclabili",
+    description_en: "Two-wheeled cycling routes across nature, hills and bike trails",
     icon_name: "Bike", color: "#3D6E90",
     sort_order: 1, is_active: true,
     is_available_for_booking: true, is_available_for_places: true,
@@ -705,7 +1046,8 @@ const FALLBACK_TRANSPORT: TransportModeT[] = [
   {
     id: "tm_moto", slug: "moto",
     name_it: "In Moto / Scooter", name_en: "Motorcycle / Scooter",
-    description_it: "", description_en: "",
+    description_it: "Percorsi panoramici tra passi montani, colli e grandi vallate",
+    description_en: "Scenic motorcycle routes across mountain passes and scenic valleys",
     icon_name: "Car", color: "#9C1C1C",
     sort_order: 2, is_active: true,
     is_available_for_booking: true, is_available_for_places: true,
@@ -714,7 +1056,8 @@ const FALLBACK_TRANSPORT: TransportModeT[] = [
   {
     id: "tm_car", slug: "car",
     name_it: "In Automobile propria", name_en: "By Private Car",
-    description_it: "", description_en: "",
+    description_it: "Tour con auto propria tra borghi e località più distanti",
+    description_en: "Tours with private vehicle between distant destinations and villages",
     icon_name: "CarFront", color: "#7A6655",
     sort_order: 3, is_active: true,
     is_available_for_booking: true, is_available_for_places: true,
@@ -723,7 +1066,8 @@ const FALLBACK_TRANSPORT: TransportModeT[] = [
   {
     id: "tm_bus", slug: "bus",
     name_it: "Pullman / Gruppo Organizzato", name_en: "Bus / Organized Group",
-    description_it: "", description_en: "",
+    description_it: "Itinerari per comitive, scolaresche e gruppi turistici con pullman",
+    description_en: "Itineraries for large groups, schools and coach bus tour parties",
     icon_name: "Bus", color: "#C4923A",
     sort_order: 4, is_active: true,
     is_available_for_booking: true, is_available_for_places: true,

@@ -3,6 +3,7 @@ export interface BookingPrefillData {
   destination?: string;
   preferredDate?: string;
   participants?: number;
+  transport?: string;
   notes?: string;
 }
 

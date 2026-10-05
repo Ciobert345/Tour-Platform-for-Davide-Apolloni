@@ -205,7 +205,7 @@ function ReviewForm() {
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-2 p-2 bg-[#F9F4EC] rounded-xl border border-black/5">
+      <div className="flex items-center justify-between gap-2 p-2 bg-[#F9F4EC] rounded-lg border border-black/5">
         <label className="text-[10.5px] sm:text-xs font-bold uppercase tracking-wider text-text-main shrink-0">
           {t("reviews.ratingLabel")} <span className="required">*</span>
         </label>
@@ -217,7 +217,7 @@ function ReviewForm() {
               onClick={() => setRating(n)}
               onMouseEnter={() => setHover(n)}
               onMouseLeave={() => setHover(0)}
-              className="p-0.5 sm:p-1 rounded-xl hover:bg-white transition-colors cursor-pointer"
+              className="p-0.5 sm:p-1 rounded-md hover:bg-white transition-colors cursor-pointer"
               aria-label={`${n} stelle`}
             >
               <Star
@@ -241,14 +241,14 @@ function ReviewForm() {
           required
           name="review_text"
           rows={2}
-          className="form-textarea text-xs sm:text-sm py-1.5 sm:py-2.5 min-h-[60px] sm:min-h-[85px] leading-relaxed rounded-xl"
+          className="form-textarea text-xs sm:text-sm py-1.5 sm:py-2.5 min-h-[60px] sm:min-h-[85px] leading-relaxed rounded-lg"
           placeholder={t("reviews.textPh")}
           minLength={5}
         />
       </div>
 
       {state === "success" && (
-        <div className="bg-olive/10 border border-olive/30 text-olive-dark p-3 rounded-xl text-center font-semibold text-xs flex items-center justify-center gap-1.5">
+        <div className="bg-olive/10 border border-olive/30 text-olive-dark p-3 rounded-lg text-center font-semibold text-xs flex items-center justify-center gap-1.5">
           <CheckCircle2 className="w-4 h-4 text-olive shrink-0" />
           <span>{t("reviews.success")}</span>
         </div>

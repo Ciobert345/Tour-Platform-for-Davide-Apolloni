@@ -2,7 +2,6 @@
 import { useState, useRef } from "react";
 import EditableSectionHeading from "@/components/live-edit/EditableSectionHeading";
 import Editable from "@/components/live-edit/Editable";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useLiveEdit } from "@/components/live-edit/LiveEditProvider";
 import { useLang, useT, useLanguage } from "@/lib/i18n/LanguageProvider";
 import { stringValues } from "@/lib/live-edit/helpers";
@@ -141,65 +140,34 @@ export default function MediaSection({ media }: { media: MediaT[] }) {
 
         {videos.length > 0 && (
           <div className="mb-8 sm:mb-16">
-            {videos.length > 1 && (
-              <div className="hidden md:flex items-center justify-end gap-2 mb-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const container = document.getElementById('video-carousel');
-                    if (container) container.scrollBy({ left: -400, behavior: 'smooth' });
-                  }}
-                  className="flex items-center justify-center w-9 h-9 rounded-full border border-current/15 text-current transition-colors duration-200 hover:bg-current/10"
-                  aria-label="Scorri a sinistra"
-                >
-                  <ChevronLeft className="w-4.5 h-4.5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const container = document.getElementById('video-carousel');
-                    if (container) container.scrollBy({ left: 400, behavior: 'smooth' });
-                  }}
-                  className="flex items-center justify-center w-9 h-9 rounded-full border border-current/15 text-current transition-colors duration-200 hover:bg-current/10"
-                  aria-label="Scorri a destra"
-                >
-                  <ChevronRight className="w-4.5 h-4.5" />
-                </button>
+            {videos.length === 1 ? (
+              /* Un solo video: centrato, nessun carosello */
+              <div className="w-full max-w-4xl lg:max-w-5xl mx-auto">
+                <VideoCard
+                  m={videos[0]}
+                  i={0}
+                  lang={lang}
+                  onOpen={() => setModalMedia(videos[0])}
+                />
               </div>
-            )}
-
-            <div
-              id="video-carousel"
-              className={
-                videos.length === 1
-                  ? "flex justify-center -mx-5 px-5 pb-3 md:mx-0 md:px-0"
-                  : "flex gap-7 overflow-x-auto snap-x snap-mandatory scrollbar-hide touch-pan-x -mx-5 px-5 pb-3 md:mx-0 md:px-0"
-              }
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            >
-              {videos.map((m, i) => (
-                <div
-                  key={m.id}
-                  className={
-                    videos.length === 1
-                      ? "w-full max-w-4xl lg:max-w-5xl mx-auto"
-                      : "shrink-0 snap-start w-[min(90vw,800px)] md:w-[min(85vw,900px)] lg:w-[min(75vw,1000px)]"
-                  }
-                >
+            ) : (
+              /* Più video: stesso sistema dei tour (MobileCarousel) —
+                 gestione touch, padding/margini, snap, frecce e hint condivisi */
+              <MobileCarousel
+                desktopMode="scroll"
+                childWidth="w-[min(86vw,800px)] md:w-[min(85vw,900px)] lg:w-[min(75vw,1000px)]"
+                hint={lang === "it" ? "← Scorri per vedere tutti i video →" : "← Swipe to see all videos →"}
+              >
+                {videos.map((m, i) => (
                   <VideoCard
+                    key={m.id}
                     m={m}
                     i={i}
                     lang={lang}
                     onOpen={() => setModalMedia(m)}
                   />
-                </div>
-              ))}
-            </div>
-
-            {videos.length > 1 && (
-              <p className="mt-2 text-center text-[10.5px] font-medium uppercase tracking-wider text-text-muted md:hidden">
-                {lang === "it" ? "← Scorri per vedere tutti i video →" : "← Swipe to see all videos →"}
-              </p>
+                ))}
+              </MobileCarousel>
             )}
           </div>
         )}
@@ -377,7 +345,8 @@ function VideoCard({
   const isEmbed = videoType === "youtube" || videoType === "vimeo";
 
   return (
-    <article className="bg-white rounded-2xl shadow-sm border border-black/10 overflow-hidden grid lg:grid-cols-[1.25fr_0.75fr] h-full">
+    // grow: dentro MobileCarousel (flex-col) la card si stira all'altezza della riga, come le card dei tour
+    <article className="bg-white rounded-2xl shadow-sm border border-black/10 overflow-hidden grid lg:grid-cols-[1.25fr_0.75fr] h-full grow">
       <div className="relative bg-black aspect-video w-full lg:aspect-auto lg:min-h-[420px] flex items-center justify-center overflow-hidden">
         <Editable
           id={`media-video-url-${m.id}`}
