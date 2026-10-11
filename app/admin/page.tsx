@@ -16,6 +16,7 @@ import { cn, formatDate, renderStars } from "@/lib/utils";
 
 import AdminTutorial from "@/components/admin/AdminTutorial";
 import MaintenanceToggle from "@/components/admin/MaintenanceToggle";
+import MapSectionToggle from "@/components/admin/MapSectionToggle";
 
 /* ============================================================
    DASHBOARD ADMIN — Server Component
@@ -36,10 +37,10 @@ export default async function AdminDashboard() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3">
         <div>
-          <h1 className="text-2xl md:text-3xl font-semibold text-[#1E160A] font-serif">
+          <h1 className="text-2xl md:text-3xl font-semibold text-[#1E160A] dark:text-[#f5ede2] font-serif">
             Dashboard
           </h1>
-          <p className="text-sm text-[#5C4C38] mt-1">
+          <p className="text-sm text-[#5C4C38] dark:text-[#c7b59f] mt-1">
             Panoramica in tempo reale delle richieste, delle recensioni e del calendario
           </p>
         </div>
@@ -78,6 +79,9 @@ export default async function AdminDashboard() {
       {/* ======== Modalita Manutenzione ======== */}
       <MaintenanceToggle />
 
+      {/* ======== Sezione e banner mappa pubblica ======== */}
+      <MapSectionToggle />
+
       {/* ======== Stat cards ======== */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
@@ -114,9 +118,9 @@ export default async function AdminDashboard() {
       {/* ======== Righe tabella ======== */}
       <div className="grid lg:grid-cols-3 gap-4">
         {/* Ultime prenotazioni */}
-        <div className="lg:col-span-2 bg-white rounded-sm border border-stone/40 shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-stone/30 flex items-center justify-between">
-            <h2 className="font-semibold text-[#1E160A] flex items-center gap-2">
+        <div className="lg:col-span-2 bg-white dark:bg-[#1a140e] rounded-sm border border-stone/40 dark:border-white/10 shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-stone/30 dark:border-white/10 flex items-center justify-between">
+            <h2 className="font-semibold text-[#1E160A] dark:text-[#f5ede2] flex items-center gap-2">
               <TrendingUp className="w-4.5 h-4.5 text-[#9C1C1C]" />
               Ultime richieste ricevute
             </h2>
@@ -130,11 +134,11 @@ export default async function AdminDashboard() {
           {stats.latestBookings.length === 0 ? (
             <EmptyState label="Ancora nessuna richiesta" />
           ) : (
-            <div className="divide-y divide-[#F0E8D6]">
+            <div className="divide-y divide-[#F0E8D6] dark:divide-white/10">
               {stats.latestBookings.map((b: any) => (
                 <div
                   key={b.id}
-                  className="px-5 py-3.5 hover:bg-[#F9F4EC] transition-colors flex items-start gap-4"
+                  className="px-5 py-3.5 hover:bg-[#F9F4EC] dark:hover:bg-[#231b14] transition-colors flex items-start gap-4"
                 >
                   <div
                     className={cn(
@@ -142,7 +146,7 @@ export default async function AdminDashboard() {
                       b.status === "new"
                         ? "bg-[#9C1C1C]/10 text-[#9C1C1C]"
                         : b.status === "confirmed"
-                          ? "bg-[#4A6535]/15 text-[#4A6535]"
+                          ? "bg-[#C4923A]/15 text-[#C4923A] dark:text-[#d4a84b]"
                           : "bg-stone/30 text-[#8A6E3E]"
                     )}
                   >
@@ -150,10 +154,10 @@ export default async function AdminDashboard() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2 mb-1">
-                      <p className="font-semibold text-[#1E160A] truncate">{b.full_name}</p>
+                      <p className="font-semibold text-[#1E160A] dark:text-[#f5ede2] truncate">{b.full_name}</p>
                       <StatusBadge status={b.status} />
                     </div>
-                    <p className="text-xs text-[#5C4C38] truncate">
+                    <p className="text-xs text-[#5C4C38] dark:text-[#c7b59f] truncate">
                       {b.email}
                       {b.phone && <> · {b.phone}</>}
                       {b.preferred_destination && (
@@ -162,7 +166,7 @@ export default async function AdminDashboard() {
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-xs text-[#92816A] flex items-center gap-1 justify-end">
+                    <p className="text-xs text-[#92816A] dark:text-[#b09e8b] flex items-center gap-1 justify-end">
                       <Clock className="w-3 h-3" />
                       {formatDate(b.created_at)}
                     </p>
@@ -174,15 +178,15 @@ export default async function AdminDashboard() {
         </div>
 
         {/* Ultime recensioni */}
-        <div className="bg-white rounded-sm border border-stone/40 shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-stone/30 flex items-center justify-between">
-            <h2 className="font-semibold text-[#1E160A] flex items-center gap-2">
+        <div className="bg-white dark:bg-[#1a140e] rounded-sm border border-stone/40 dark:border-white/10 shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-stone/30 dark:border-white/10 flex items-center justify-between">
+            <h2 className="font-semibold text-[#1E160A] dark:text-[#f5ede2] flex items-center gap-2">
               <Star className="w-4.5 h-4.5 text-[#C4923A]" />
               Recensioni recenti
             </h2>
             <Link
               href="/admin/reviews"
-              className="text-xs font-bold text-[#4A6535] hover:underline flex items-center gap-0.5"
+              className="text-xs font-bold text-[#9C1C1C] hover:underline flex items-center gap-0.5"
             >
               Tutte <ChevronRight className="w-3.5 h-3.5" />
             </Link>
@@ -190,30 +194,30 @@ export default async function AdminDashboard() {
           {stats.latestReviews.length === 0 ? (
             <EmptyState label="Ancora nessuna recensione" />
           ) : (
-            <div className="divide-y divide-[#F0E8D6]">
+            <div className="divide-y divide-[#F0E8D6] dark:divide-white/10">
               {stats.latestReviews.map((r: any) => (
-                <div key={r.id} className="px-5 py-3.5 hover:bg-[#F9F4EC] transition-colors">
+                <div key={r.id} className="px-5 py-3.5 hover:bg-[#F9F4EC] dark:hover:bg-[#231b14] transition-colors">
                   <div className="flex items-center justify-between mb-1.5">
-                    <p className="text-sm font-semibold text-[#1E160A] truncate mr-2">
+                    <p className="text-sm font-semibold text-[#1E160A] dark:text-[#f5ede2] truncate mr-2">
                       {r.author_name}
                     </p>
                     <span className="text-[#C4923A] text-sm">{renderStars(r.rating)}</span>
                   </div>
-                  <p className="text-xs text-[#5C4C38] line-clamp-2 leading-relaxed mb-2">
+                  <p className="text-xs text-[#5C4C38] dark:text-[#c7b59f] line-clamp-2 leading-relaxed mb-2">
                     {r.review_text}
                   </p>
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-[#92816A]">{formatDate(r.submitted_at)}</span>
+                    <span className="text-[#92816A] dark:text-[#b09e8b]">{formatDate(r.submitted_at)}</span>
                     {r.status === "pending" ? (
                       <span className="inline-flex items-center gap-1 text-[#9C1C1C] font-semibold">
                         <AlertTriangle className="w-3 h-3" /> In attesa
                       </span>
                     ) : r.status === "approved" ? (
-                      <span className="inline-flex items-center gap-1 text-[#4A6535] font-semibold">
+                      <span className="inline-flex items-center gap-1 text-[#C4923A] dark:text-[#d4a84b] font-semibold">
                         <CheckCircle2 className="w-3 h-3" /> Approvata
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 text-[#92816A] font-semibold">
+                      <span className="inline-flex items-center gap-1 text-[#92816A] dark:text-[#b09e8b] font-semibold">
                         Respinta
                       </span>
                     )}
@@ -257,7 +261,7 @@ function StatCard({
 }) {
   const palettes = {
     terracotta: { bg: "bg-[#9C1C1C]/10", text: "text-[#9C1C1C]", ring: "ring-[#9C1C1C]/30" },
-    olive:      { bg: "bg-[#4A6535]/10", text: "text-[#4A6535]", ring: "ring-[#4A6535]/30" },
+    olive:      { bg: "bg-[#C4923A]/10", text: "text-[#C4923A] dark:text-[#d4a84b]", ring: "ring-[#C4923A]/30" },
     adria:      { bg: "bg-[#3D6E90]/10", text: "text-[#244D68]", ring: "ring-[#3D6E90]/30" },
     stone:      { bg: "bg-[#E8D5A8]/40", text: "text-[#8A6E3E]", ring: "ring-[#C4923A]/30" },
   } as const;
@@ -265,7 +269,7 @@ function StatCard({
 
   const content = (
     <div className={cn(
-      "bg-white rounded-sm border border-stone/40 shadow-sm p-5 transition-all hover:-translate-y-0.5 hover:shadow-md h-full",
+      "bg-white dark:bg-[#1a140e] rounded-sm border border-stone/40 dark:border-white/10 shadow-sm p-5 transition-all hover:-translate-y-0.5 hover:shadow-md h-full",
       highlight && `ring-2 ${p.ring}`
     )}>
       <div className="flex items-start justify-between mb-3">
@@ -278,10 +282,10 @@ function StatCard({
           </span>
         )}
       </div>
-      <p className="text-3xl md:text-4xl font-bold text-[#1E160A] font-serif leading-none">
+      <p className="text-3xl md:text-4xl font-bold text-[#1E160A] dark:text-[#f5ede2] font-serif leading-none">
         {value.toLocaleString("it-IT")}
       </p>
-      <p className="text-sm text-[#5C4C38] mt-2">{label}</p>
+      <p className="text-sm text-[#5C4C38] dark:text-[#c7b59f] mt-2">{label}</p>
     </div>
   );
 
@@ -293,7 +297,7 @@ function StatusBadge({ status }: { status: string }) {
   const map: Record<string, string> = {
     new:       "bg-[#9C1C1C]/10 text-[#9C1C1C] border-[#9C1C1C]/20",
     contacted: "bg-[#3D6E90]/10 text-[#244D68] border-[#3D6E90]/20",
-    confirmed: "bg-[#4A6535]/10 text-[#4A6535] border-[#4A6535]/25",
+    confirmed: "bg-[#C4923A]/10 text-[#8A5E1A] dark:text-[#d4a84b] border-[#C4923A]/25",
     archived:  "bg-[#E8D5A8]/40 text-[#8A6E3E] border-[#C4923A]/20",
   };
   const labels: Record<string, string> = {

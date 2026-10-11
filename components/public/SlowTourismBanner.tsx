@@ -5,8 +5,9 @@ import { useLanguage, useT } from "@/lib/i18n/LanguageProvider";
 import Editable from "@/components/live-edit/Editable";
 import EditableIcon from "@/components/live-edit/EditableIcon";
 import { imageValue, stringValues } from "@/lib/live-edit/helpers";
-import { renderWithLinks } from "@/lib/renderWithLinks";
 import { Footprints } from "lucide-react";
+import { useTheme } from "@/lib/theme/ThemeProvider";
+import { renderWithLinks } from "@/lib/renderWithLinks";
 
 function colorWithOpacity(color: string, opacity: number): string {
   if (!/^#[0-9a-f]{6}$/i.test(color)) return color;
@@ -19,11 +20,18 @@ function colorWithOpacity(color: string, opacity: number): string {
 export default function SlowTourismBanner() {
   const t = useT();
   const { strings } = useLanguage();
+  const { resolvedTheme } = useTheme();
   const slowIcon = strings["slow.icon"]?.it || "Hourglass";
   const [bannerImage, setBannerImage] = React.useState(strings["slow.banner_image"]?.it || "");
   const [bannerColor, setBannerColor] = React.useState(strings["slow.banner_color"]?.it || "#F9F4EC");
-  const isDark = /^#[0-9a-f]{6}$/i.test(bannerColor) && (() => {
-    const rgb = [1, 3, 5].map((i) => parseInt(bannerColor.slice(i, i + 2), 16) / 255);
+
+  // Se l'admin ha lasciato il colore crema chiaro di default, in Dark Mode usiamo la superficie scura calda.
+  // Se l'admin ha scelto un colore specifico (es. terracotta, verde o personalizzato), lo onoriamo pienamente!
+  const isDefaultColor = !bannerColor || /^(#f9f4ec|#faf5ee|#f9f5ec|#fff|#ffffff)$/i.test(bannerColor.trim());
+  const effectiveBgColor = (isDefaultColor && resolvedTheme === "dark") ? "#1d1712" : bannerColor;
+
+  const isDark = /^#[0-9a-f]{6}$/i.test(effectiveBgColor) && (() => {
+    const rgb = [1, 3, 5].map((i) => parseInt(effectiveBgColor.slice(i, i + 2), 16) / 255);
     const linear = rgb.map((c) => c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
     return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2] < 0.45;
   })();
@@ -74,10 +82,10 @@ export default function SlowTourismBanner() {
         <div
           className="border border-gold/40 rounded-xl shadow-sm p-5 sm:p-8 md:p-12 flex flex-col md:flex-row gap-5 sm:gap-6 md:gap-10 items-start md:items-center relative overflow-hidden"
           style={{
-            backgroundColor: bannerColor,
+            backgroundColor: effectiveBgColor,
             // La tinta viene sopra l'immagine: il colore resta quindi visibile anche con una foto caricata.
             backgroundImage: bannerImage
-              ? `linear-gradient(${colorWithOpacity(bannerColor, 0.86)}, ${colorWithOpacity(bannerColor, 0.86)}), url("${bannerImage}")`
+              ? `linear-gradient(${colorWithOpacity(effectiveBgColor, 0.86)}, ${colorWithOpacity(effectiveBgColor, 0.86)}), url("${bannerImage}")`
               : "none",
             backgroundSize: "cover",
             backgroundPosition: "center",

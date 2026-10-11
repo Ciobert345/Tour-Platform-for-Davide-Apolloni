@@ -155,8 +155,7 @@ export default function ContactsSection({
                 style={{ borderColor: "rgba(222, 197, 165, 0.2)" }}
               >
                 <span
-                  className="shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: "rgba(222, 197, 165, 0.1)", color: "var(--color-stone)" }}
+                  className="shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center bg-white/12 dark:bg-white/15 border border-white/20 text-[#dec5a5] dark:text-[#fbeec8]"
                 >
                   <EditableIcon
                     id="contacts.hours.icon"
@@ -202,10 +201,9 @@ export default function ContactsSection({
               </li>
               <li className="flex items-start gap-3 sm:gap-4">
                 <span
-                  className="shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: "rgba(222, 197, 165, 0.1)", color: "var(--color-terracotta)" }}
+                  className="shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center bg-white/12 dark:bg-white/15 border border-white/20 text-[#e05a50] dark:text-[#fca59d]"
                 >
-                  <MapPin className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: "var(--color-terracotta)" }} />
+                  <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
                 </span>
                 <div>
                   <Editable
@@ -349,10 +347,9 @@ export default function ContactsSection({
               >
                 <a
                   href="#prenota"
-                  className="btn w-full justify-center shadow-md font-bold py-2 sm:py-3 text-xs sm:text-sm"
-                  style={{ backgroundColor: "var(--bg-main)", color: "var(--color-terracotta)" }}
+                  className="btn w-full justify-center shadow-lg font-bold py-2 sm:py-3 text-xs sm:text-sm bg-[#FAF4EB] text-[#7E191B] hover:bg-white dark:bg-[#FAF4EB] dark:text-[#7E191B] dark:hover:bg-white border border-white/30 cursor-pointer transition-transform hover:-translate-y-0.5"
                 >
-                  <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#7E191B]" />
                   {t("contacts.cta")}
                 </a>
               </Editable>
@@ -393,8 +390,7 @@ function ContactRow({ c }: { c: ContactT }) {
     <li>
       <div className="flex items-start gap-3 sm:gap-4 py-0.5 sm:py-1">
         <span
-          className="shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center"
-          style={{ backgroundColor: "rgba(222, 197, 165, 0.1)", color: "var(--color-stone)" }}
+          className="shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center bg-white/12 dark:bg-white/15 border border-white/20 text-[#dec5a5] dark:text-[#fbeec8]"
         >
           <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
         </span>

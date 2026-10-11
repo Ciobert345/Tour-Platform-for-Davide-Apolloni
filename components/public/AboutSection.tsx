@@ -97,15 +97,15 @@ export default function AboutSection({
     : [bioShort];
 
   return (
-    <section id="chi-sono" className="section relative bg-[#F9F4EC] border-y border-black/5 overflow-hidden">
+    <section id="chi-sono" className="section relative bg-[#F9F4EC] dark:bg-[#18130e] border-y border-black/5 dark:border-white/5 overflow-hidden">
       <div className="container-app">
         <div className="grid lg:grid-cols-[0.85fr_1.15fr] gap-4 sm:gap-8 lg:gap-16 items-start lg:items-center">
           {/* SINISTRA: Foto Profilo / Card Autore Compatta */}
           <div className="w-full">
-            <div className="flex flex-row lg:flex-col items-center lg:items-stretch gap-3.5 sm:gap-4 lg:gap-0 bg-white lg:bg-transparent p-3 sm:p-4 lg:p-0 rounded-2xl border border-black/8 lg:border-none shadow-xs lg:shadow-none max-w-xl mx-auto lg:max-w-[440px]">
+            <div className="flex flex-row lg:flex-col items-center lg:items-stretch gap-3.5 sm:gap-4 lg:gap-0 bg-white dark:bg-[#1f1712] lg:bg-transparent lg:dark:bg-transparent p-3 sm:p-4 lg:p-0 rounded-2xl border border-black/8 dark:border-white/8 lg:border-none shadow-xs lg:shadow-none max-w-xl mx-auto lg:max-w-[440px]">
               {/* Box Immagine (Avatar compatto su mobile, ritratto nobile h-[480px] su desktop) */}
               <div className="relative isolate w-20 h-20 xs:w-24 xs:h-24 sm:w-28 sm:h-28 lg:w-full lg:h-[560px] xl:h-[620px] lg:aspect-[4/5] rounded-2xl overflow-visible shadow-sm lg:shadow-none border border-black/10 lg:border-none bg-bg-card shrink-0">
-                <div className="absolute inset-0 z-0 overflow-hidden rounded-2xl shadow-sm lg:shadow-xl border border-black/10">
+                <div className="absolute inset-0 z-0 overflow-hidden rounded-2xl shadow-sm lg:shadow-xl border border-black/10 dark:border-white/10">
                   <Editable
                     id="profile.photo"
                     label="Foto profilo"
@@ -132,7 +132,7 @@ export default function AboutSection({
                 </div>
 
                 {/* Card esperienza: layout desktop sovrapposto alla foto */}
-                <div className="hidden lg:block absolute -bottom-8 -right-8 xl:-bottom-10 xl:-right-10 z-20 w-[210px] xl:w-[250px] rounded-2xl bg-white p-5 xl:p-7 text-[#1E160A] shadow-xl border border-black/10">
+                <div className="hidden lg:block absolute -bottom-8 -right-8 xl:-bottom-10 xl:-right-10 z-20 w-[210px] xl:w-[250px] rounded-2xl bg-white dark:bg-[#201812] p-5 xl:p-7 text-[#1E160A] dark:text-[#f5ede2] shadow-xl border border-black/10 dark:border-white/10">
                   <Editable
                     id="about.experience_years"
                     label="Anni di esperienza"
@@ -351,7 +351,7 @@ function CredentialCard({
   const tDesc = tFieldStr(credential as any, "description", lang);
 
   return (
-    <div className="bg-white p-3 sm:p-5 rounded-2xl border border-black/10 shadow-xs hover:border-terracotta/40 hover:shadow-sm transition-all duration-300 h-full flex flex-col justify-start">
+    <div className="bg-white dark:bg-[#1e1711] p-3 sm:p-5 rounded-2xl border border-black/10 dark:border-white/10 shadow-xs hover:border-terracotta/40 dark:hover:border-terracotta/50 hover:shadow-sm transition-all duration-300 h-full flex flex-col justify-start">
       <div className="flex items-center gap-2 sm:gap-2.5 mb-1 sm:mb-2">
         <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-terracotta/10 text-terracotta flex items-center justify-center shrink-0">
           <EditableIcon

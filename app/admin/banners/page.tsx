@@ -30,7 +30,7 @@ function AutoTranslateBadge({ state }: { state: "idle" | "loading" | "success" |
   if (state === "idle") return null;
   const map = {
     loading: { cls: "text-[#3D6E90] bg-[#3D6E90]/10", Icon: Loader2, spin: true, label: "Traduzione..." },
-    success: { cls: "text-[#4A6535] bg-[#4A6535]/10", Icon: CheckCircle2, spin: false, label: "Tradotto ✓" },
+    success: { cls: "text-[#C4923A] bg-[#C4923A]/10", Icon: CheckCircle2, spin: false, label: "Tradotto ✓" },
     error: { cls: "text-[#9C1C1C] bg-[#9C1C1C]/10", Icon: AlertCircle, spin: false, label: "Errore" },
   } as const;
   const conf = map[state];

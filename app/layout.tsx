@@ -36,6 +36,8 @@ export const metadata: Metadata = {
 
 export const revalidate = 300; // ISR ogni 5 minuti
 
+import { ThemeProvider } from "@/lib/theme/ThemeProvider";
+
 export default async function RootLayout({
   children,
 }: {
@@ -61,11 +63,18 @@ export default async function RootLayout({
       <head>
         <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://images.unsplash.com" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var s=localStorage.getItem("da_theme_preference");var d=s==="dark"||(!s&&window.matchMedia("(prefers-color-scheme:dark)").matches);if(d){document.documentElement.classList.add("dark");document.documentElement.setAttribute("data-theme","dark");}else{document.documentElement.classList.remove("dark");document.documentElement.setAttribute("data-theme","light");}}catch(e){}})();`,
+          }}
+        />
       </head>
-      <body className="antialiased bg-bg-main overflow-x-clip w-full max-w-[100vw]">
-        <LanguageProvider initialStrings={uiStrings}>
-          {children}
-        </LanguageProvider>
+      <body className="antialiased bg-bg-main text-text-main overflow-x-clip w-full max-w-[100vw]">
+        <ThemeProvider>
+          <LanguageProvider initialStrings={uiStrings}>
+            {children}
+          </LanguageProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

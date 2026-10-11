@@ -11,6 +11,7 @@ import Image from "next/image";
 import MobileCarousel from "@/components/public/MobileCarousel";
 import type { Database, Lang } from "@/types/database.types";
 import { optimizeImageUrl, BLUR_DATA_URL } from "@/lib/imageUtils";
+import { getAdaptiveBadgeStyle } from "@/lib/theme/colorUtils";
 
 type EventT = Database["public"]["Tables"]["events"]["Row"] & {
   tour_type: { id: string; slug: string; name_it: string; name_en: string; color: string; icon: string | null } | null;
@@ -116,7 +117,7 @@ function EventCard({
   const description = tFieldStr(event as any, "description", lang);
 
   return (
-    <article className="card-base card-hover flex flex-col bg-white h-full">
+    <article className="card-base card-hover flex flex-col bg-white dark:bg-bg-card h-full">
       <div className="relative h-44 sm:h-52 overflow-hidden">
         <Image
           src={cover}
@@ -160,17 +161,17 @@ function EventCard({
 
         {(event.tour_type || event.event_places?.[0]?.place) && (
           <div className="flex flex-wrap gap-2 mb-2.5 sm:mb-3 pb-2.5 sm:pb-3 border-b border-black/5">
-            {event.tour_type && (
-              <span
-                className="chip font-semibold"
-                style={{
-                  backgroundColor: (event.tour_type.color ?? "#9C1C1C") + "15",
-                  color: event.tour_type.color,
-                }}
-              >
-                {tFieldStr(event.tour_type as any, "name", lang)}
-              </span>
-            )}
+            {event.tour_type && (() => {
+              const bStyle = getAdaptiveBadgeStyle(event.tour_type.color);
+              return (
+                <span
+                  className={cn("chip font-semibold", bStyle.className)}
+                  style={bStyle.style}
+                >
+                  {tFieldStr(event.tour_type as any, "name", lang)}
+                </span>
+              );
+            })()}
             {event.event_places?.[0]?.place && (
               <span className="chip inline-flex items-center gap-1">
                 <MapPin className="w-3 h-3" />

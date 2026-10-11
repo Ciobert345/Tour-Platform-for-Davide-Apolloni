@@ -174,12 +174,12 @@ function TransportModeModal({
     const hasError = errors[key] && touched[key];
     return cn(
       "w-full px-3 py-2 text-sm border rounded-sm bg-white focus:outline-none focus:ring-2 transition-colors",
-      hasError ? "border-[#B22A2A] focus:ring-[#B22A2A]/30" : "border-[#E9DCC4] focus:ring-[#4A6535]/30 focus:border-[#4A6535]"
+      hasError ? "border-[#B22A2A] focus:ring-[#B22A2A]/30" : "border-[#E9DCC4] focus:ring-[#9C1C1C]/30 focus:border-[#9C1C1C]"
     );
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="admin-modal fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-[#1E160A]/40 backdrop-blur-sm" onClick={onClose} />
       <div ref={modalRef} className="relative bg-white rounded-lg shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
 
@@ -290,7 +290,7 @@ function TransportModeModal({
             </Grid2>
           </CollapsibleSection>
 
-          <CollapsibleSection title="Aspetto e Visibilità" color="bg-[#4A6535]" defaultOpen={true}>
+          <CollapsibleSection title="Aspetto e Visibilità" color="bg-[#C4923A]" defaultOpen={true}>
             <Grid2>
               <Field label={<>Colore badge <span className="text-[#C4923A] text-[10px] font-normal normal-case">(consigliato)</span></>} hint="Usato per card e tag del sito pubblico">
                 <div className="flex flex-wrap gap-2 items-center">
@@ -316,7 +316,7 @@ function TransportModeModal({
                       className={cn(
                         "w-10 h-10 rounded-sm border flex items-center justify-center transition-all",
                         edit.icon_name === name
-                          ? "bg-[#4A6535]/10 border-[#4A6535] text-[#3A5228] ring-2 ring-[#4A6535]/30"
+                          ? "bg-[#9C1C1C]/10 border-[#9C1C1C] text-[#9C1C1C] ring-2 ring-[#9C1C1C]/30"
                           : "border-[#E9DCC4] text-[#5C4C38] hover:bg-[#F9F4EC]"
                       )}
                     >
@@ -375,7 +375,7 @@ function TransportModeModal({
 function Tag({ color, children }: { color: "terracotta" | "olive" | "adria" | "stone" | "gold"; children: React.ReactNode }) {
   const cls = {
     terracotta: "bg-[#B22A2A]/10 text-[#9C1C1C] border-[#B22A2A]/20",
-    olive: "bg-[#4A6535]/15 text-[#3A5228] border-[#4A6535]/30",
+    olive: "bg-[#C4923A]/15 text-[#8A5E1A] dark:text-[#d4a84b] border-[#C4923A]/30",
     adria: "bg-[#3D6E90]/10 text-[#244D68] border-[#3D6E90]/20",
     stone: "bg-[#F0E8D6] text-[#5C4C38] border-[#E9DCC4]",
     gold: "bg-[#C4923A]/10 text-[#8B6F00] border-[#C4923A]/25",
@@ -605,7 +605,7 @@ export default function TransportModesPage() {
                       "px-2.5 h-8 rounded-sm text-[10px] font-bold uppercase tracking-wider transition-colors",
                       r.is_active
                         ? "text-[#7A6655] hover:bg-[#F0E8D6]"
-                        : "bg-[#4A6535]/15 text-[#3A5228] hover:bg-[#4A6535]/25 border border-[#4A6535]/30"
+                        : "bg-[#C4923A]/15 text-[#8A5E1A] dark:text-[#d4a84b] hover:bg-[#C4923A]/25 border border-[#C4923A]/30"
                     )}
                     title={r.is_active ? "Nascondi dal sito senza eliminare" : "Rendi visibile nel sito"}>
                     {r.is_active ? "On" : "Off"}

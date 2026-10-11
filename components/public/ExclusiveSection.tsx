@@ -315,12 +315,7 @@ export default function ExclusiveSection({
                         destination: lang === "it" ? "Tour su misura" : "Custom tour",
                       })
                     }
-                    className="text-xs sm:text-sm px-5 py-3 sm:py-3.5 rounded-lg font-semibold shadow-lg transition-all duration-300 shrink-0 w-full sm:w-auto text-center whitespace-nowrap hover:-translate-y-0.5"
-                    style={{
-                      backgroundColor: "var(--bg-main)",
-                      color: "var(--color-terracotta)",
-                      boxShadow: "0 4px 14px rgba(0, 0, 0, 0.25)",
-                    }}
+                    className="text-xs sm:text-sm px-5 py-3 sm:py-3.5 rounded-lg font-bold shadow-xl transition-all duration-300 shrink-0 w-full sm:w-auto text-center whitespace-nowrap hover:-translate-y-0.5 bg-[#FAF4EB] text-[#7E191B] hover:bg-white dark:bg-[#FAF4EB] dark:text-[#7E191B] dark:hover:bg-white border border-white/40 cursor-pointer"
                   >
                     <Editable
                       id="customTour.cta"
@@ -366,17 +361,17 @@ export default function ExclusiveSection({
                   return (
                     <div
                       key={i}
-                      className="rounded-xl border p-3 sm:p-5 transition-all duration-300 hover:border-stone-300/40 min-w-0 overflow-hidden flex flex-col justify-start"
+                      className="rounded-xl border p-3 sm:p-5 transition-all duration-300 hover:border-stone-300/60 min-w-0 overflow-hidden flex flex-col justify-start"
                       style={{
-                        backgroundColor: "rgba(0, 0, 0, 0.18)",
-                        borderColor: "rgba(222, 197, 165, 0.15)",
+                        backgroundColor: "rgba(0, 0, 0, 0.28)",
+                        borderColor: "rgba(222, 197, 165, 0.25)",
                       }}
                     >
                       <div
                         className="w-7 h-7 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center mb-2 sm:mb-3 shrink-0 border"
                         style={{
-                          backgroundColor: "rgba(222, 197, 165, 0.1)",
-                          borderColor: "rgba(222, 197, 165, 0.25)",
+                          backgroundColor: "rgba(255, 255, 255, 0.14)",
+                          borderColor: "rgba(222, 197, 165, 0.35)",
                           color: "var(--color-stone)",
                         }}
                       >
@@ -396,7 +391,7 @@ export default function ExclusiveSection({
                         >
                           <h4
                             className="font-serif text-xs sm:text-base font-bold mb-1 sm:mb-2 leading-tight break-words"
-                            style={{ color: "var(--text-white)" }}
+                            style={{ color: "#ffffff" }}
                           >
                             {title}
                           </h4>
@@ -414,7 +409,7 @@ export default function ExclusiveSection({
                         >
                           <p
                             className="text-[10px] sm:text-xs leading-tight sm:leading-relaxed font-light break-words"
-                            style={{ color: "rgba(247, 240, 227, 0.7)" }}
+                            style={{ color: "rgba(253, 249, 242, 0.90)" }}
                           >
                             {desc}
                           </p>
@@ -483,8 +478,8 @@ function ExclusiveCard({
     <article
       className="border rounded-2xl overflow-hidden flex flex-col transition-all duration-300 shadow-xl h-full group min-w-0"
       style={{
-        backgroundColor: "rgba(36, 26, 18, 0.5)",
-        borderColor: "rgba(222, 197, 165, 0.2)",
+        backgroundColor: "rgba(42, 32, 24, 0.8)",
+        borderColor: "rgba(222, 197, 165, 0.35)",
       }}
     >
       <div className="relative h-48 sm:h-60 overflow-hidden shrink-0">
@@ -501,19 +496,14 @@ function ExclusiveCard({
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(to top, var(--color-terracotta-dark) 0%, rgba(77,26,16,0.3) 60%, transparent 100%)",
+              "linear-gradient(to top, rgba(58, 23, 20, 0.95) 0%, rgba(77, 26, 16, 0.35) 60%, transparent 100%)",
           }}
         />
         <span
-          className="absolute top-4 left-4 text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full inline-flex items-center gap-1.5 shadow-md border"
-          style={{
-            backgroundColor: "var(--bg-main)",
-            color: "var(--color-terracotta-dark)",
-            borderColor: "var(--color-stone)",
-          }}
+          className="absolute top-3.5 left-3.5 text-[10.5px] sm:text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full inline-flex items-center gap-1.5 shadow-lg border backdrop-blur-md bg-white/95 text-[#7E191B] border-white/50 dark:bg-[#251c15]/95 dark:text-[#fdf9f2] dark:border-[#e05a50]/50"
         >
-          <Moon className="w-3 h-3 sm:w-3.5 sm:h-3.5" style={{ color: "var(--color-terracotta)" }} />
-          {lang === "it" ? "Esperienza Esclusiva" : "Exclusive"}
+          <Moon className="w-3.5 h-3.5 text-[#9C1C1C] dark:text-[#e05a50] shrink-0" />
+          <span>{lang === "it" ? "Esperienza Esclusiva" : "Exclusive"}</span>
         </span>
       </div>
       <div className="p-4 sm:p-6 flex flex-col grow justify-between min-w-0">
@@ -526,7 +516,7 @@ function ExclusiveCard({
           </h3>
           <p
             className="text-xs sm:text-sm leading-relaxed mb-4 sm:mb-6 font-light min-h-[4.5rem] sm:min-h-[5.25rem] break-words"
-            style={{ color: "rgba(247, 240, 227, 0.75)" }}
+            style={{ color: "rgba(253, 249, 242, 0.85)" }}
           >
             {renderWithLinks(shortDesc)}
           </p>
@@ -538,14 +528,10 @@ function ExclusiveCard({
               destination: name,
             })
           }
-          className="w-full text-xs sm:text-sm py-2.5 sm:py-3 rounded-lg font-semibold flex items-center justify-center gap-2 shadow-md whitespace-nowrap transition-all duration-300 hover:-translate-y-0.5"
-          style={{
-            backgroundColor: "var(--bg-main)",
-            color: "var(--color-terracotta)",
-          }}
+          className="w-full text-xs sm:text-sm py-2.5 sm:py-3 rounded-lg font-bold flex items-center justify-center gap-2 shadow-md whitespace-nowrap transition-all duration-300 hover:-translate-y-0.5 bg-[#FAF4EB] text-[#7E191B] hover:bg-white dark:bg-[#3d3025] dark:text-[#fdf9f2] dark:hover:bg-[#4d3d2f] border border-white/20 dark:border-white/10"
         >
-          <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
-          {t("exclusive.btn")}
+          <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#9C1C1C] dark:text-[#e05a50] shrink-0" />
+          <span>{t("exclusive.btn")}</span>
         </button>
       </div>
       <ReadMoreModal

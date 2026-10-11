@@ -52,10 +52,10 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
   if (loading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F9F4EC]">
+      <div className="min-h-dvh flex items-center justify-center bg-[#F9F4EC] dark:bg-[#14100c]">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-9 h-9 text-[#B22A2A] animate-spin" />
-          <p className="text-sm text-[#7A6655] font-medium">Verifica accesso…</p>
+          <Loader2 className="w-9 h-9 text-[#B22A2A] dark:text-[#f07f82] animate-spin" />
+          <p className="text-sm text-[#7A6655] dark:text-[#c7b59f] font-medium">Verifica accesso…</p>
         </div>
       </div>
     );

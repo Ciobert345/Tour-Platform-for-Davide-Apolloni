@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  darkMode: "class",
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -17,46 +18,52 @@ const config: Config = {
     },
     extend: {
       colors: {
-        // ===== PALETTE UFFICIALE (allineata a index.html L27-L42) =====
-        "bg-main": "#f9f5ec",
-        "bg-card": "#fffdf9",
-        "bg-alt": "#ede1ca",
-        "bg-warm": "#e4d5bb",
-        "bg-dark": "#241a12",
-        "bg-darker": "#18100a",
+        // ===== PALETTE DINAMICA (gestita da CSS variables con supporto Dark Mode & Opacity) =====
+        "bg-main": "rgb(var(--bg-main-rgb, 249 245 236) / <alpha-value>)",
+        "bg-card": "rgb(var(--bg-card-rgb, 255 253 249) / <alpha-value>)",
+        "bg-alt": "rgb(var(--bg-alt-rgb, 237 225 202) / <alpha-value>)",
+        "bg-warm": "rgb(var(--bg-warm-rgb, 228 213 187) / <alpha-value>)",
+        "bg-dark": "rgb(var(--bg-dark-rgb, 36 26 18) / <alpha-value>)",
+        "bg-darker": "rgb(var(--bg-darker-rgb, 24 16 10) / <alpha-value>)",
 
         // Crema / Pietra
-        stone: "#dec5a5",
-        "stone-dark": "#a07f55",
+        stone: "rgb(var(--color-stone-rgb, 222 197 165) / <alpha-value>)",
+        "stone-dark": "rgb(var(--color-stone-dark-rgb, 160 127 85) / <alpha-value>)",
 
         // Terracotta — cremisi logo
-        terracotta: "#93161a",
-        "terracotta-dark": "#4d1a10",
-        "terracotta-light": "#f0d8d9",
+        terracotta: "rgb(var(--color-terracotta-rgb, 147 22 26) / <alpha-value>)",
+        "terracotta-dark": "rgb(var(--color-terracotta-dark-rgb, 77 26 16) / <alpha-value>)",
+        "terracotta-light": "rgb(var(--color-terracotta-light-rgb, 240 216 217) / <alpha-value>)",
 
-        // Bronzo antico — dorato (mantenuto per cordicelle/logo)
-        gold: "#a87e3c",
-        "gold-dark": "#7a5828",
-        "gold-light": "#f8eed9",
+        // Bronzo antico — dorato
+        gold: "rgb(var(--color-gold-rgb, 168 126 60) / <alpha-value>)",
+        "gold-dark": "rgb(var(--color-gold-dark-rgb, 122 88 40) / <alpha-value>)",
+        "gold-light": "rgb(var(--color-gold-light-rgb, 248 238 217) / <alpha-value>)",
 
-        // Oliva — marrone chiaro (nuova palette, ex verde foresta)
-        olive: "#936f52",
-        "olive-dark": "#482e21",
-        "olive-light": "#ece1d3",
+        // Oliva — marrone chiaro
+        olive: "rgb(var(--color-olive-rgb, 147 111 82) / <alpha-value>)",
+        "olive-dark": "rgb(var(--color-olive-dark-rgb, 72 46 33) / <alpha-value>)",
+        "olive-light": "rgb(var(--color-olive-light-rgb, 236 225 211) / <alpha-value>)",
 
-        // Verde foresta Slow Tourism (riservato: banner ed etichette slow)
-        forest: "#5d7250",
-        "forest-dark": "#3e4d34",
-        "forest-light": "#e8ede3",
+        // Verde foresta Slow Tourism
+        forest: "rgb(var(--color-forest-rgb, 93 114 80) / <alpha-value>)",
+        "forest-dark": "rgb(var(--color-forest-dark-rgb, 62 77 52) / <alpha-value>)",
+        "forest-light": "rgb(var(--color-forest-light-rgb, 232 237 227) / <alpha-value>)",
 
         // Blu Adriatico
-        "blue-adriatic": "#537385",
-        "blue-dark": "#47596a",
+        "blue-adriatic": "rgb(var(--color-blue-adriatic-rgb, 83 115 133) / <alpha-value>)",
+        "blue-dark": "rgb(var(--color-blue-dark-rgb, 71 89 106) / <alpha-value>)",
 
-        "text-main": "#2b2018",
-        "text-muted": "#72553f",
-        "text-light": "#b18e6d",
-        "text-white": "#f7f0e3",
+        // Testi
+        "text-main": "rgb(var(--text-main-rgb, 43 32 24) / <alpha-value>)",
+        "text-muted": "rgb(var(--text-muted-rgb, 114 85 63) / <alpha-value>)",
+        "text-light": "rgb(var(--text-light-rgb, 177 142 109) / <alpha-value>)",
+        "text-white": "var(--text-white, #f7f0e3)",
+
+        // Specifici dark mode per sfondi caldi
+        "dark-surface": "#1d1712",
+        "dark-surface-elevated": "#261f18",
+        "dark-border": "#3d3024",
       },
       
       fontFamily: {

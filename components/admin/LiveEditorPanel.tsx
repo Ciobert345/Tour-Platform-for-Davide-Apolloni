@@ -41,8 +41,11 @@ import {
   Palette,
   Eraser,
   Paintbrush,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { cn, formatDbError } from "@/lib/utils";
+import { useTheme } from "@/lib/theme/ThemeProvider";
 import { saveLiveEdit } from "@/lib/live-edit/save";
 import type { LiveEditMessage, LiveEditTarget, LiveEditValues } from "@/lib/live-edit/types";
 import supabase from "@/lib/supabase/browser";
@@ -92,6 +95,8 @@ export default function LiveEditorPanel() {
   const initialTab = (searchParams?.get("tab") as ActiveTab) || "visual";
   const [tab, setTab] = useState<ActiveTab>(initialTab);
 
+  const { resolvedTheme, setTheme } = useTheme();
+
   const [ready, setReady] = useState(false);
   const [target, setTarget] = useState<LiveEditTarget | null>(null);
   const [values, setValues] = useState<LiveEditValues>(EMPTY);
@@ -102,9 +107,15 @@ export default function LiveEditorPanel() {
 
   const iframeSrc = `/?liveEdit=1&lang=${previewLang}`;
 
-  const notifyIframe = useCallback((message: LiveEditMessage) => {
+  const notifyIframe = useCallback((message: any) => {
     iframeRef.current?.contentWindow?.postMessage(message, window.location.origin);
   }, []);
+
+  useEffect(() => {
+    if (ready) {
+      notifyIframe({ type: "SET_THEME", theme: resolvedTheme });
+    }
+  }, [resolvedTheme, ready, notifyIframe]);
 
   const reloadPreview = () => {
     setReady(false);
@@ -227,31 +238,31 @@ export default function LiveEditorPanel() {
       {/* Main split work area */}
       <div className="flex flex-1 min-h-0 w-full">
         {/* Left Side Panel */}
-        <aside className="w-full md:w-[420px] lg:w-[460px] shrink-0 border-r border-[#E9DCC4] bg-white flex flex-col overflow-hidden shadow-sm">
+        <aside className="w-full md:w-[420px] lg:w-[460px] shrink-0 border-r border-[#E9DCC4] dark:border-[#382b20] bg-white dark:bg-[#1c1611] flex flex-col overflow-hidden shadow-sm">
           {/* Header & Tabs */}
-          <div className="p-4 border-b border-[#E9DCC4] bg-[#F9F4EC]">
+          <div className="p-4 border-b border-[#E9DCC4] dark:border-[#382b20] bg-[#F9F4EC] dark:bg-[#241c15]">
             <div className="flex items-center justify-between gap-2 mb-3">
-              <div className="flex items-center gap-2 text-[#9C1C1C]">
+              <div className="flex items-center gap-2 text-[#9C1C1C] dark:text-[#f07f82]">
                 <MousePointerClick className="w-5 h-5" />
-                <h1 className="font-serif text-lg font-semibold text-[#1E160A]">
+                <h1 className="font-serif text-lg font-semibold text-[#1E160A] dark:text-[#f5ede2]">
                   Editor Live
                 </h1>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#92816A]">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#92816A] dark:text-[#a89582]">
                   Anteprima:
                 </span>
-                <div className="flex rounded-sm border border-[#E9DCC4] overflow-hidden">
+                <div className="flex rounded-sm border border-[#E9DCC4] dark:border-[#382b20] overflow-hidden">
                   {(["it", "en"] as const).map((l) => (
                     <button
                       key={l}
                       type="button"
                       onClick={() => setPreviewLang(l)}
                       className={cn(
-                        "px-2.5 py-1 text-xs font-bold uppercase transition-colors",
+                        "px-2.5 py-1 text-xs font-bold uppercase transition-colors cursor-pointer",
                         previewLang === l
                           ? "bg-[#B22A2A] text-white"
-                          : "bg-white text-[#5C4C38] hover:bg-[#F0E8D6]"
+                          : "bg-white dark:bg-[#1c1611] text-[#5C4C38] dark:text-[#d6c5b0] hover:bg-[#F0E8D6] dark:hover:bg-[#2c221a]"
                       )}
                     >
                       {l}
@@ -261,10 +272,26 @@ export default function LiveEditorPanel() {
                 <button
                   type="button"
                   onClick={reloadPreview}
-                  className="p-1.5 rounded-sm hover:bg-[#E9DCC4] text-[#7A6655] transition-colors"
+                  className="p-1.5 rounded-sm hover:bg-[#E9DCC4] dark:hover:bg-[#382b20] text-[#7A6655] dark:text-[#c7b59f] transition-colors border border-[#E9DCC4] dark:border-[#382b20] bg-white dark:bg-[#1c1611] cursor-pointer"
                   title="Ricarica anteprima"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = resolvedTheme === "dark" ? "light" : "dark";
+                    setTheme(next);
+                    notifyIframe({ type: "SET_THEME", theme: next });
+                  }}
+                  className="p-1.5 rounded-sm hover:bg-[#E9DCC4] dark:hover:bg-[#382b20] text-[#7A6655] dark:text-[#c7b59f] transition-colors border border-[#E9DCC4] dark:border-[#382b20] bg-white dark:bg-[#1c1611] cursor-pointer"
+                  title={resolvedTheme === "dark" ? "Passa ad anteprima Chiara" : "Passa ad anteprima Scura"}
+                >
+                  {resolvedTheme === "dark" ? (
+                    <Sun className="w-3.5 h-3.5 text-gold" />
+                  ) : (
+                    <Moon className="w-3.5 h-3.5 text-terracotta" />
+                  )}
                 </button>
               </div>
             </div>
@@ -279,10 +306,10 @@ export default function LiveEditorPanel() {
                     setMsg(null);
                   }}
                   className={cn(
-                    "px-3 py-2 rounded-sm text-xs font-bold transition-all flex items-center justify-center gap-1.5",
+                    "px-3 py-2 rounded-sm text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer",
                     tab === "visual"
                       ? "bg-[#9C1C1C] text-white shadow-sm"
-                      : "bg-white text-[#5C4C38] hover:bg-[#E9DCC4]/80 border border-[#E9DCC4]"
+                      : "bg-white dark:bg-[#1c1611] text-[#5C4C38] dark:text-[#d6c5b0] hover:bg-[#E9DCC4]/80 dark:hover:bg-[#2a2018] border border-[#E9DCC4] dark:border-[#382b20]"
                   )}
                 >
                   <MousePointerClick className="w-3.5 h-3.5" />
@@ -442,11 +469,11 @@ export default function LiveEditorPanel() {
         </aside>
 
         {/* Right Site Preview Iframe */}
-        <div className="hidden md:flex flex-1 flex-col min-w-0 bg-[#E9DCC4] relative">
+        <div className="hidden md:flex flex-1 flex-col min-w-0 bg-[#E9DCC4] dark:bg-[#14100c] relative">
           {!ready && (
-            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#F0E8D6]/90 gap-3">
-              <Loader2 className="w-8 h-8 text-[#B22A2A] animate-spin" />
-              <p className="text-sm font-medium text-[#5C4C38]">
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#F0E8D6]/90 dark:bg-[#1c1611]/90 gap-3">
+              <Loader2 className="w-8 h-8 text-[#B22A2A] dark:text-[#f07f82] animate-spin" />
+              <p className="text-sm font-medium text-[#5C4C38] dark:text-[#c7b59f]">
                 Caricamento anteprima reattiva…
               </p>
             </div>
@@ -455,8 +482,11 @@ export default function LiveEditorPanel() {
             ref={iframeRef}
             src={iframeSrc}
             title="Anteprima sito pubblico"
-            className="flex-1 w-full border-0 bg-white min-h-0"
-            onLoad={() => setReady(true)}
+            className="flex-1 w-full border-0 bg-transparent min-h-0"
+            onLoad={() => {
+              setReady(true);
+              notifyIframe({ type: "SET_THEME", theme: resolvedTheme });
+            }}
           />
         </div>
 
@@ -839,11 +869,11 @@ function VisualTabContent({
 
   const renderFormattingToolbar = (lang: "it" | "en") => (
     <div
-      className="flex flex-wrap items-center gap-1.5 py-0.5 px-1 bg-[#FAF4EB] border border-[#E9DCC4] rounded-sm"
+      className="flex flex-wrap items-center gap-1.5 py-0.5 px-1 bg-[#FAF4EB] dark:bg-[#251e17] border border-[#E9DCC4] dark:border-[#382b20] rounded-sm"
       onMouseDownCapture={() => rememberSelection(lang)}
     >
       {/* Bottoni Font Diretti a 1 Click */}
-      <div className="flex items-center gap-1 pr-1 border-r border-[#E0D0B6]">
+      <div className="flex items-center gap-1 pr-1 border-r border-[#E0D0B6] dark:border-[#382b20]">
         <button
           type="button"
           onMouseDown={(e) => {
@@ -855,7 +885,7 @@ function VisualTabContent({
               fontWeight: "700",
             });
           }}
-          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-serif font-bold text-[#7A5828] bg-white hover:bg-[#A87E3C]/15 border border-[#A87E3C]/40 shadow-xs transition-all active:scale-95 cursor-pointer"
+          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-serif font-bold text-[#7A5828] dark:text-[#dfb875] bg-white dark:bg-[#1c1611] hover:bg-[#A87E3C]/15 border border-[#A87E3C]/40 shadow-xs transition-all active:scale-95 cursor-pointer"
           title="Applica Font Titolo (Cormorant Garamond Grassetto come sotto)"
         >
           <span style={{ fontFamily: "'Cormorant Garamond','Playfair Display',Georgia,serif" }}>Font Titolo</span>
@@ -871,10 +901,10 @@ function VisualTabContent({
               fontWeight: "500",
             });
           }}
-          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-serif italic text-[#7A5828] bg-white hover:bg-[#A87E3C]/15 border border-[#A87E3C]/40 shadow-xs transition-all active:scale-95 cursor-pointer"
+          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-serif italic text-[#7A5828] dark:text-[#dfb875] bg-white dark:bg-[#1c1611] hover:bg-[#A87E3C]/15 border border-[#A87E3C]/40 shadow-xs transition-all active:scale-95 cursor-pointer"
           title="Applica Cormorant Garamond Corsivo (1 click)"
         >
-          <Type className="w-3 h-3 italic text-[#A87E3C]" />
+          <Type className="w-3 h-3 italic text-[#A87E3C] dark:text-[#dfb875]" />
           <span style={{ fontFamily: "'Cormorant Garamond','Playfair Display',Georgia,serif" }}>Corsivo</span>
         </button>
         <button
@@ -888,7 +918,7 @@ function VisualTabContent({
               fontWeight: "400",
             });
           }}
-          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-serif text-[#7A5828] bg-white hover:bg-[#A87E3C]/15 border border-[#A87E3C]/40 shadow-xs transition-all active:scale-95 cursor-pointer"
+          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-serif text-[#7A5828] dark:text-[#dfb875] bg-white dark:bg-[#1c1611] hover:bg-[#A87E3C]/15 border border-[#A87E3C]/40 shadow-xs transition-all active:scale-95 cursor-pointer"
           title="Applica Cormorant Garamond Regolare (1 click)"
         >
           <span style={{ fontFamily: "'Cormorant Garamond','Playfair Display',Georgia,serif" }}>Serif</span>
@@ -904,7 +934,7 @@ function VisualTabContent({
               fontWeight: "600",
             });
           }}
-          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-sans font-bold text-[#5C4C38] bg-white hover:bg-[#A87E3C]/15 border border-[#A87E3C]/40 shadow-xs transition-all active:scale-95 cursor-pointer"
+          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-sans font-bold text-[#5C4C38] dark:text-[#c7b59f] bg-white dark:bg-[#1c1611] hover:bg-[#A87E3C]/15 border border-[#A87E3C]/40 shadow-xs transition-all active:scale-95 cursor-pointer"
           title="Ripristina Font Sans predefinito (1 click)"
         >
           <span>Sans</span>
@@ -918,7 +948,7 @@ function VisualTabContent({
               textTransform: "none",
             });
           }}
-          className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[11px] font-semibold text-[#5C4C38] bg-white hover:bg-[#A87E3C]/15 border border-[#A87E3C]/40 shadow-xs transition-all active:scale-95 cursor-pointer"
+          className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[11px] font-semibold text-[#5C4C38] dark:text-[#c7b59f] bg-white dark:bg-[#1c1611] hover:bg-[#A87E3C]/15 border border-[#A87E3C]/40 shadow-xs transition-all active:scale-95 cursor-pointer"
           title="Conserva Maiuscole/Minuscole normali (senza forzare TUTTO MAIUSCOLO)"
         >
           <span>Aa</span>
@@ -926,13 +956,13 @@ function VisualTabContent({
       </div>
 
       {/* Palette Colori Brand Istantanea */}
-      <div className="flex items-center gap-1 pr-1 border-r border-[#E0D0B6]">
+      <div className="flex items-center gap-1 pr-1 border-r border-[#E0D0B6] dark:border-[#382b20]">
         {[
           { color: "#9C1C1C", name: "Terracotta" },
           { color: "#A87E3C", name: "Oro caldo" },
           { color: "#3D6E90", name: "Blu" },
           { color: "#4A6535", name: "Verde oliva" },
-          { color: "#1E160A", name: "Marrone scuro" },
+          { color: "#1E160A", name: "Marrone scuro (adattivo)" },
         ].map((c) => (
           <button
             key={c.color}
@@ -942,9 +972,9 @@ function VisualTabContent({
               rememberSelection(lang);
               applyInlineStyle(lang, { color: c.color });
             }}
-            className="w-4 h-4 rounded-full border border-white shadow-xs hover:scale-125 transition-transform cursor-pointer active:scale-95"
+            className="w-4 h-4 rounded-full border border-white dark:border-[#382b20] shadow-xs hover:scale-125 transition-transform cursor-pointer active:scale-95"
             style={{ backgroundColor: c.color }}
-            title={`Applica colore ${c.name} (${c.color})`}
+            title={`Applica colore ${c.name} (${c.color}) - leggibilità garantita in Light e Dark mode`}
           />
         ))}
 
@@ -953,10 +983,10 @@ function VisualTabContent({
           onMouseDown={() => {
             rememberSelection(lang);
           }}
-          className="w-4.5 h-4.5 rounded-full bg-white border border-[#C4B49A] hover:border-[#7A5828] flex items-center justify-center cursor-pointer shadow-xs hover:scale-110 transition-transform relative ml-0.5"
-          title="Scegli colore personalizzato"
+          className="w-4.5 h-4.5 rounded-full bg-white dark:bg-[#1c1611] border border-[#C4B49A] dark:border-[#382b20] hover:border-[#7A5828] flex items-center justify-center cursor-pointer shadow-xs hover:scale-110 transition-transform relative ml-0.5"
+          title="Scegli colore personalizzato (adattivo)"
         >
-          <Palette className="w-2.5 h-2.5 text-[#5C4C38]" />
+          <Palette className="w-2.5 h-2.5 text-[#5C4C38] dark:text-[#c7b59f]" />
           <input
             type="color"
             className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
@@ -976,7 +1006,7 @@ function VisualTabContent({
             rememberSelection(lang);
             openLinkPanel(lang);
           }}
-          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold text-[#3D6E90] bg-white hover:bg-[#3D6E90]/10 border border-[#3D6E90]/30 shadow-xs transition-all active:scale-95 cursor-pointer"
+          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold text-[#3D6E90] dark:text-[#8bc0e0] bg-white dark:bg-[#1c1611] hover:bg-[#3D6E90]/10 border border-[#3D6E90]/30 shadow-xs transition-all active:scale-95 cursor-pointer"
           title="Inserisci link sulla selezione"
         >
           <Link2 className="w-3 h-3" />
@@ -989,7 +1019,7 @@ function VisualTabContent({
             rememberSelection(lang);
             stripSelectionFormatting(lang);
           }}
-          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold text-[#7A6655] bg-white hover:bg-[#7A6655]/10 border border-[#92816A]/40 shadow-xs transition-all active:scale-95 cursor-pointer"
+          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold text-[#7A6655] dark:text-[#c7b59f] bg-white dark:bg-[#1c1611] hover:bg-[#7A6655]/10 border border-[#92816A]/40 shadow-xs transition-all active:scale-95 cursor-pointer"
           title="Rimuovi formattazione (font, colore, span)"
         >
           <Eraser className="w-3 h-3" />
@@ -1467,7 +1497,7 @@ function VisualTabContent({
 
       {/* Messaggio di Feedback */}
       {msg && (
-        <div className={cn("text-xs px-3.5 py-2.5 rounded-sm border flex items-center gap-2 shadow-sm", msg.type === "ok" ? "bg-[#4A6535]/15 border-[#4A6535]/40 text-[#3A5228]" : "bg-[#9C1C1C]/15 border-[#9C1C1C]/40 text-[#9C1C1C]")}>
+        <div className={cn("text-xs px-3.5 py-2.5 rounded-sm border flex items-center gap-2 shadow-sm", msg.type === "ok" ? "bg-[#C4923A]/15 border-[#C4923A]/40 text-[#8A5E1A] dark:text-[#d4a84b]" : "bg-[#9C1C1C]/15 border-[#9C1C1C]/40 text-[#9C1C1C]")}>
           {msg.type === "ok" && <CheckCircle2 className="w-4 h-4 shrink-0" />}
           <span>{msg.text}</span>
         </div>
@@ -1640,7 +1670,7 @@ function ProfileTabContent({
           className={cn(
             "text-xs px-3.5 py-2.5 rounded-sm border flex items-center gap-2 shadow-sm",
             msg.type === "ok"
-              ? "bg-[#4A6535]/15 border-[#4A6535]/40 text-[#3A5228]"
+              ? "bg-[#C4923A]/15 border-[#C4923A]/40 text-[#8A5E1A] dark:text-[#d4a84b]"
               : "bg-[#9C1C1C]/15 border-[#9C1C1C]/40 text-[#9C1C1C]"
           )}
         >
@@ -1661,7 +1691,7 @@ function ProfileTabContent({
           <div>
             <label className="text-[10px] font-semibold text-[#7A6655] block mb-1">Nome</label>
             <input
-              className="w-full text-xs p-2 bg-white border border-[#E9DCC4] rounded-sm focus:border-[#9C1C1C] focus:outline-none"
+              className="w-full text-xs p-2 bg-white dark:bg-[#261f18] border border-[#E9DCC4] dark:border-[#382b20] text-[#1E160A] dark:text-[#f5ede2] rounded-sm focus:border-[#9C1C1C] focus:outline-none"
               value={profile?.first_name_it || ""}
               onChange={(e) => setProfile({ ...profile, first_name_it: e.target.value, first_name_en: e.target.value })}
             />
@@ -1669,7 +1699,7 @@ function ProfileTabContent({
           <div>
             <label className="text-[10px] font-semibold text-[#7A6655] block mb-1">Cognome</label>
             <input
-              className="w-full text-xs p-2 bg-white border border-[#E9DCC4] rounded-sm focus:border-[#9C1C1C] focus:outline-none"
+              className="w-full text-xs p-2 bg-white dark:bg-[#261f18] border border-[#E9DCC4] dark:border-[#382b20] text-[#1E160A] dark:text-[#f5ede2] rounded-sm focus:border-[#9C1C1C] focus:outline-none"
               value={profile?.last_name_it || ""}
               onChange={(e) => setProfile({ ...profile, last_name_it: e.target.value, last_name_en: e.target.value })}
             />
@@ -1681,7 +1711,7 @@ function ProfileTabContent({
           <label className="text-[10px] font-semibold text-[#7A6655] block mb-1">Anni di Esperienza</label>
           <input
             type="number"
-            className="w-full text-xs p-2 bg-white border border-[#E9DCC4] rounded-sm focus:border-[#9C1C1C] focus:outline-none"
+            className="w-full text-xs p-2 bg-white dark:bg-[#261f18] border border-[#E9DCC4] dark:border-[#382b20] text-[#1E160A] dark:text-[#f5ede2] rounded-sm focus:border-[#9C1C1C] focus:outline-none"
             value={profile?.experience_years ?? 20}
             onChange={(e) => setProfile({ ...profile, experience_years: Number(e.target.value) })}
           />
@@ -1697,7 +1727,7 @@ function ProfileTabContent({
             <div className="flex-1">
               <span className="text-[9px] font-bold text-[#9C1C1C] mb-0.5 block">IT</span>
               <input
-                className="w-full text-xs p-2 bg-white border border-[#E9DCC4] rounded-sm focus:border-[#9C1C1C] focus:outline-none"
+                className="w-full text-xs p-2 bg-white dark:bg-[#261f18] border border-[#E9DCC4] dark:border-[#382b20] text-[#1E160A] dark:text-[#f5ede2] rounded-sm focus:border-[#9C1C1C] focus:outline-none"
                 value={profile?.academic_badge_it || ""}
                 onChange={(e) => {
                   const val = e.target.value;
@@ -1709,7 +1739,7 @@ function ProfileTabContent({
             </div>
             <div className="flex-1">
               <span className="text-[9px] font-bold text-[#3D6E90] mb-0.5 block">EN</span>
-              <input className="w-full text-xs p-2 bg-white border border-[#E9DCC4] rounded-sm focus:border-[#3D6E90] focus:outline-none" value={profile?.academic_badge_en || ""} onChange={(e) => setProfile((p: any) => p ? { ...p, academic_badge_en: e.target.value } : p)} placeholder="e.g. Degree in Literature" />
+              <input className="w-full text-xs p-2 bg-white dark:bg-[#261f18] border border-[#E9DCC4] dark:border-[#382b20] text-[#1E160A] dark:text-[#f5ede2] rounded-sm focus:border-[#3D6E90] focus:outline-none" value={profile?.academic_badge_en || ""} onChange={(e) => setProfile((p: any) => p ? { ...p, academic_badge_en: e.target.value } : p)} placeholder="e.g. Degree in Literature" />
             </div>
           </div>
         </div>
@@ -1763,7 +1793,7 @@ function ProfileTabContent({
               <div className="flex-1">
                 <span className="text-[9px] font-bold text-[#9C1C1C] mb-0.5 block">IT</span>
                 <input
-                  className="w-full text-xs p-2 bg-white border border-[#E9DCC4] rounded-sm focus:border-[#9C1C1C] focus:outline-none"
+                  className="w-full text-xs p-2 bg-white dark:bg-[#261f18] border border-[#E9DCC4] dark:border-[#382b20] text-[#1E160A] dark:text-[#f5ede2] rounded-sm focus:border-[#9C1C1C] focus:outline-none"
                   value={profile?.[itKey] || ""}
                   onChange={(e) => {
                     const val = e.target.value;
@@ -1775,7 +1805,7 @@ function ProfileTabContent({
               </div>
               <div className="flex-1">
                 <span className="text-[9px] font-bold text-[#3D6E90] mb-0.5 block">EN</span>
-                <input className="w-full text-xs p-2 bg-white border border-[#E9DCC4] rounded-sm focus:border-[#3D6E90] focus:outline-none" value={profile?.[enKey] || ""} onChange={(e) => setProfile((p: any) => p ? { ...p, [enKey]: e.target.value } : p)} placeholder={enPh} />
+                <input className="w-full text-xs p-2 bg-white dark:bg-[#261f18] border border-[#E9DCC4] dark:border-[#382b20] text-[#1E160A] dark:text-[#f5ede2] rounded-sm focus:border-[#3D6E90] focus:outline-none" value={profile?.[enKey] || ""} onChange={(e) => setProfile((p: any) => p ? { ...p, [enKey]: e.target.value } : p)} placeholder={enPh} />
               </div>
             </div>
           </div>
@@ -1785,7 +1815,7 @@ function ProfileTabContent({
       {/* 3. Biografia (Breve & Lunga) */}
       <div className="bg-[#F9F4EC] p-4 rounded-sm border border-[#E9DCC4] space-y-3">
         <div className="flex items-center gap-2 border-b border-black/5 pb-2">
-          <Type className="w-3.5 h-3.5 text-[#4A6535]" />
+          <Type className="w-3.5 h-3.5 text-[#3D6E90]" />
           <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#3D2E1A]">3. Biografia (Breve & Estesa)</h3>
         </div>
 
@@ -1875,7 +1905,7 @@ function ProfileTabContent({
         </div>
 
         {contacts.map((c, i) => (
-          <div key={c.id || i} className="p-3 bg-white border border-[#E9DCC4] rounded-sm space-y-2">
+          <div key={c.id || i} className="p-3 bg-white dark:bg-[#1c1611] border border-[#E9DCC4] dark:border-[#382b20] rounded-sm space-y-2">
             {/* Riga 1: tipo + pulsante rimozione */}
             <div className="flex items-center justify-between gap-2">
               <div className="flex-1">
@@ -1906,7 +1936,7 @@ function ProfileTabContent({
               <div className="flex-1">
                 <span className="text-[9px] font-bold text-[#9C1C1C] mb-0.5 block">Etichetta IT</span>
                 <input
-                  className="w-full text-xs p-1.5 bg-white border border-[#E9DCC4] rounded-sm"
+                  className="w-full text-xs p-1.5 bg-white dark:bg-[#261f18] border border-[#E9DCC4] dark:border-[#382b20] text-[#1E160A] dark:text-[#f5ede2] rounded-sm"
                   value={c.label_it || ""}
                   onChange={(e) => {
                     const val = e.target.value;
@@ -1920,14 +1950,14 @@ function ProfileTabContent({
                   <span className="text-[9px] font-bold text-[#3D6E90]">Etichetta EN</span>
                   <TranslateButton sourceText={c.label_it || ""} onTranslated={(t) => setContacts(contacts.map((x, idx) => idx === i ? { ...x, label_en: t } : x))} />
                 </div>
-                <input className="w-full text-xs p-1.5 bg-white border border-[#E9DCC4] rounded-sm" value={c.label_en || ""} onChange={(e) => setContacts(contacts.map((x, idx) => idx === i ? { ...x, label_en: e.target.value } : x))} />
+                <input className="w-full text-xs p-1.5 bg-white dark:bg-[#261f18] border border-[#E9DCC4] dark:border-[#382b20] text-[#1E160A] dark:text-[#f5ede2] rounded-sm" value={c.label_en || ""} onChange={(e) => setContacts(contacts.map((x, idx) => idx === i ? { ...x, label_en: e.target.value } : x))} />
               </div>
             </div>
             {/* Riga 3: valore */}
             <div>
               <span className="text-[9px] font-semibold text-[#7A6655] block mb-0.5">Valore (indirizzo, numero o link)</span>
               <input
-                className="w-full text-xs p-1.5 bg-white border border-[#E9DCC4] rounded-sm font-mono"
+                className="w-full text-xs p-1.5 bg-white dark:bg-[#261f18] border border-[#E9DCC4] dark:border-[#382b20] text-[#1E160A] dark:text-[#f5ede2] rounded-sm font-mono"
                 value={c.value || ""}
                 onChange={(e) => setContacts(contacts.map((x, idx) => idx === i ? { ...x, value: e.target.value } : x))}
                 placeholder="es. info@davideapolloni.it"
@@ -1954,7 +1984,7 @@ function ProfileTabContent({
         </div>
 
         {credentials.map((cr, i) => (
-          <div key={cr.id || i} className="p-3 bg-white border border-[#E9DCC4] rounded-sm space-y-2">
+          <div key={cr.id || i} className="p-3 bg-white dark:bg-[#1c1611] border border-[#E9DCC4] dark:border-[#382b20] rounded-sm space-y-2">
             {/* Titoli IT/EN con bottone rimozione */}
             <div>
               <div className="flex items-center justify-between mb-0.5">
@@ -1970,7 +2000,7 @@ function ProfileTabContent({
                 <div className="flex-1">
                   <span className="text-[9px] font-bold text-[#9C1C1C] mb-0.5 block">IT</span>
                   <input
-                    className="w-full text-xs p-1.5 bg-white border border-[#E9DCC4] rounded-sm"
+                    className="w-full text-xs p-1.5 bg-white dark:bg-[#261f18] border border-[#E9DCC4] dark:border-[#382b20] text-[#1E160A] dark:text-[#f5ede2] rounded-sm"
                     value={cr.title_it || ""}
                     onChange={(e) => {
                       const val = e.target.value;
@@ -1982,7 +2012,7 @@ function ProfileTabContent({
                 </div>
                 <div className="flex-1">
                   <span className="text-[9px] font-bold text-[#3D6E90] mb-0.5 block">EN</span>
-                  <input className="w-full text-xs p-1.5 bg-white border border-[#E9DCC4] rounded-sm" value={cr.title_en || ""} onChange={(e) => setCredentials(credentials.map((x, idx) => idx === i ? { ...x, title_en: e.target.value } : x))} placeholder="e.g. Licensed Tour Guide" />
+                  <input className="w-full text-xs p-1.5 bg-white dark:bg-[#261f18] border border-[#E9DCC4] dark:border-[#382b20] text-[#1E160A] dark:text-[#f5ede2] rounded-sm" value={cr.title_en || ""} onChange={(e) => setCredentials(credentials.map((x, idx) => idx === i ? { ...x, title_en: e.target.value } : x))} placeholder="e.g. Licensed Tour Guide" />
                 </div>
               </div>
             </div>
@@ -2175,7 +2205,7 @@ function CvTabContent({
             <span className="text-[9px] font-bold text-[#9C1C1C] mb-0.5 block">IT</span>
             <input
               required
-              className="w-full text-xs p-2 bg-white border border-[#E9DCC4] rounded-sm focus:border-[#9C1C1C] focus:outline-none"
+              className="w-full text-xs p-2 bg-white dark:bg-[#261f18] border border-[#E9DCC4] dark:border-[#382b20] text-[#1E160A] dark:text-[#f5ede2] rounded-sm focus:border-[#9C1C1C] focus:outline-none"
               value={editItem.section_it || ""}
               onChange={(e) => {
                 const val = e.target.value;
@@ -2188,7 +2218,7 @@ function CvTabContent({
           <div className="flex-1">
             <span className="text-[9px] font-bold text-[#3D6E90] mb-0.5 block">EN</span>
             <input
-              className="w-full text-xs p-2 bg-white border border-[#E9DCC4] rounded-sm focus:border-[#3D6E90] focus:outline-none"
+              className="w-full text-xs p-2 bg-white dark:bg-[#261f18] border border-[#E9DCC4] dark:border-[#382b20] text-[#1E160A] dark:text-[#f5ede2] rounded-sm focus:border-[#3D6E90] focus:outline-none"
               value={editItem.section_en || ""}
               onChange={(e) => setEditItem((prev: any) => prev ? { ...prev, section_en: e.target.value } : prev)}
               placeholder="e.g. Education & Specializations"
@@ -2211,7 +2241,7 @@ function CvTabContent({
             <span className="text-[9px] font-bold text-[#9C1C1C] mb-0.5 block">IT</span>
             <input
               required
-              className="w-full text-xs p-2 bg-white border border-[#E9DCC4] rounded-sm focus:border-[#9C1C1C] focus:outline-none"
+              className="w-full text-xs p-2 bg-white dark:bg-[#261f18] border border-[#E9DCC4] dark:border-[#382b20] text-[#1E160A] dark:text-[#f5ede2] rounded-sm focus:border-[#9C1C1C] focus:outline-none"
               value={editItem.title_it || ""}
               onChange={(e) => {
                 const val = e.target.value;
@@ -2224,7 +2254,7 @@ function CvTabContent({
           <div className="flex-1">
             <span className="text-[9px] font-bold text-[#3D6E90] mb-0.5 block">EN</span>
             <input
-              className="w-full text-xs p-2 bg-white border border-[#E9DCC4] rounded-sm focus:border-[#3D6E90] focus:outline-none"
+              className="w-full text-xs p-2 bg-white dark:bg-[#261f18] border border-[#E9DCC4] dark:border-[#382b20] text-[#1E160A] dark:text-[#f5ede2] rounded-sm focus:border-[#3D6E90] focus:outline-none"
               value={editItem.title_en || ""}
               onChange={(e) => setEditItem((prev: any) => prev ? { ...prev, title_en: e.target.value } : prev)}
               placeholder="e.g. Master's Degree in Art History"
@@ -2246,7 +2276,7 @@ function CvTabContent({
           <div className="flex-1">
             <span className="text-[9px] font-bold text-[#9C1C1C] mb-0.5 block">IT</span>
             <input
-              className="w-full text-xs p-2 bg-white border border-[#E9DCC4] rounded-sm focus:border-[#9C1C1C] focus:outline-none"
+              className="w-full text-xs p-2 bg-white dark:bg-[#261f18] border border-[#E9DCC4] dark:border-[#382b20] text-[#1E160A] dark:text-[#f5ede2] rounded-sm focus:border-[#9C1C1C] focus:outline-none"
               value={editItem.institution_it || ""}
               onChange={(e) => {
                 const val = e.target.value;
@@ -2259,7 +2289,7 @@ function CvTabContent({
           <div className="flex-1">
             <span className="text-[9px] font-bold text-[#3D6E90] mb-0.5 block">EN</span>
             <input
-              className="w-full text-xs p-2 bg-white border border-[#E9DCC4] rounded-sm focus:border-[#3D6E90] focus:outline-none"
+              className="w-full text-xs p-2 bg-white dark:bg-[#261f18] border border-[#E9DCC4] dark:border-[#382b20] text-[#1E160A] dark:text-[#f5ede2] rounded-sm focus:border-[#3D6E90] focus:outline-none"
               value={editItem.institution_en || ""}
               onChange={(e) => setEditItem((prev: any) => prev ? { ...prev, institution_en: e.target.value } : prev)}
               placeholder="e.g. University of Padua"
@@ -2293,7 +2323,7 @@ function CvTabContent({
           <label className="text-[10px] font-semibold text-[#7A6655] block mb-1">Ordine visualizzazione</label>
           <input
             type="number"
-            className="w-full text-xs p-2 bg-white border border-[#E9DCC4] rounded-sm focus:border-[#9C1C1C] focus:outline-none"
+            className="w-full text-xs p-2 bg-white dark:bg-[#261f18] border border-[#E9DCC4] dark:border-[#382b20] text-[#1E160A] dark:text-[#f5ede2] rounded-sm focus:border-[#9C1C1C] focus:outline-none"
             value={editItem.sort_order ?? 0}
             onChange={(e) => setEditItem((prev: any) => prev ? { ...prev, sort_order: Number(e.target.value) } : prev)}
           />
@@ -2391,7 +2421,7 @@ function CvTabContent({
           className={cn(
             "text-xs px-3.5 py-2 rounded-sm border flex items-center gap-2 shadow-sm",
             msg.type === "ok"
-              ? "bg-[#4A6535]/15 border-[#4A6535]/40 text-[#3A5228]"
+              ? "bg-[#C4923A]/15 border-[#C4923A]/40 text-[#8A5E1A] dark:text-[#d4a84b]"
               : "bg-[#9C1C1C]/15 border-[#9C1C1C]/40 text-[#9C1C1C]"
           )}
         >
@@ -2404,7 +2434,7 @@ function CvTabContent({
       {editItem && !editItem.id && renderCvForm(true)}
 
       {/* Lista Voci CV con In-Place Edit per elementi esistenti */}
-      <div className="divide-y divide-[#F0E8D6] border border-[#E9DCC4] rounded-sm overflow-hidden bg-white shadow-2xs">
+      <div className="divide-y divide-[#F0E8D6] dark:divide-[#2d2218] border border-[#E9DCC4] dark:border-[#382b20] rounded-sm overflow-hidden bg-white dark:bg-[#1c1611] shadow-2xs">
         {rows.length === 0 ? (
           <p className="p-6 text-center text-xs text-[#92816A]">
             Nessuna voce salvata. Clicca &quot;Nuova voce&quot; per iniziare.
@@ -2426,7 +2456,7 @@ function CvTabContent({
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 bg-[#4A6535]/15 text-[#3A5228] rounded-sm">
+                    <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 bg-[#C4923A]/15 text-[#8A5E1A] dark:text-[#d4a84b] rounded-sm">
                       {r.section_it || "CV"}
                     </span>
                     {r.period_it && (
@@ -2590,7 +2620,7 @@ function FaqTabContent({ onSaved }: { onSaved: () => void }) {
           <div className="flex-1">
             <span className="text-[9px] font-bold text-[#9C1C1C] mb-0.5 block">IT</span>
             <input
-              className="w-full text-xs p-2 bg-white border border-[#E9DCC4] rounded-sm focus:border-[#9C1C1C] focus:outline-none"
+              className="w-full text-xs p-2 bg-white dark:bg-[#261f18] border border-[#E9DCC4] dark:border-[#382b20] text-[#1E160A] dark:text-[#f5ede2] rounded-sm focus:border-[#9C1C1C] focus:outline-none"
               value={editItem.category_it || ""}
               onChange={(e) => {
                 const val = e.target.value;
@@ -2603,7 +2633,7 @@ function FaqTabContent({ onSaved }: { onSaved: () => void }) {
           <div className="flex-1">
             <span className="text-[9px] font-bold text-[#3D6E90] mb-0.5 block">EN</span>
             <input
-              className="w-full text-xs p-2 bg-white border border-[#E9DCC4] rounded-sm focus:border-[#3D6E90] focus:outline-none"
+              className="w-full text-xs p-2 bg-white dark:bg-[#261f18] border border-[#E9DCC4] dark:border-[#382b20] text-[#1E160A] dark:text-[#f5ede2] rounded-sm focus:border-[#3D6E90] focus:outline-none"
               value={editItem.category_en || ""}
               onChange={(e) => setEditItem((prev: any) => prev ? { ...prev, category_en: e.target.value } : prev)}
               placeholder="e.g. Bookings & Rates"
@@ -2626,7 +2656,7 @@ function FaqTabContent({ onSaved }: { onSaved: () => void }) {
             <span className="text-[9px] font-bold text-[#9C1C1C] mb-0.5 block">IT</span>
             <input
               required
-              className="w-full text-xs p-2 bg-white border border-[#E9DCC4] rounded-sm focus:border-[#9C1C1C] focus:outline-none"
+              className="w-full text-xs p-2 bg-white dark:bg-[#261f18] border border-[#E9DCC4] dark:border-[#382b20] text-[#1E160A] dark:text-[#f5ede2] rounded-sm focus:border-[#9C1C1C] focus:outline-none"
               value={editItem.title_it || ""}
               onChange={(e) => {
                 const val = e.target.value;
@@ -2639,7 +2669,7 @@ function FaqTabContent({ onSaved }: { onSaved: () => void }) {
           <div className="flex-1">
             <span className="text-[9px] font-bold text-[#3D6E90] mb-0.5 block">EN</span>
             <input
-              className="w-full text-xs p-2 bg-white border border-[#E9DCC4] rounded-sm focus:border-[#3D6E90] focus:outline-none"
+              className="w-full text-xs p-2 bg-white dark:bg-[#261f18] border border-[#E9DCC4] dark:border-[#382b20] text-[#1E160A] dark:text-[#f5ede2] rounded-sm focus:border-[#3D6E90] focus:outline-none"
               value={editItem.title_en || ""}
               onChange={(e) => setEditItem((prev: any) => prev ? { ...prev, title_en: e.target.value } : prev)}
               placeholder="Question in English…"
@@ -2740,7 +2770,7 @@ function FaqTabContent({ onSaved }: { onSaved: () => void }) {
           className={cn(
             "text-xs px-3.5 py-2 rounded-sm border flex items-center gap-2 shadow-sm",
             msg.type === "ok"
-              ? "bg-[#4A6535]/15 border-[#4A6535]/40 text-[#3A5228]"
+              ? "bg-[#C4923A]/15 border-[#C4923A]/40 text-[#8A5E1A] dark:text-[#d4a84b]"
               : "bg-[#9C1C1C]/15 border-[#9C1C1C]/40 text-[#9C1C1C]"
           )}
         >
@@ -2753,7 +2783,7 @@ function FaqTabContent({ onSaved }: { onSaved: () => void }) {
       {editItem && !editItem.id && renderFaqForm(true)}
 
       {/* Lista FAQ con In-Place Edit per elementi esistenti */}
-      <div className="divide-y divide-[#F0E8D6] border border-[#E9DCC4] rounded-sm overflow-hidden bg-white shadow-2xs">
+      <div className="divide-y divide-[#F0E8D6] dark:divide-[#2d2218] border border-[#E9DCC4] dark:border-[#382b20] rounded-sm overflow-hidden bg-white dark:bg-[#1c1611] shadow-2xs">
         {rows.length === 0 ? (
           <p className="p-6 text-center text-xs text-[#92816A]">
             Nessuna FAQ presente. Clicca &quot;Nuova FAQ&quot; per iniziare.
@@ -3050,7 +3080,7 @@ function BannersTabContent({ onSaved }: { onSaved: () => void }) {
           className={cn(
             "text-xs px-3.5 py-2 rounded-sm border flex items-center gap-2 shadow-sm",
             msg.type === "ok"
-              ? "bg-[#4A6535]/15 border-[#4A6535]/40 text-[#3A5228]"
+              ? "bg-[#C4923A]/15 border-[#C4923A]/40 text-[#8A5E1A] dark:text-[#d4a84b]"
               : "bg-[#9C1C1C]/15 border-[#9C1C1C]/40 text-[#9C1C1C]"
           )}
         >
@@ -3083,7 +3113,7 @@ function BannersTabContent({ onSaved }: { onSaved: () => void }) {
                 <span className="text-[9px] font-bold text-[#7A6655] mb-0.5 block">Italiano (IT) *</span>
                 <input
                   required
-                  className="w-full text-xs p-2 bg-white border border-[#E9DCC4] rounded-sm focus:border-[#9C1C1C] focus:outline-none"
+                  className="w-full text-xs p-2 bg-white dark:bg-[#261f18] border border-[#E9DCC4] dark:border-[#382b20] text-[#1E160A] dark:text-[#f5ede2] rounded-sm focus:border-[#9C1C1C] focus:outline-none"
                   value={editItem.text_it}
                   onChange={(e) => {
                     const val = e.target.value;
@@ -3096,7 +3126,7 @@ function BannersTabContent({ onSaved }: { onSaved: () => void }) {
               <div>
                 <span className="text-[9px] font-bold text-[#3D6E90] mb-0.5 block">English (EN)</span>
                 <input
-                  className="w-full text-xs p-2 bg-white border border-[#E9DCC4] rounded-sm focus:border-[#3D6E90] focus:outline-none"
+                  className="w-full text-xs p-2 bg-white dark:bg-[#261f18] border border-[#E9DCC4] dark:border-[#382b20] text-[#1E160A] dark:text-[#f5ede2] rounded-sm focus:border-[#3D6E90] focus:outline-none"
                   value={editItem.text_en}
                   onChange={(e) => setEditItem((prev: any) => prev ? { ...prev, text_en: e.target.value } : prev)}
                   placeholder="e.g. Slow tourism · time to gaze"
@@ -3177,7 +3207,7 @@ function BannersTabContent({ onSaved }: { onSaved: () => void }) {
       )}
 
       {/* Lista Banner */}
-      <div className="divide-y divide-[#F0E8D6] border border-[#E9DCC4] rounded-sm overflow-hidden bg-white shadow-2xs">
+      <div className="divide-y divide-[#F0E8D6] dark:divide-[#2d2218] border border-[#E9DCC4] dark:border-[#382b20] rounded-sm overflow-hidden bg-white dark:bg-[#1c1611] shadow-2xs">
         {banners.length === 0 ? (
           <p className="p-6 text-center text-xs text-[#92816A]">
             Nessun banner configurato. Clicca &quot;Nuovo Banner&quot;.
@@ -3378,12 +3408,12 @@ function FooterTabContent({ onSaved }: { onSaved: () => void }) {
 
   return (
     <div className="p-4 space-y-6 overflow-y-auto max-h-full">
-      <div className="border-b border-[#E9DCC4] pb-3">
-        <h2 className="text-sm font-bold text-[#1E160A] flex items-center gap-2">
+      <div className="border-b border-[#E9DCC4] dark:border-[#382b20] pb-3">
+        <h2 className="text-sm font-bold text-[#1E160A] dark:text-[#f5ede2] flex items-center gap-2">
           <LayoutGrid className="w-4 h-4 text-[#9C1C1C]" />
           Gestione Contenuti del Footer
         </h2>
-        <p className="text-xs text-[#7A6655] mt-0.5">
+        <p className="text-xs text-[#7A6655] dark:text-[#a89582] mt-0.5">
           Modifica qui tutti i testi, contatti, licenza, copyright e le icone mostrate nel piè di pagina.
         </p>
       </div>
@@ -3393,18 +3423,18 @@ function FooterTabContent({ onSaved }: { onSaved: () => void }) {
           className={cn(
             "p-3 rounded-sm text-xs font-semibold flex items-center gap-2",
             msg.type === "ok"
-              ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
-              : "bg-rose-50 text-rose-800 border border-rose-200"
+              ? "bg-[#4A6535]/10 dark:bg-[#4A6535]/15 text-[#3A5228] dark:text-[#a6cf8c] border border-[#4A6535]/25"
+              : "bg-[#9C1C1C]/10 dark:bg-[#9C1C1C]/15 text-[#9C1C1C] dark:text-[#f07f82] border border-[#9C1C1C]/25"
           )}
         >
-          {msg.type === "ok" ? <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" /> : null}
+          {msg.type === "ok" ? <CheckCircle2 className="w-4 h-4 shrink-0 text-[#4A6535] dark:text-[#a6cf8c]" /> : null}
           <span>{msg.text}</span>
         </div>
       )}
 
       <form onSubmit={handleSave} className="space-y-6">
         {/* SEZIONE 1: BRAND E QUALIFICA */}
-        <div className="bg-[#FAF6F0] p-3.5 rounded-sm border border-[#E9DCC4] space-y-4">
+        <div className="bg-[#FAF6F0] dark:bg-[#1d1712] p-3.5 rounded-sm border border-[#E9DCC4] dark:border-[#382b20] space-y-4">
           <h3 className="text-xs font-bold uppercase tracking-wider text-[#9C1C1C] flex items-center gap-1.5">
             <Award className="w-3.5 h-3.5" />
             1. Brand &amp; Qualifica
@@ -3413,7 +3443,7 @@ function FooterTabContent({ onSaved }: { onSaved: () => void }) {
           {/* Nome Brand */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-[#3D2E1A]">Nome Brand / Titolo</label>
+              <label className="text-xs font-bold text-[#3D2E1A] dark:text-[#e8dccb]">Nome Brand / Titolo</label>
               <TranslateButton
                 sourceText={data.brandName_it}
                 targetLang="en"
@@ -3422,22 +3452,22 @@ function FooterTabContent({ onSaved }: { onSaved: () => void }) {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <div>
-                <span className="text-[10px] uppercase font-bold text-[#7A6655]">IT:</span>
+                <span className="text-[10px] uppercase font-bold text-[#7A6655] dark:text-[#a89582]">IT:</span>
                 <input
                   type="text"
                   value={data.brandName_it}
                   onChange={(e) => setData({ ...data, brandName_it: e.target.value })}
-                  className="w-full text-xs p-2 rounded-sm border border-[#E9DCC4] bg-white text-[#1E160A] focus:outline-[#9C1C1C]"
+                  className="w-full text-xs p-2 rounded-sm border border-[#E9DCC4] dark:border-[#382b20] bg-white dark:bg-[#261f18] text-[#1E160A] dark:text-[#f5ede2] focus:outline-[#9C1C1C]"
                   placeholder="Prof. Davide Apolloni"
                 />
               </div>
               <div>
-                <span className="text-[10px] uppercase font-bold text-[#7A6655]">EN:</span>
+                <span className="text-[10px] uppercase font-bold text-[#7A6655] dark:text-[#a89582]">EN:</span>
                 <input
                   type="text"
                   value={data.brandName_en}
                   onChange={(e) => setData({ ...data, brandName_en: e.target.value })}
-                  className="w-full text-xs p-2 rounded-sm border border-[#E9DCC4] bg-white text-[#1E160A] focus:outline-[#9C1C1C]"
+                  className="w-full text-xs p-2 rounded-sm border border-[#E9DCC4] dark:border-[#382b20] bg-white dark:bg-[#261f18] text-[#1E160A] dark:text-[#f5ede2] focus:outline-[#9C1C1C]"
                   placeholder="Prof. Davide Apolloni"
                 />
               </div>
@@ -3447,7 +3477,7 @@ function FooterTabContent({ onSaved }: { onSaved: () => void }) {
           {/* Qualifica / Badge */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-[#3D2E1A]">Qualifica / Badge Sottotitolo</label>
+              <label className="text-xs font-bold text-[#3D2E1A] dark:text-[#e8dccb]">Qualifica / Badge Sottotitolo</label>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
@@ -3466,21 +3496,21 @@ function FooterTabContent({ onSaved }: { onSaved: () => void }) {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <div>
-                <span className="text-[10px] uppercase font-bold text-[#7A6655]">IT:</span>
+                <span className="text-[10px] uppercase font-bold text-[#7A6655] dark:text-[#a89582]">IT:</span>
                 <input
                   type="text"
                   value={data.badge_it}
                   onChange={(e) => setData({ ...data, badge_it: e.target.value })}
-                  className="w-full text-xs p-2 rounded-sm border border-[#E9DCC4] bg-white text-[#1E160A] focus:outline-[#9C1C1C]"
+                  className="w-full text-xs p-2 rounded-sm border border-[#E9DCC4] dark:border-[#382b20] bg-white dark:bg-[#261f18] text-[#1E160A] dark:text-[#f5ede2] focus:outline-[#9C1C1C]"
                 />
               </div>
               <div>
-                <span className="text-[10px] uppercase font-bold text-[#7A6655]">EN:</span>
+                <span className="text-[10px] uppercase font-bold text-[#7A6655] dark:text-[#a89582]">EN:</span>
                 <input
                   type="text"
                   value={data.badge_en}
                   onChange={(e) => setData({ ...data, badge_en: e.target.value })}
-                  className="w-full text-xs p-2 rounded-sm border border-[#E9DCC4] bg-white text-[#1E160A] focus:outline-[#9C1C1C]"
+                  className="w-full text-xs p-2 rounded-sm border border-[#E9DCC4] dark:border-[#382b20] bg-white dark:bg-[#261f18] text-[#1E160A] dark:text-[#f5ede2] focus:outline-[#9C1C1C]"
                 />
               </div>
             </div>
@@ -3489,7 +3519,7 @@ function FooterTabContent({ onSaved }: { onSaved: () => void }) {
           {/* Descrizione Breve */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-[#3D2E1A]">Descrizione Breve</label>
+              <label className="text-xs font-bold text-[#3D2E1A] dark:text-[#e8dccb]">Descrizione Breve</label>
               <TranslateButton
                 sourceText={data.desc_it}
                 targetLang="en"
@@ -3498,21 +3528,21 @@ function FooterTabContent({ onSaved }: { onSaved: () => void }) {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <div>
-                <span className="text-[10px] uppercase font-bold text-[#7A6655]">IT:</span>
+                <span className="text-[10px] uppercase font-bold text-[#7A6655] dark:text-[#a89582]">IT:</span>
                 <textarea
                   rows={3}
                   value={data.desc_it}
                   onChange={(e) => setData({ ...data, desc_it: e.target.value })}
-                  className="w-full text-xs p-2 rounded-sm border border-[#E9DCC4] bg-white text-[#1E160A] focus:outline-[#9C1C1C]"
+                  className="w-full text-xs p-2 rounded-sm border border-[#E9DCC4] dark:border-[#382b20] bg-white dark:bg-[#261f18] text-[#1E160A] dark:text-[#f5ede2] focus:outline-[#9C1C1C]"
                 />
               </div>
               <div>
-                <span className="text-[10px] uppercase font-bold text-[#7A6655]">EN:</span>
+                <span className="text-[10px] uppercase font-bold text-[#7A6655] dark:text-[#a89582]">EN:</span>
                 <textarea
                   rows={3}
                   value={data.desc_en}
                   onChange={(e) => setData({ ...data, desc_en: e.target.value })}
-                  className="w-full text-xs p-2 rounded-sm border border-[#E9DCC4] bg-white text-[#1E160A] focus:outline-[#9C1C1C]"
+                  className="w-full text-xs p-2 rounded-sm border border-[#E9DCC4] dark:border-[#382b20] bg-white dark:bg-[#261f18] text-[#1E160A] dark:text-[#f5ede2] focus:outline-[#9C1C1C]"
                 />
               </div>
             </div>
@@ -3520,7 +3550,7 @@ function FooterTabContent({ onSaved }: { onSaved: () => void }) {
         </div>
 
         {/* SEZIONE 2: RECAPITI E CONTATTI */}
-        <div className="bg-[#FAF6F0] p-3.5 rounded-sm border border-[#E9DCC4] space-y-4">
+        <div className="bg-[#FAF6F0] dark:bg-[#1d1712] p-3.5 rounded-sm border border-[#E9DCC4] dark:border-[#382b20] space-y-4">
           <h3 className="text-xs font-bold uppercase tracking-wider text-[#9C1C1C] flex items-center gap-1.5">
             <Mail className="w-3.5 h-3.5" />
             2. Contatti &amp; Sede nel Footer
@@ -3529,7 +3559,7 @@ function FooterTabContent({ onSaved }: { onSaved: () => void }) {
           {/* Luogo / Sede */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-[#3D2E1A]">Sede Operativa / Luogo</label>
+              <label className="text-xs font-bold text-[#3D2E1A] dark:text-[#e8dccb]">Sede Operativa / Luogo</label>
               <button
                 type="button"
                 onClick={() => setActiveIconPicker("location_icon")}
@@ -3541,21 +3571,21 @@ function FooterTabContent({ onSaved }: { onSaved: () => void }) {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <div>
-                <span className="text-[10px] uppercase font-bold text-[#7A6655]">IT:</span>
+                <span className="text-[10px] uppercase font-bold text-[#7A6655] dark:text-[#a89582]">IT:</span>
                 <input
                   type="text"
                   value={data.location_it}
                   onChange={(e) => setData({ ...data, location_it: e.target.value })}
-                  className="w-full text-xs p-2 rounded-sm border border-[#E9DCC4] bg-white text-[#1E160A] focus:outline-[#9C1C1C]"
+                  className="w-full text-xs p-2 rounded-sm border border-[#E9DCC4] dark:border-[#382b20] bg-white dark:bg-[#261f18] text-[#1E160A] dark:text-[#f5ede2] focus:outline-[#9C1C1C]"
                 />
               </div>
               <div>
-                <span className="text-[10px] uppercase font-bold text-[#7A6655]">EN:</span>
+                <span className="text-[10px] uppercase font-bold text-[#7A6655] dark:text-[#a89582]">EN:</span>
                 <input
                   type="text"
                   value={data.location_en}
                   onChange={(e) => setData({ ...data, location_en: e.target.value })}
-                  className="w-full text-xs p-2 rounded-sm border border-[#E9DCC4] bg-white text-[#1E160A] focus:outline-[#9C1C1C]"
+                  className="w-full text-xs p-2 rounded-sm border border-[#E9DCC4] dark:border-[#382b20] bg-white dark:bg-[#261f18] text-[#1E160A] dark:text-[#f5ede2] focus:outline-[#9C1C1C]"
                 />
               </div>
             </div>
@@ -3564,7 +3594,7 @@ function FooterTabContent({ onSaved }: { onSaved: () => void }) {
           {/* Email */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-[#3D2E1A]">Email di Riferimento</label>
+              <label className="text-xs font-bold text-[#3D2E1A] dark:text-[#e8dccb]">Email di Riferimento</label>
               <button
                 type="button"
                 onClick={() => setActiveIconPicker("email_icon")}
@@ -3576,21 +3606,21 @@ function FooterTabContent({ onSaved }: { onSaved: () => void }) {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <div>
-                <span className="text-[10px] uppercase font-bold text-[#7A6655]">IT:</span>
+                <span className="text-[10px] uppercase font-bold text-[#7A6655] dark:text-[#a89582]">IT:</span>
                 <input
                   type="text"
                   value={data.email_it}
                   onChange={(e) => setData({ ...data, email_it: e.target.value, email_en: e.target.value })}
-                  className="w-full text-xs p-2 rounded-sm border border-[#E9DCC4] bg-white text-[#1E160A] focus:outline-[#9C1C1C]"
+                  className="w-full text-xs p-2 rounded-sm border border-[#E9DCC4] dark:border-[#382b20] bg-white dark:bg-[#261f18] text-[#1E160A] dark:text-[#f5ede2] focus:outline-[#9C1C1C]"
                 />
               </div>
               <div>
-                <span className="text-[10px] uppercase font-bold text-[#7A6655]">EN:</span>
+                <span className="text-[10px] uppercase font-bold text-[#7A6655] dark:text-[#a89582]">EN:</span>
                 <input
                   type="text"
                   value={data.email_en}
                   onChange={(e) => setData({ ...data, email_en: e.target.value })}
-                  className="w-full text-xs p-2 rounded-sm border border-[#E9DCC4] bg-white text-[#1E160A] focus:outline-[#9C1C1C]"
+                  className="w-full text-xs p-2 rounded-sm border border-[#E9DCC4] dark:border-[#382b20] bg-white dark:bg-[#261f18] text-[#1E160A] dark:text-[#f5ede2] focus:outline-[#9C1C1C]"
                 />
               </div>
             </div>
@@ -3598,19 +3628,19 @@ function FooterTabContent({ onSaved }: { onSaved: () => void }) {
 
           {/* Partita IVA */}
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-[#3D2E1A]">Partita IVA (es. IT12345678901 o —)</label>
+            <label className="text-xs font-bold text-[#3D2E1A] dark:text-[#e8dccb]">Partita IVA (es. IT12345678901 o —)</label>
             <input
               type="text"
               value={data.piva_it}
               onChange={(e) => setData({ ...data, piva_it: e.target.value, piva_en: e.target.value })}
-              className="w-full text-xs p-2 rounded-sm border border-[#E9DCC4] bg-white text-[#1E160A] focus:outline-[#9C1C1C]"
+              className="w-full text-xs p-2 rounded-sm border border-[#E9DCC4] dark:border-[#382b20] bg-white dark:bg-[#261f18] text-[#1E160A] dark:text-[#f5ede2] focus:outline-[#9C1C1C]"
               placeholder="—"
             />
           </div>
         </div>
 
         {/* SEZIONE 3: LEGALE, LICENZA E COPYRIGHT */}
-        <div className="bg-[#FAF6F0] p-3.5 rounded-sm border border-[#E9DCC4] space-y-4">
+        <div className="bg-[#FAF6F0] dark:bg-[#1d1712] p-3.5 rounded-sm border border-[#E9DCC4] dark:border-[#382b20] space-y-4">
           <h3 className="text-xs font-bold uppercase tracking-wider text-[#9C1C1C] flex items-center gap-1.5">
             <Shield className="w-3.5 h-3.5" />
             3. Licenza, Copyright &amp; Icone Colonne
@@ -3619,7 +3649,7 @@ function FooterTabContent({ onSaved }: { onSaved: () => void }) {
           {/* Licenza */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-[#3D2E1A]">Dicitura Licenza Guida</label>
+              <label className="text-xs font-bold text-[#3D2E1A] dark:text-[#e8dccb]">Dicitura Licenza Guida</label>
               <TranslateButton
                 sourceText={data.license_it}
                 targetLang="en"
@@ -3628,21 +3658,21 @@ function FooterTabContent({ onSaved }: { onSaved: () => void }) {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <div>
-                <span className="text-[10px] uppercase font-bold text-[#7A6655]">IT:</span>
+                <span className="text-[10px] uppercase font-bold text-[#7A6655] dark:text-[#a89582]">IT:</span>
                 <input
                   type="text"
                   value={data.license_it}
                   onChange={(e) => setData({ ...data, license_it: e.target.value })}
-                  className="w-full text-xs p-2 rounded-sm border border-[#E9DCC4] bg-white text-[#1E160A] focus:outline-[#9C1C1C]"
+                  className="w-full text-xs p-2 rounded-sm border border-[#E9DCC4] dark:border-[#382b20] bg-white dark:bg-[#261f18] text-[#1E160A] dark:text-[#f5ede2] focus:outline-[#9C1C1C]"
                 />
               </div>
               <div>
-                <span className="text-[10px] uppercase font-bold text-[#7A6655]">EN:</span>
+                <span className="text-[10px] uppercase font-bold text-[#7A6655] dark:text-[#a89582]">EN:</span>
                 <input
                   type="text"
                   value={data.license_en}
                   onChange={(e) => setData({ ...data, license_en: e.target.value })}
-                  className="w-full text-xs p-2 rounded-sm border border-[#E9DCC4] bg-white text-[#1E160A] focus:outline-[#9C1C1C]"
+                  className="w-full text-xs p-2 rounded-sm border border-[#E9DCC4] dark:border-[#382b20] bg-white dark:bg-[#261f18] text-[#1E160A] dark:text-[#f5ede2] focus:outline-[#9C1C1C]"
                 />
               </div>
             </div>
@@ -3651,7 +3681,7 @@ function FooterTabContent({ onSaved }: { onSaved: () => void }) {
           {/* Copyright */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-[#3D2E1A]">Testo Copyright</label>
+              <label className="text-xs font-bold text-[#3D2E1A] dark:text-[#e8dccb]">Testo Copyright</label>
               <TranslateButton
                 sourceText={data.copyright_it}
                 targetLang="en"
@@ -3660,21 +3690,21 @@ function FooterTabContent({ onSaved }: { onSaved: () => void }) {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <div>
-                <span className="text-[10px] uppercase font-bold text-[#7A6655]">IT:</span>
+                <span className="text-[10px] uppercase font-bold text-[#7A6655] dark:text-[#a89582]">IT:</span>
                 <input
                   type="text"
                   value={data.copyright_it}
                   onChange={(e) => setData({ ...data, copyright_it: e.target.value })}
-                  className="w-full text-xs p-2 rounded-sm border border-[#E9DCC4] bg-white text-[#1E160A] focus:outline-[#9C1C1C]"
+                  className="w-full text-xs p-2 rounded-sm border border-[#E9DCC4] dark:border-[#382b20] bg-white dark:bg-[#261f18] text-[#1E160A] dark:text-[#f5ede2] focus:outline-[#9C1C1C]"
                 />
               </div>
               <div>
-                <span className="text-[10px] uppercase font-bold text-[#7A6655]">EN:</span>
+                <span className="text-[10px] uppercase font-bold text-[#7A6655] dark:text-[#a89582]">EN:</span>
                 <input
                   type="text"
                   value={data.copyright_en}
                   onChange={(e) => setData({ ...data, copyright_en: e.target.value })}
-                  className="w-full text-xs p-2 rounded-sm border border-[#E9DCC4] bg-white text-[#1E160A] focus:outline-[#9C1C1C]"
+                  className="w-full text-xs p-2 rounded-sm border border-[#E9DCC4] dark:border-[#382b20] bg-white dark:bg-[#261f18] text-[#1E160A] dark:text-[#f5ede2] focus:outline-[#9C1C1C]"
                 />
               </div>
             </div>
@@ -3682,7 +3712,7 @@ function FooterTabContent({ onSaved }: { onSaved: () => void }) {
 
           {/* Icone Colonne */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-            <div className="p-2.5 bg-white rounded-sm border border-[#E9DCC4] flex items-center justify-between">
+            <div className="p-2.5 bg-white dark:bg-[#261f18] rounded-sm border border-[#E9DCC4] dark:border-[#382b20] flex items-center justify-between">
               <div>
                 <span className="text-[11px] font-bold text-[#3D2E1A] block">Colonna Navigazione</span>
                 <span className="text-[10px] text-[#7A6655]">Icona intestazione</span>
@@ -3697,7 +3727,7 @@ function FooterTabContent({ onSaved }: { onSaved: () => void }) {
               </button>
             </div>
 
-            <div className="p-2.5 bg-white rounded-sm border border-[#E9DCC4] flex items-center justify-between">
+            <div className="p-2.5 bg-white dark:bg-[#261f18] rounded-sm border border-[#E9DCC4] dark:border-[#382b20] flex items-center justify-between">
               <div>
                 <span className="text-[11px] font-bold text-[#3D2E1A] block">Colonna Legale</span>
                 <span className="text-[10px] text-[#7A6655]">Icona intestazione</span>
@@ -3715,7 +3745,7 @@ function FooterTabContent({ onSaved }: { onSaved: () => void }) {
         </div>
 
         {/* Pulsante Salva Tutto */}
-        <div className="pt-2 sticky bottom-0 bg-white/95 backdrop-blur-xs py-3 border-t border-[#E9DCC4]">
+        <div className="pt-2 sticky bottom-0 bg-white/95 dark:bg-[#1c1611]/95 backdrop-blur-xs py-3 border-t border-[#E9DCC4] dark:border-[#382b20]">
           <button
             type="submit"
             disabled={saving}
@@ -3738,8 +3768,8 @@ function FooterTabContent({ onSaved }: { onSaved: () => void }) {
 
       {/* Icon Picker Modal */}
       {activeIconPicker && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="bg-white rounded-lg p-4 shadow-xl max-w-md w-full">
+        <div className="admin-modal fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-white dark:bg-[#1c1611] rounded-lg p-4 shadow-xl max-w-md w-full">
             <IconPicker
               value={(data as any)[activeIconPicker] || "Sparkles"}
               onChange={(iconName: string) => {

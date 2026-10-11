@@ -1212,7 +1212,7 @@ INSERT INTO public.ui_strings (key, it, en, description) VALUES
   ('nav.tours', 'I Tour', 'Tours', 'Menu nav'),
   ('nav.experiences', 'Esperienze', 'Experiences', 'Menu nav'),
   ('nav.ww1', 'Grande Guerra', 'World War I', 'Menu nav'),
-  ('nav.media', 'Galleria & Video', 'Gallery & Video', 'Menu nav'),
+  ('nav.media', 'Media'  , 'Media', 'Menu nav'),
   ('nav.contacts', 'Contatti', 'Contact', 'Menu nav'),
   ('nav.book', 'Prenota una visita', 'Book a visit', 'CTA nav'),
 

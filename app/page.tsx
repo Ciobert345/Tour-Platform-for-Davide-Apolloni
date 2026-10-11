@@ -18,6 +18,8 @@ import QuoteSection from "@/components/public/QuoteSection";
 import ContactsSection from "@/components/public/ContactsSection";
 import Footer from "@/components/public/Footer";
 import CvModal from "@/components/public/CvModal";
+import MapTeaserBanner from "@/components/public/MapTeaserBanner";
+import ScrollToTopOnReload from "@/components/public/ScrollToTopOnReload";
 
 export default async function HomePage() {
   const data = await fetchPublicHomeData().catch((err) => {
@@ -34,6 +36,7 @@ export default async function HomePage() {
   return (
     <Suspense fallback={null}>
       <LiveEditRoot profileId={profileId}>
+        <ScrollToTopOnReload />
         <main className="min-h-screen bg-bg-main text-text-main font-sans">
           <Header />
           <HeroSection profile={data?.profile ?? null} />
@@ -53,6 +56,7 @@ export default async function HomePage() {
           />
           <Footer />
           <CvModal cvItems={data?.cvItems ?? []} />
+          <MapTeaserBanner enabled={!hidden["map-teaser"]} />
         </main>
       </LiveEditRoot>
     </Suspense>

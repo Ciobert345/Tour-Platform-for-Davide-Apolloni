@@ -34,7 +34,7 @@ const DEFAULT_COVERS = [
 
 /* Altezza identica per tutte le card: ogni blocco ha altezza riservata */
 const CARD_CLASS =
-  "card-base card-hover flex flex-col bg-white rounded-2xl border border-black/10 shadow-sm overflow-hidden h-full grow min-h-[560px] sm:min-h-[660px]";
+  "card-base card-hover flex flex-col bg-white dark:bg-bg-card rounded-2xl border border-black/10 dark:border-white/10 shadow-sm overflow-hidden h-full grow min-h-[560px] sm:min-h-[660px]";
 
 /**
  * Tours section
@@ -265,7 +265,7 @@ function DescFade({ children }: { children: ReactNode }) {
         {children}
       </div>
       {overflowing && (
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[2.6em] bg-gradient-to-t from-white via-white/80 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[2.6em] bg-gradient-to-t from-white dark:from-[#2c241d] via-white/80 dark:via-[#2c241d]/80 to-transparent" />
       )}
     </div>
   );

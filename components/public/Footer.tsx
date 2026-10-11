@@ -13,6 +13,7 @@ export default function Footer() {
   const { lang } = useLang();
   const { strings } = useLanguage();
   const it = lang === "it";
+  const mapEnabled = strings["section.hidden.mappa"]?.it !== "true";
   const [legalPage, setLegalPage] = useState<LegalPage>(null);
 
   const brandName = strings["footer.brand_name"]?.[lang] || "Prof. Davide Apolloni";
@@ -282,6 +283,15 @@ export default function Footer() {
                   >
                     {it ? "Contatti diretti" : "Direct contacts"} →
                   </a>
+                  {mapEnabled && (
+                    <a
+                      href="/mappa"
+                      className="inline-flex items-center gap-1 text-xs font-semibold transition-colors hover:opacity-80 mt-1"
+                      style={{ color: "var(--color-stone)" }}
+                    >
+                      {strings["nav.map"]?.[lang] || (it ? "Mappa" : "Map")} →
+                    </a>
+                  )}
                 </div>
               </div>
             </div>

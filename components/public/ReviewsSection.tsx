@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLang, useT } from "@/lib/i18n/LanguageProvider";
 import EditableSectionHeading from "@/components/live-edit/EditableSectionHeading";
 import LiveEditSectionMask from "@/components/live-edit/LiveEditSectionMask";
@@ -15,7 +15,7 @@ export default function ReviewsSection({ reviews, defaultHidden = false }: { rev
   const { lang } = useLang();
 
   return (
-    <section id="recensioni" className="section bg-[#F9F4EC] border-b border-black/5" style={defaultHidden ? { display: "none" } : undefined}>
+    <section id="recensioni" className="section bg-[#F9F4EC] dark:bg-[#18130e] border-b border-black/5 dark:border-white/5" style={defaultHidden ? { display: "none" } : undefined}>
       <div className="container-app">
         <EditableSectionHeading
           section="Recensioni"
@@ -39,7 +39,7 @@ export default function ReviewsSection({ reviews, defaultHidden = false }: { rev
           <div className="grid lg:grid-cols-[1.15fr_0.85fr] gap-8 items-start">
             {/* COLONNA SINISTRA: Recensioni */}
             <div className="space-y-4 min-w-0">
-              <div className="flex items-center justify-between pb-2 border-b border-black/5">
+              <div className="flex items-center justify-between pb-2 border-b border-black/5 dark:border-white/5">
                 <span className="text-xs font-bold uppercase tracking-wider text-gold-dark">
                   {lang === "it" ? "Esperienze dei Viaggiatori" : "Traveler Experiences"}
                 </span>
@@ -49,7 +49,7 @@ export default function ReviewsSection({ reviews, defaultHidden = false }: { rev
               </div>
 
               {reviews.length === 0 ? (
-                <div className="py-12 text-center text-sm text-text-muted border border-dashed border-black/15 rounded-xl bg-white">
+                <div className="py-12 text-center text-sm text-text-muted border border-dashed border-black/15 dark:border-white/10 rounded-xl bg-white dark:bg-[#1c1611]">
                   <Quote className="w-8 h-8 mx-auto mb-2 opacity-25 text-terracotta" />
                   <p className="font-light">{t("reviews.empty")}</p>
                 </div>
@@ -80,7 +80,7 @@ export default function ReviewsSection({ reviews, defaultHidden = false }: { rev
                           key={r.id}
                           className="w-[min(80vw,300px)] xs:w-[min(82vw,320px)] shrink-0 snap-start self-stretch flex flex-col md:w-auto md:shrink md:self-auto"
                         >
-                          <blockquote className="bg-white p-3.5 sm:p-5 rounded-2xl border border-black/10 shadow-xs hover:border-gold/40 hover:shadow-sm transition-all duration-300 relative flex flex-col h-full md:h-auto grow md:grow-0">
+                          <blockquote className="bg-white dark:bg-[#1c1611] p-3.5 sm:p-5 rounded-2xl border border-black/10 dark:border-white/10 shadow-xs hover:border-gold/40 dark:hover:border-gold/50 hover:shadow-sm transition-all duration-300 relative flex flex-col h-full md:h-auto grow md:grow-0">
                             <div className="flex items-center justify-between mb-1.5 sm:mb-2">
                               <div className="text-gold text-xs sm:text-sm tracking-wider font-semibold">
                                 {renderStars(r.rating)}
@@ -92,7 +92,7 @@ export default function ReviewsSection({ reviews, defaultHidden = false }: { rev
                             <p className="text-xs sm:text-[0.92rem] text-text-muted italic leading-relaxed font-serif mb-2 sm:mb-3">
                               "{r.review_text}"
                             </p>
-                            <div className="mt-auto pt-2 border-t border-black/5 flex items-center justify-between gap-2 text-[11px] sm:text-xs">
+                            <div className="mt-auto pt-2 border-t border-black/5 dark:border-white/5 flex items-center justify-between gap-2 text-[11px] sm:text-xs">
                               <p className="font-bold text-text-main">{r.author_name}</p>
                               {loc && <p className="text-text-light font-light text-right">{loc}</p>}
                             </div>
@@ -111,8 +111,8 @@ export default function ReviewsSection({ reviews, defaultHidden = false }: { rev
             </div>
 
             {/* COLONNA DESTRA: Form lascia recensione */}
-            <div className="bg-white p-3.5 sm:p-6 md:p-8 rounded-2xl border border-black/10 shadow-sm lg:sticky lg:top-24">
-              <div className="flex items-center gap-2 sm:gap-2.5 mb-3.5 sm:mb-5 pb-2.5 sm:pb-3 border-b border-black/5">
+            <div className="bg-white dark:bg-[#1c1611] p-3.5 sm:p-6 md:p-8 rounded-2xl border border-black/10 dark:border-white/10 shadow-sm lg:sticky lg:top-24">
+              <div className="flex items-center gap-2 sm:gap-2.5 mb-3.5 sm:mb-5 pb-2.5 sm:pb-3 border-b border-black/5 dark:border-white/5">
                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-terracotta/10 text-terracotta flex items-center justify-center shrink-0">
                   <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
@@ -145,18 +145,49 @@ function ReviewForm() {
   const [hover, setHover] = useState<number>(0);
   const [state, setState] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [err, setErr] = useState<string>("");
+  const [visited, setVisited] = useState("");
+  const [placeOptions, setPlaceOptions] = useState<Array<{ key: string; label: string }>>([]);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const supabase = (await import("@/lib/supabase/browser")).default;
+        const [{ data: places }, { data: spots }] = await Promise.all([
+          supabase.from("places").select("id, name_it, name_en").eq("is_active", true).order("name_it"),
+          supabase.from("map_spots").select("id, name_it, name_en").eq("is_active", true).order("name_it"),
+        ]);
+        if (!alive) return;
+        const opts: Array<{ key: string; label: string }> = [];
+        type Named = { id: string; name_it: string; name_en: string | null };
+        for (const p of (places ?? []) as Named[]) {
+          opts.push({ key: `p:${p.id}`, label: lang === "en" ? p.name_en || p.name_it : p.name_it });
+        }
+        for (const s of (spots ?? []) as Named[]) {
+          opts.push({ key: `s:${s.id}`, label: lang === "en" ? s.name_en || s.name_it : s.name_it });
+        }
+        setPlaceOptions(opts);
+      } catch {
+        /* elenco facoltativo */
+      }
+    })();
+    return () => { alive = false; };
+  }, [lang]);
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErr("");
     setState("loading");
     const fd = new FormData(e.currentTarget);
+    const visitedVal = String(fd.get("visited_place") ?? visited);
     const payload = {
       author_name: String(fd.get("author_name") ?? "").trim(),
       author_location_it: lang === "it" ? String(fd.get("author_location") ?? "").trim() : null,
       author_location_en: lang === "en" ? String(fd.get("author_location") ?? "").trim() : null,
       review_text: String(fd.get("review_text") ?? "").trim(),
       rating,
+      place_id: visitedVal.startsWith("p:") ? visitedVal.slice(2) : null,
+      map_spot_id: visitedVal.startsWith("s:") ? visitedVal.slice(2) : null,
     };
     if (payload.author_name.length < 2) {
       setErr(lang === "it" ? "Inserisci il tuo nome e cognome." : "Please enter your full name.");
@@ -184,6 +215,7 @@ function ReviewForm() {
       setState("success");
       (e.target as HTMLFormElement).reset();
       setRating(5);
+      setVisited("");
     } catch (e: any) {
       console.error(e);
       setErr(e?.message || t("form.error"));
@@ -228,7 +260,7 @@ function ReviewForm() {
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-2 p-2 bg-[#F9F4EC] rounded-lg border border-black/5">
+      <div className="flex items-center justify-between gap-2 p-2 bg-[#F9F4EC] dark:bg-[#231b14] rounded-lg border border-black/5 dark:border-white/5">
         <label className="text-[10.5px] sm:text-xs font-bold uppercase tracking-wider text-text-main shrink-0">
           {t("reviews.ratingLabel")} <span className="required">*</span>
         </label>
@@ -240,7 +272,7 @@ function ReviewForm() {
               onClick={() => setRating(n)}
               onMouseEnter={() => setHover(n)}
               onMouseLeave={() => setHover(0)}
-              className="p-0.5 sm:p-1 rounded-md hover:bg-white transition-colors cursor-pointer"
+              className="p-0.5 sm:p-1 rounded-md hover:bg-white dark:hover:bg-[#2e231a] transition-colors cursor-pointer"
               aria-label={`${n} stelle`}
             >
               <Star
@@ -248,12 +280,29 @@ function ReviewForm() {
                   "w-4 h-4 sm:w-5 sm:h-5 transition-colors",
                   ((hover || rating) >= n
                     ? "fill-gold text-gold"
-                    : "text-black/20")
+                    : "text-black/20 dark:text-white/20")
                 )}
               />
             </button>
           ))}
         </div>
+      </div>
+
+      <div className="form-group">
+        <label className="form-label text-[10.5px] sm:text-xs mb-0.5">
+          {t("map.reviewPlaceLabel")}
+        </label>
+        <select
+          name="visited_place"
+          value={visited}
+          onChange={(e) => setVisited(e.target.value)}
+          className="form-control text-xs sm:text-sm py-1.5 sm:py-2.5 w-full"
+        >
+          <option value="">{t("map.reviewPlaceNone")}</option>
+          {placeOptions.map((o) => (
+            <option key={o.key} value={o.key}>{o.label}</option>
+          ))}
+        </select>
       </div>
 
       <div className="form-group">

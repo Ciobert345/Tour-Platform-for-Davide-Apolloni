@@ -5,6 +5,11 @@ export interface BookingPrefillData {
   participants?: number;
   transport?: string;
   notes?: string;
+  source?: "form" | "map";
+  mapLat?: number | null;
+  mapLng?: number | null;
+  placeId?: string | null;
+  mapSpotId?: string | null;
 }
 
 /**
@@ -14,14 +19,12 @@ export interface BookingPrefillData {
 export function triggerBookingPrefill(data: BookingPrefillData) {
   if (typeof window === "undefined") return;
 
-  // 1. Dispatch custom window event
   window.dispatchEvent(
     new CustomEvent<BookingPrefillData>("davide:prefill-booking", {
       detail: data,
     })
   );
 
-  // 2. Smooth scroll to #prenota con offset header
   setTimeout(() => {
     const el = document.getElementById("prenota");
     if (el) {
@@ -34,4 +37,22 @@ export function triggerBookingPrefill(data: BookingPrefillData) {
       });
     }
   }, 30);
+}
+
+export function readBookingQueryParams(search: string): BookingPrefillData | null {
+  const p = new URLSearchParams(search);
+  const dest = p.get("dest");
+  const lat = p.get("lat");
+  const lng = p.get("lng");
+  const tour = p.get("tour");
+  if (!dest && !lat && !lng && !tour) return null;
+  const mapLat = lat != null && lat !== "" ? Number(lat) : undefined;
+  const mapLng = lng != null && lng !== "" ? Number(lng) : undefined;
+  return {
+    destination: dest || undefined,
+    tourTypeId: tour || undefined,
+    mapLat: mapLat != null && Number.isFinite(mapLat) ? mapLat : undefined,
+    mapLng: mapLng != null && Number.isFinite(mapLng) ? mapLng : undefined,
+    source: mapLat != null && mapLng != null ? "map" : "form",
+  };
 }

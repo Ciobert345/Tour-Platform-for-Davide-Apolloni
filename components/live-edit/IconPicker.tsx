@@ -56,42 +56,42 @@ export default function IconPicker({
     <div
       ref={ref}
       className={cn(
-        "relative w-[340px] max-w-[calc(100vw-32px)] bg-white rounded-lg shadow-2xl border border-slate-200 flex flex-col overflow-hidden",
+        "relative w-[340px] max-w-[calc(100vw-32px)] bg-white dark:bg-[#1c1611] rounded-lg shadow-2xl border border-slate-200 dark:border-[#382b20] flex flex-col overflow-hidden",
         className
       )}
       style={{ maxHeight: "420px" }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2.5 border-b border-slate-100 bg-slate-50">
-        <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+      <div className="flex items-center justify-between px-3 py-2.5 border-b border-slate-100 dark:border-[#2d2218] bg-slate-50 dark:bg-[#261f18]">
+        <span className="text-xs font-bold text-slate-700 dark:text-[#e8dccb] uppercase tracking-wider">
           Scegli Icona
         </span>
         <button
           type="button"
           onClick={onClose}
-          className="w-6 h-6 rounded-full hover:bg-slate-200 flex items-center justify-center transition-colors"
+          className="w-6 h-6 rounded-full hover:bg-slate-200 dark:hover:bg-[#2c221a] flex items-center justify-center transition-colors"
         >
-          <X className="w-3.5 h-3.5 text-slate-500" />
+          <X className="w-3.5 h-3.5 text-slate-500 dark:text-[#a89582]" />
         </button>
       </div>
 
       {/* Search */}
-      <div className="px-3 py-2 border-b border-slate-100">
+      <div className="px-3 py-2 border-b border-slate-100 dark:border-[#2d2218]">
         <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 dark:text-[#a89582] pointer-events-none" />
           <input
             type="text"
             placeholder="Cerca icona…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-sm focus:outline-none focus:ring-2 focus:ring-[#9C1C1C]/40 bg-white"
+            className="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-200 dark:border-[#382b20] rounded-sm focus:outline-none focus:ring-2 focus:ring-[#9C1C1C]/40 bg-white dark:bg-[#261f18] text-slate-800 dark:text-[#f5ede2] placeholder:text-slate-400 dark:placeholder:text-[#6b5c4e]"
             autoFocus
           />
         </div>
       </div>
 
       {/* Category tabs */}
-      <div className="flex gap-1 px-2 py-1.5 border-b border-slate-100 overflow-x-auto scrollbar-hide flex-shrink-0">
+      <div className="flex gap-1 px-2 py-1.5 border-b border-slate-100 dark:border-[#2d2218] overflow-x-auto scrollbar-hide flex-shrink-0">
         {(["Tutte", ...ICON_CATEGORIES] as const).map((cat) => (
           <button
             key={cat}
@@ -101,7 +101,7 @@ export default function IconPicker({
               "shrink-0 px-2 py-1 rounded-sm text-[10px] font-semibold transition-colors whitespace-nowrap",
               activeCategory === cat
                 ? "bg-[#9C1C1C] text-white"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                : "bg-slate-100 dark:bg-[#2d2218] text-slate-600 dark:text-[#c7b59f] hover:bg-slate-200 dark:hover:bg-[#382b20]"
             )}
           >
             {cat}
@@ -112,7 +112,7 @@ export default function IconPicker({
       {/* Icons grid */}
       <div className="overflow-y-auto flex-1 p-2">
         {filtered.length === 0 ? (
-          <div className="py-8 text-center text-xs text-slate-400">
+          <div className="py-8 text-center text-xs text-slate-400 dark:text-[#6b5c4e]">
             Nessuna icona trovata
           </div>
         ) : (
@@ -132,8 +132,8 @@ export default function IconPicker({
                   className={cn(
                     "flex flex-col items-center gap-0.5 p-2 rounded-sm transition-all text-center group",
                     isSelected
-                      ? "bg-[#9C1C1C]/15 ring-1 ring-[#9C1C1C]/50 text-[#9C1C1C]"
-                      : "hover:bg-slate-100 text-slate-600 hover:text-slate-900"
+                      ? "bg-[#9C1C1C]/15 ring-1 ring-[#9C1C1C]/50 text-[#9C1C1C] dark:text-[#f07f82]"
+                      : "hover:bg-slate-100 dark:hover:bg-[#2d2218] text-slate-600 dark:text-[#c7b59f] hover:text-slate-900 dark:hover:text-[#f5ede2]"
                   )}
                 >
                   <IconComp className="w-4 h-4 shrink-0" />

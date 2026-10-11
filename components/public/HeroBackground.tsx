@@ -28,7 +28,7 @@ export default function HeroBackground() {
             fill
             sizes="100vw"
             priority
-            className="object-cover"
+            className="object-cover transition-opacity duration-300 dark:opacity-40"
             onError={() => setFailed(true)}
           />
         )}

@@ -9,43 +9,167 @@
 @import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap");
 
 :root {
-  /* ===== PALETTE UFFICIALE (allineata a index.html L27-L42) ===== */
+  /* ===== PALETTE UFFICIALE (RGB Channels per piena compatibilità con opacità Tailwind) ===== */
+  --bg-main-rgb: 249 245 236;
+  --bg-card-rgb: 255 253 249;
+  --bg-alt-rgb: 237 225 202;
+  --bg-warm-rgb: 228 213 187;
+  --bg-dark-rgb: 36 26 18;
+  --bg-darker-rgb: 24 16 10;
+
+  /* Pietra / Crema */
+  --color-stone-rgb: 222 197 165;
+  --color-stone-dark-rgb: 160 127 85;
+
+  /* Terracotta — cremisi logo */
+  --color-terracotta-rgb: 147 22 26;
+  --color-terracotta-dark-rgb: 77 26 16;
+  --color-terracotta-light-rgb: 240 216 217;
+
+  /* Bronzo antico — cordicella e dettagli dorati */
+  --color-gold-rgb: 168 126 60;
+  --color-gold-dark-rgb: 122 88 40;
+  --color-gold-light-rgb: 248 238 217;
+
+  /* Oliva — marrone chiaro */
+  --color-olive-rgb: 147 111 82;
+  --color-olive-dark-rgb: 72 46 33;
+  --color-olive-light-rgb: 236 225 211;
+
+  /* Verde foresta Slow Tourism */
+  --color-forest-rgb: 93 114 80;
+  --color-forest-dark-rgb: 62 77 52;
+  --color-forest-light-rgb: 232 237 227;
+
+  /* Blu Adriatico */
+  --color-blue-adriatic-rgb: 83 115 133;
+  --color-blue-dark-rgb: 71 89 106;
+
+  /* Testi */
+  --text-main-rgb: 43 32 24;
+  --text-muted-rgb: 114 85 63;
+  --text-light-rgb: 177 142 109;
+
+  /* CSS Standard Variables per Inline Styles */
   --bg-main: #f9f5ec;
   --bg-card: #fffdf9;
   --bg-alt: #ede1ca;
   --bg-warm: #e4d5bb;
   --bg-dark: #241a12;
   --bg-darker: #18100a;
-
-  /* Pietra / Crema */
   --color-stone: #dec5a5;
   --color-stone-dark: #a07f55;
-
-  /* Terracotta — cremisi logo */
   --color-terracotta: #93161a;
   --color-terracotta-dark: #4d1a10;
-
-  /* Bronzo antico — cordicella e dettagli dorati */
+  --color-terracotta-light: #f0d8d9;
   --color-gold: #a87e3c;
   --color-gold-dark: #7a5828;
-
-  /* Oliva — marrone chiaro (nuova palette) */
+  --color-gold-light: #f8eed9;
   --color-olive: #936f52;
   --color-olive-dark: #482e21;
-
-  /* Verde foresta Slow Tourism (riservato) */
+  --color-olive-light: #ece1d3;
   --color-forest: #5d7250;
   --color-forest-dark: #3e4d34;
-
-  /* Blu Adriatico */
+  --color-forest-light: #e8ede3;
   --color-blue-adriatic: #537385;
   --color-blue-dark: #47596a;
-
-  /* Testi */
   --text-main: #2b2018;
   --text-muted: #72553f;
   --text-light: #b18e6d;
   --text-white: #f7f0e3;
+}
+
+.dark {
+  /* ===== PALETTE UFFICIALE DARK MODE (Ebano/Ardesia calda editoriale, luminosa e accogliente) ===== */
+  --bg-main-rgb: 34 28 23;
+  --bg-card-rgb: 44 36 29;
+  --bg-alt-rgb: 53 43 35;
+  --bg-warm-rgb: 60 49 40;
+  --bg-dark-rgb: 22 18 14;
+  --bg-darker-rgb: 16 13 10;
+
+  /* Pietra / Crema — chiara e calda per accenti su scuro */
+  --color-stone-rgb: 222 197 165;
+  --color-stone-dark-rgb: 203 178 146;
+
+  /* Terracotta — profonda e identica al tema chiaro per gli sfondi delle sezioni */
+  --color-terracotta-rgb: 147 22 26;
+  --color-terracotta-dark-rgb: 77 26 16;
+  --color-terracotta-light-rgb: 252 165 157;
+
+  /* Bronzo antico / Oro caldo e luminoso */
+  --color-gold-rgb: 232 184 104;
+  --color-gold-dark-rgb: 201 155 69;
+  --color-gold-light-rgb: 251 238 200;
+
+  /* Oliva — marrone chiaro luminoso */
+  --color-olive-rgb: 201 161 131;
+  --color-olive-dark-rgb: 168 126 96;
+  --color-olive-light-rgb: 236 217 198;
+
+  /* Verde foresta Slow Tourism */
+  --color-forest-rgb: 142 181 125;
+  --color-forest-dark-rgb: 111 150 94;
+  --color-forest-light-rgb: 201 227 188;
+
+  /* Blu Adriatico */
+  --color-blue-adriatic-rgb: 132 173 198;
+  --color-blue-dark-rgb: 162 201 224;
+
+  /* Testi ad altissima leggibilità e contrasto */
+  --text-main-rgb: 253 249 242;
+  --text-muted-rgb: 218 199 178;
+  --text-light-rgb: 191 169 147;
+
+  /* CSS Standard Variables per Inline Styles in Dark Mode */
+  --bg-main: #221c17;
+  --bg-card: #2c241d;
+  --bg-alt: #352b23;
+  --bg-warm: #3c3128;
+  --bg-dark: #16120e;
+  --bg-darker: #100d0a;
+  --color-stone: #dec5a5;
+  --color-stone-dark: #cbb292;
+  --color-terracotta: #93161a;
+  --color-terracotta-dark: #4d1a10;
+  --color-terracotta-light: #fca59d;
+  --color-gold: #e8b868;
+  --color-gold-dark: #c99b45;
+  --color-gold-light: #fbeec8;
+  --color-olive: #c9a183;
+  --color-olive-dark: #a87e60;
+  --color-olive-light: #ecd9c6;
+  --color-forest: #8eb57d;
+  --color-forest-dark: #6f965e;
+  --color-forest-light: #c9e3bc;
+  --color-blue-adriatic: #84adc6;
+  --color-blue-dark: #a2c9e0;
+  --text-main: #fdf9f2;
+  --text-muted: #dac7b2;
+  --text-light: #bfa993;
+  --text-white: #ffffff;
+}
+
+/* ============================================================
+   CONTRAST-AWARE ADAPTIVE ENGINE
+   Permette a testi e oggetti con colore scelto dall'admin di
+   adattarsi dinamicamente garantendo contrasto impeccabile sia
+   in Light che in Dark Mode.
+   ============================================================ */
+.adaptive-color-span {
+  --span-color-current: var(--span-color-light);
+}
+
+.dark .adaptive-color-span {
+  --span-color-current: var(--span-color-dark, var(--span-color-light));
+}
+
+.badge-adaptive {
+  --badge-color-current: var(--badge-color-light);
+}
+
+.dark .badge-adaptive {
+  --badge-color-current: var(--badge-color-dark, var(--badge-color-light));
 }
 
 html {
@@ -61,6 +185,7 @@ body {
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 h1,
@@ -211,6 +336,49 @@ h6 {
     @apply bg-terracotta text-text-white;
     box-shadow: 0 2px 8px rgba(147, 22, 26, 0.35);
   }
+
+  /* Dark mode overrides per classi componenti condivise */
+  .dark .btn-secondary {
+    @apply bg-bg-card/90 text-text-main border-white/15 hover:bg-bg-warm hover:border-terracotta hover:text-terracotta;
+  }
+
+  .dark .btn-outline {
+    @apply text-text-main border-white/20 hover:bg-white/5 hover:border-white/40;
+  }
+
+  .dark .card-base {
+    @apply bg-bg-card border-white/10;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+  }
+
+  .dark .card-hover:hover {
+    @apply border-terracotta/40;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.65);
+  }
+
+  .dark .form-control {
+    @apply border-white/15 bg-bg-alt/70 text-text-main placeholder:text-text-muted focus:bg-bg-warm focus:border-terracotta focus:ring-terracotta/25;
+  }
+
+  .dark .chip {
+    @apply bg-bg-warm text-text-muted border-white/10;
+  }
+
+  .dark .section-subtitle {
+    @apply text-terracotta-light;
+  }
+
+  .dark .eyebrow {
+    @apply bg-terracotta/20 text-terracotta-light border-terracotta/40;
+  }
+
+  .dark .eyebrow-gold {
+    @apply bg-gold/20 text-gold-light border-gold/40;
+  }
+
+  .dark .eyebrow-dark {
+    @apply bg-white/10 text-[#fdf9f2] border-white/20;
+  }
 }
 
 /* =========================================================
@@ -223,6 +391,22 @@ html {
 
 html.dark {
   scrollbar-color: #B22A2A #18100a;
+}
+
+/* Admin: niente scroll sul documento — solo colonna contenuto */
+html:has(.admin-shell),
+html:has(.admin-shell) body {
+  overflow: hidden;
+  height: 100%;
+  height: 100dvh;
+}
+
+.admin-shell .admin-scroll {
+  scrollbar-gutter: stable;
+}
+
+.admin-shell nav::-webkit-scrollbar {
+  width: 8px;
 }
 
 /* WebKit / Chromium / Edge / Safari */
@@ -257,6 +441,20 @@ html.dark {
   background: var(--bg-alt, #ede1ca);
 }
 
+html.dark ::-webkit-scrollbar-track,
+html.dark ::-webkit-scrollbar-corner {
+  background: #18100a;
+  border-left-color: rgba(255, 255, 255, 0.06);
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  border-color: #18100a;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  border-color: #241a14;
+}
+
 /* Dark / Footer sections override */
 .bg-bg-dark::-webkit-scrollbar-track,
 .bg-bg-darker::-webkit-scrollbar-track,
@@ -277,6 +475,19 @@ footer::-webkit-scrollbar-thumb {
 .overflow-y-auto,
 .overflow-auto {
   scrollbar-width: thin;
+}
+
+/* Nascondi scrollbar: definite UNLAYERED e DOPO .overflow-x-auto
+   perché negli stili non stratificati vincono sull'equivalente
+   `scrollbar-width: thin` applicato ai container con overflow. */
+.no-scrollbar,
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar,
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 
 /* ===== Nascondi scrollbar DEL TUTTO su mobile ===== */
@@ -309,15 +520,6 @@ footer::-webkit-scrollbar-thumb {
 @layer utilities {
   .text-balance {
     text-wrap: balance;
-  }
-
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
   }
 
   /* Hero ring frame */
@@ -462,4 +664,239 @@ section.live-section-hidden {
 section.live-section-hidden .section-title-wrap,
 section.live-section-hidden .section-divider {
   display: none !important;
+}
+
+/* ============================================================
+   DARK MODE REFINEMENTS & LEGIBILITY GUARANTEES
+   Garantisce contrasto perfetto, aria visiva ed eleganza
+   su tutti i componenti complessi del sito
+   ============================================================ */
+.dark .section-title {
+  color: var(--text-main);
+}
+
+.dark .section-desc {
+  color: var(--text-muted);
+}
+
+.dark .card-base {
+  background-color: var(--bg-card);
+  border-color: rgba(222, 197, 165, 0.16);
+}
+
+.dark .card-base:hover {
+  border-color: rgba(224, 90, 80, 0.4);
+}
+
+.dark .chip {
+  background-color: var(--bg-alt);
+  color: var(--text-main);
+  border-color: rgba(222, 197, 165, 0.15);
+}
+
+.dark .btn-secondary {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--text-main);
+  border-color: rgba(222, 197, 165, 0.2);
+}
+
+.dark .btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: var(--color-terracotta);
+  color: var(--text-main);
+}
+
+.dark .btn-outline {
+  color: var(--text-main);
+  border-color: rgba(222, 197, 165, 0.25);
+}
+
+.dark .btn-outline:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(222, 197, 165, 0.45);
+}
+
+.dark .form-control {
+  background-color: rgba(0, 0, 0, 0.25);
+  border-color: rgba(222, 197, 165, 0.18);
+  color: var(--text-main);
+}
+
+.dark .form-control:focus {
+  background-color: rgba(0, 0, 0, 0.4);
+  border-color: var(--color-terracotta);
+}
+
+.dark .lang-switcher {
+  background-color: var(--bg-alt);
+  border-color: rgba(222, 197, 165, 0.18);
+}
+
+/* ---------------------------------------------------------------------------
+   Admin + login: le pagine usano hex Tailwind chiari (bg-white, #F9F4EC…).
+   Questo strato le rende leggibili in dark mode senza toccare ogni file.
+--------------------------------------------------------------------------- */
+html.dark :is(.admin-shell, .admin-modal) {
+  color-scheme: dark;
+  color: #f5ede2;
+}
+
+html.dark :is(.admin-shell, .admin-modal) .bg-white {
+  background-color: #1c1611;
+}
+html.dark :is(.admin-shell, .admin-modal) .bg-\[\#F9F4EC\],
+html.dark :is(.admin-shell, .admin-modal) .bg-\[\#F0E8D6\],
+html.dark :is(.admin-shell, .admin-modal) .bg-\[\#FAF4EB\] {
+  background-color: #251e17;
+}
+html.dark :is(.admin-shell, .admin-modal) .text-\[\#1E160A\],
+html.dark :is(.admin-shell, .admin-modal) .text-\[\#3D2E1A\],
+html.dark :is(.admin-shell, .admin-modal) .text-\[\#2E2010\],
+html.dark :is(.admin-shell, .admin-modal) .text-\[\#2B2018\] {
+  color: #f5ede2;
+}
+html.dark :is(.admin-shell, .admin-modal) .text-\[\#5C4C38\],
+html.dark :is(.admin-shell, .admin-modal) .text-\[\#7A6655\] {
+  color: #c7b59f;
+}
+html.dark :is(.admin-shell, .admin-modal) .text-\[\#92816A\] {
+  color: #a89582;
+}
+html.dark :is(.admin-shell, .admin-modal) .border-\[\#E9DCC4\],
+html.dark :is(.admin-shell, .admin-modal) .border-\[\#F0E8D6\],
+html.dark :is(.admin-shell, .admin-modal) .divide-\[\#F0E8D6\] > :not([hidden]) ~ :not([hidden]) {
+  border-color: #382b20;
+}
+html.dark :is(.admin-shell, .admin-modal) input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+html.dark :is(.admin-shell, .admin-modal) textarea,
+html.dark :is(.admin-shell, .admin-modal) select {
+  background-color: #251e17;
+  color: #f5ede2;
+  border-color: #4a3a2c;
+}
+html.dark :is(.admin-shell, .admin-modal) input::placeholder,
+html.dark :is(.admin-shell, .admin-modal) textarea::placeholder {
+  color: #8a7868;
+}
+html.dark :is(.admin-shell, .admin-modal) thead {
+  background-color: #251e17;
+  color: #c7b59f;
+}
+html.dark :is(.admin-shell, .admin-modal) tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+html.dark :is(.admin-shell, .admin-modal) .hover\:bg-\[\#F9F4EC\]:hover,
+html.dark :is(.admin-shell, .admin-modal) .hover\:bg-\[\#F0E8D6\]:hover,
+html.dark :is(.admin-shell, .admin-modal) .hover\:bg-\[\#F9F4EC\]\/60:hover,
+html.dark :is(.admin-shell, .admin-modal) .hover\:bg-white:hover {
+  background-color: #2c221a;
+}
+
+html.dark :is(.admin-shell, .admin-modal) .bg-\[\#F9F4EC\]\/50,
+html.dark :is(.admin-shell, .admin-modal) .bg-\[\#F9F4EC\]\/60,
+html.dark :is(.admin-shell, .admin-modal) .bg-\[\#F9F4EC\]\/70 {
+  background-color: #251e17;
+}
+
+html.dark :is(.admin-shell, .admin-modal) input[type="checkbox"],
+html.dark :is(.admin-shell, .admin-modal) input[type="radio"] {
+  color-scheme: light;
+  accent-color: #6d9a52;
+  width: 1.05rem;
+  height: 1.05rem;
+  flex-shrink: 0;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+html.dark :is(.admin-shell, .admin-modal) .text-\[\#8B6F00\],
+html.dark :is(.admin-shell, .admin-modal) .text-\[\#B89200\] {
+  color: #e4c56a;
+}
+
+html.dark .admin-login-page input:not([type="checkbox"]):not([type="radio"]),
+html.dark .admin-login-page textarea {
+  background-color: #2a2119;
+  color: #f5ede2;
+  border-color: #4a3a2c;
+}
+html.dark .admin-login-page input::placeholder {
+  color: #8a7868;
+}
+
+/* ===== MAPPA: Stile editoriale caldo e pulizia controlli ===== */
+.leaflet-control-zoom,
+.leaflet-control-attribution {
+  display: none !important;
+}
+
+.leaflet-container {
+  background-color: #FAF4EB !important;
+  font-family: inherit;
+}
+
+html.dark .leaflet-container {
+  background-color: #1a140f !important;
+}
+
+/* Trasforma le tile OSM standard in un'elegante carta d'epoca calda/avorio */
+.leaflet-tile-pane {
+  filter: sepia(0.24) saturate(0.68) brightness(1.02) contrast(0.96);
+  transition: filter 0.3s ease;
+}
+
+/* Modalità scura morbida, rilassante ed elegante (contrasto attenuato, toni caldi ardesia/ebano) */
+html.dark .leaflet-tile-pane {
+  filter: invert(0.88) hue-rotate(185deg) brightness(0.86) contrast(0.72) saturate(0.60) sepia(0.25);
+}
+
+/* Stile raggruppatori mappa (Cluster Markers) — Terracotta e Oro rinascimentale, non verde */
+.da-cluster-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+.da-cluster-badge {
+  width: 42px;
+  height: 42px;
+  border-radius: 9999px;
+  background: rgba(156, 28, 28, 0.24);
+  border: 1.5px solid rgba(196, 146, 58, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(156, 28, 28, 0.28);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.da-cluster-badge:hover {
+  transform: scale(1.12);
+}
+
+.da-cluster-inner {
+  width: 30px;
+  height: 30px;
+  border-radius: 9999px;
+  background: #9C1C1C;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1;
+  border: 1.5px solid #C4923A;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+html.dark .da-cluster-badge {
+  background: rgba(196, 146, 58, 0.25);
+  border-color: rgba(232, 184, 104, 0.5);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+
+html.dark .da-cluster-inner {
+  background: #871818;
+  border-color: #E8B868;
 }

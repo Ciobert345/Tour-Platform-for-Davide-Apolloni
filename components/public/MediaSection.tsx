@@ -97,7 +97,7 @@ export default function MediaSection({ media }: { media: MediaT[] }) {
   };
 
   return (
-    <section id="media" className="section bg-[#F9F4EC]">
+    <section id="media" className="section bg-[#F9F4EC] dark:bg-bg-main border-b border-black/5 dark:border-white/5">
       <div className="container-app">
         <EditableSectionHeading
           section="Media"
@@ -346,7 +346,7 @@ function VideoCard({
 
   return (
     // grow: dentro MobileCarousel (flex-col) la card si stira all'altezza della riga, come le card dei tour
-    <article className="bg-white rounded-2xl shadow-sm border border-black/10 overflow-hidden grid lg:grid-cols-[1.25fr_0.75fr] h-full grow">
+    <article className="bg-white dark:bg-bg-card rounded-2xl shadow-sm border border-black/10 dark:border-white/10 overflow-hidden grid lg:grid-cols-[1.25fr_0.75fr] h-full grow">
       <div className="relative bg-black aspect-video w-full lg:aspect-auto lg:min-h-[420px] flex items-center justify-center overflow-hidden">
         <Editable
           id={`media-video-url-${m.id}`}
@@ -383,7 +383,7 @@ function VideoCard({
         </button>
       </div>
 
-      <div className="p-5 sm:p-8 lg:p-10 flex flex-col justify-center bg-white">
+      <div className="p-5 sm:p-8 lg:p-10 flex flex-col justify-center bg-white dark:bg-bg-card">
         <Editable
           id={`media-video-badge-${m.id}`}
           label={`Badge video ${i + 1}`}

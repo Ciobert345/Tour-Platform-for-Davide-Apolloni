@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -51,6 +52,9 @@ export async function POST(req: NextRequest) {
       );
 
     if (error) throw error;
+
+    revalidatePath("/", "layout");
+    if (sectionId === "mappa") revalidatePath("/mappa");
 
     return NextResponse.json({ ok: true, sectionId, hidden });
   } catch (err: any) {

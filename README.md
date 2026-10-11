@@ -32,6 +32,7 @@ Il sito nasce con l'obiettivo di offrire uno strumento digitale completo e auton
 - **Recensioni** dei clienti con valutazione
 - **Informazioni pratiche** su modalita di trasporto, lingue disponibili e condizioni di servizio
 - **Bilingue italiano / inglese** con traduzione automatica dei contenuti tramite AI (Google Translate API) e sistema di lingua persistente
+- **Mappa interattiva** (`/mappa`) con OpenStreetMap: luoghi del sito, mete proposte, recensioni e richiesta di visita personalizzata cliccando un punto in Veneto o in provincia di Trento
 
 ### Area amministrativa
 
@@ -39,7 +40,8 @@ Accessibile all'indirizzo `/admin`, protetta da autenticazione Supabase Auth:
 
 | Sezione | Contenuto gestibile |
 |---|---|
-| Luoghi | Nome, descrizione, immagine, tag, durata, categorie tour associate |
+| Luoghi | Nome, descrizione, immagine, tag, durata, categorie tour associate, coordinate sulla mappa |
+| Mappa / Mete proposte | Punti visibili solo in `/mappa`, non nella sezione Tour della homepage |
 | Categorie tour | Nome, colore, icona, flag esclusivita |
 | Eventi | Date, posti disponibili, stato, luoghi collegati |
 | Prenotazioni | Ricezione e gestione delle richieste di prenotazione |
@@ -77,9 +79,11 @@ Il sistema di live editing consente di modificare ogni stringa di testo del sito
 ```
 app/
   page.tsx              # Homepage pubblica (SSR con dati Supabase)
+  (map)/mappa/          # Mappa interattiva OpenStreetMap
   admin/                # Area amministrativa (15+ sezioni)
   api/
     translate/          # Route handler per traduzione AI
+    geo/                # Proxy Nominatim (reverse/search) e Wikimedia Commons
     ...
 
 components/
@@ -101,6 +105,14 @@ types/
 ---
 
 ## Note sul design
+
+### Privacy — mappa
+
+La pagina `/mappa` carica tessere da OpenStreetMap e, sui click liberi, foto da Wikimedia Commons. Il browser dell’utente contatta quindi server terzi. In **Admin → Documenti legali** conviene aggiungere (IT/EN) una riga del tipo:
+
+> Il sito, nella pagina Mappa, mostra carte geografiche fornite da OpenStreetMap e può visualizzare fotografie da Wikimedia Commons. In questi casi il tuo browser si connette ai server di quei servizi, che possono registrare indirizzo IP e dati tecnici secondo le rispettive privacy policy.
+
+---
 
 Il design segue una palette terracotta/pietra ispirata ai colori del paesaggio veneto e trentino. Le scelte tipografiche (serif per i titoli, sans-serif leggero per i testi) richiamano un'estetica editoriale e culturale, coerente con il profilo professionale della guida. Le immagini esterne (Unsplash e CDN) sono ottimizzate automaticamente in WebP/AVIF con placeholder a bassa risoluzione per eliminare il flash di caricamento.
 

@@ -97,7 +97,7 @@ export function TagInput({
   return (
     <div>
       <div
-        className={`flex flex-wrap items-center gap-1.5 p-1.5 min-h-[42px] border rounded-sm bg-white border-[#E9DCC4] focus-within:ring-2 focus-within:ring-[#4A6535]/30 focus-within:border-[#4A6535] transition-colors cursor-text ${className || ""
+        className={`flex flex-wrap items-center gap-1.5 p-1.5 min-h-[42px] border rounded-sm bg-white border-[#E9DCC4] focus-within:ring-2 focus-within:ring-[#9C1C1C]/30 focus-within:border-[#9C1C1C] transition-colors cursor-text ${className || ""
           }`}
       >
         {Array.isArray(tags) &&

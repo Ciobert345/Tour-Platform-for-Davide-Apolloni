@@ -103,7 +103,7 @@ export default function TranslateButton({
       {isTranslating ? (
         <Loader2 className="w-3.5 h-3.5 animate-spin" />
       ) : status === "success" ? (
-        <CheckCircle2 className="w-3.5 h-3.5 text-[#4A6535]" />
+        <CheckCircle2 className="w-3.5 h-3.5 text-[#C4923A]" />
       ) : status === "error" ? (
         <AlertCircle className="w-3.5 h-3.5 text-[#9C1C1C]" />
       ) : (

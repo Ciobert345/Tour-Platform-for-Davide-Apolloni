@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database.types";
+import { UUID_RE } from "@/lib/geo/constants";
 
 type ReviewInsert = Database["public"]["Tables"]["reviews"]["Insert"];
 
@@ -55,6 +56,22 @@ export async function POST(req: NextRequest) {
       rating: Math.max(1, Math.min(5, Math.round(rating))),
       status: "pending",
     };
+
+    const placeId =
+      typeof payload.place_id === "string" && UUID_RE.test(payload.place_id)
+        ? payload.place_id
+        : null;
+    const mapSpotId =
+      typeof payload.map_spot_id === "string" && UUID_RE.test(payload.map_spot_id)
+        ? payload.map_spot_id
+        : null;
+    if (placeId) {
+      const { data: pl } = await sb.from("places").select("id").eq("id", placeId).eq("is_active", true).maybeSingle();
+      if (pl) insert.place_id = placeId;
+    } else if (mapSpotId) {
+      const { data: ms } = await sb.from("map_spots").select("id").eq("id", mapSpotId).eq("is_active", true).maybeSingle();
+      if (ms) insert.map_spot_id = mapSpotId;
+    }
 
     const { data, error } = await sb.from("reviews").insert([insert] as any).select("id").single() as any;
 

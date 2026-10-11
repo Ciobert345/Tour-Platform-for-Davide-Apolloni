@@ -298,3 +298,222 @@ export async function fetchPublicHomeData(
     hiddenSections,
   };
 }
+
+export type PublicMapReview = {
+  id: string;
+  author_name: string;
+  author_location_it: string | null;
+  author_location_en: string | null;
+  review_text: string;
+  rating: number;
+  submitted_at: string;
+  place_id: string | null;
+  map_spot_id: string | null;
+};
+
+export type PublicMapPlace = Database["public"]["Tables"]["places"]["Row"] & {
+  color: string;
+  tour_type_ids: string[];
+  avgRating: number | null;
+  reviewCount: number;
+  spotsCount?: number;
+};
+
+export type PublicMapSiblingSpot = {
+  id: string;
+  name_it: string;
+  name_en: string;
+  lat: number;
+  lng: number;
+};
+
+export type PublicMapSpot = Database["public"]["Tables"]["map_spots"]["Row"] & {
+  color: string;
+  avgRating: number | null;
+  reviewCount: number;
+  tour_type_ids?: string[];
+  parentPlace?: {
+    id: string;
+    slug: string;
+    name_it: string;
+    name_en: string;
+    duration_hours: number | null;
+    difficulty: "accessible" | "easy" | "moderate" | "challenging" | null;
+    cover_image_url: string | null;
+    short_description_it: string | null;
+    short_description_en: string | null;
+    tour_type_ids: string[];
+  } | null;
+  siblingSpots?: PublicMapSiblingSpot[];
+};
+
+export type PublicMapEvent = Database["public"]["Tables"]["events"]["Row"] & {
+  lat: number;
+  lng: number;
+  color: string;
+  place_id: string | null;
+  place_name_it: string | null;
+  place_name_en: string | null;
+  tour_type: { id: string; slug: string; name_it: string; name_en: string; color: string; icon: string | null } | null;
+};
+
+export async function fetchPublicMapData(sb: Supabase = createClient()) {
+  const [places, spots, tourTypesRaw, reviewsRes, eventsRes] = await Promise.all([
+    fetchPlaces(sb),
+    sb.from("map_spots").select("*").eq("is_active", true).order("sort_order"),
+    fetchTourTypes(sb),
+    sb
+      .from("reviews")
+      .select("id, author_name, author_location_it, author_location_en, review_text, rating, submitted_at, place_id, map_spot_id")
+      .eq("status", "approved")
+      .order("submitted_at", { ascending: false }),
+    sb
+      .from("events")
+      .select(`
+        *,
+        tour_types!events_tour_type_id_fkey (id, slug, name_it, name_en, color, icon),
+        event_places!event_places_event_id_fkey (
+          place_id,
+          places!event_places_place_id_fkey (id, slug, name_it, name_en, lat, lng, cover_image_url)
+        )
+      `)
+      .eq("is_active", true)
+      .gte("start_date", new Date().toISOString())
+      .order("start_date", { ascending: true }),
+  ]);
+  const tourTypes = tourTypesRaw as Database["public"]["Tables"]["tour_types"]["Row"][];
+
+  if (spots.error) throw new Error(`fetchPublicMapData map_spots: ${spots.error.message}`);
+  if (reviewsRes.error) throw new Error(`fetchPublicMapData reviews: ${reviewsRes.error.message}`);
+
+  const reviews = (reviewsRes.data ?? []) as PublicMapReview[];
+  const stats = new Map<string, { sum: number; n: number }>();
+  const bump = (key: string, rating: number) => {
+    const cur = stats.get(key) ?? { sum: 0, n: 0 };
+    cur.sum += rating;
+    cur.n += 1;
+    stats.set(key, cur);
+  };
+  for (const r of reviews) {
+    if (r.place_id) bump(`p:${r.place_id}`, r.rating);
+    if (r.map_spot_id) bump(`s:${r.map_spot_id}`, r.rating);
+  }
+
+  const rawSpots = ((spots.data ?? []) as Database["public"]["Tables"]["map_spots"]["Row"][]).filter(
+    (s) => s.lat != null && s.lng != null
+  );
+
+  // Set di ID dei luoghi che hanno già uno o più punti/tappe specifici in map_spots
+  const placesWithSpots = new Set(rawSpots.map((s) => s.place_id).filter(Boolean));
+
+  const allPlaces: PublicMapPlace[] = places.map((p) => {
+    const ids = (p.place_tour_types ?? []).map((x) => x.tour_type.id).filter(Boolean);
+    const firstColor = (p.place_tour_types ?? [])[0]?.tour_type?.color || "#9C1C1C";
+    const st = stats.get(`p:${p.id}`);
+    const mySpots = rawSpots.filter((s) => s.place_id === p.id);
+    return {
+      ...p,
+      lat: p.lat != null ? Number(p.lat) : null,
+      lng: p.lng != null ? Number(p.lng) : null,
+      color: firstColor,
+      tour_type_ids: ids,
+      avgRating: st ? st.sum / st.n : null,
+      reviewCount: st?.n ?? 0,
+      spotsCount: mySpots.length,
+    };
+  });
+
+  // Luoghi mostrati direttamente come singoli pin (hanno coordinate e non sono suddivisi in spot)
+  const mappedPlaces: PublicMapPlace[] = allPlaces.filter(
+    (p) => p.lat != null && p.lng != null && !placesWithSpots.has(p.id)
+  );
+
+  // Tappe / spot con dettagli del tour genitore e tappe sorelle
+  const mappedSpots: PublicMapSpot[] = rawSpots.map((s) => {
+    const parentPlace = s.place_id ? places.find((p) => p.id === s.place_id) : null;
+    const parentTt = parentPlace?.place_tour_types?.[0]?.tour_type;
+    const tt = tourTypes.find((t) => t.id === s.tour_type_id) || parentTt;
+    const spotStats = stats.get(`s:${s.id}`);
+    const parentStats = s.place_id ? stats.get(`p:${s.place_id}`) : null;
+    const st = spotStats ?? parentStats;
+
+    const parentTourTypeIds = (parentPlace?.place_tour_types ?? []).map((x) => x.tour_type.id).filter(Boolean);
+    const ttIds = s.tour_type_id ? [s.tour_type_id] : parentTourTypeIds;
+
+    const siblings: PublicMapSiblingSpot[] = s.place_id
+      ? rawSpots
+          .filter((x) => x.place_id === s.place_id && x.id !== s.id)
+          .map((x) => ({
+            id: x.id,
+            name_it: x.name_it,
+            name_en: x.name_en,
+            lat: Number(x.lat),
+            lng: Number(x.lng),
+          }))
+      : [];
+
+    return {
+      ...s,
+      lat: Number(s.lat),
+      lng: Number(s.lng),
+      color: tt?.color || parentTt?.color || "#9C1C1C",
+      tour_type_ids: ttIds,
+      avgRating: st ? st.sum / st.n : null,
+      reviewCount: st?.n ?? 0,
+      parentPlace: parentPlace
+        ? {
+            id: parentPlace.id,
+            slug: parentPlace.slug,
+            name_it: parentPlace.name_it,
+            name_en: parentPlace.name_en,
+            duration_hours: parentPlace.duration_hours,
+            difficulty: parentPlace.difficulty,
+            cover_image_url: parentPlace.cover_image_url,
+            short_description_it: parentPlace.short_description_it,
+            short_description_en: parentPlace.short_description_en,
+            tour_type_ids: parentTourTypeIds,
+          }
+        : null,
+      siblingSpots: siblings,
+    };
+  });
+
+  // Mappatura eventi futuri con coordinate derivate dai luoghi
+  const mappedEvents: PublicMapEvent[] = [];
+  for (const ev of (eventsRes.data ?? []) as any[]) {
+    const epList = ev.event_places ?? [];
+    const primaryPlace = epList[0]?.places ?? null;
+    let lat: number | null = primaryPlace?.lat != null ? Number(primaryPlace.lat) : null;
+    let lng: number | null = primaryPlace?.lng != null ? Number(primaryPlace.lng) : null;
+
+    if ((lat == null || lng == null) && primaryPlace?.id) {
+      const sp = rawSpots.find((s) => s.place_id === primaryPlace.id);
+      if (sp) {
+        lat = Number(sp.lat);
+        lng = Number(sp.lng);
+      }
+    }
+
+    if (lat != null && lng != null) {
+      mappedEvents.push({
+        ...ev,
+        lat,
+        lng,
+        color: ev.tour_types?.color || "#B22A2A",
+        place_id: primaryPlace?.id ?? null,
+        place_name_it: primaryPlace?.name_it ?? null,
+        place_name_en: primaryPlace?.name_en ?? null,
+        tour_type: ev.tour_types ?? null,
+      });
+    }
+  }
+
+  return {
+    places: mappedPlaces,
+    allPlaces,
+    spots: mappedSpots,
+    events: mappedEvents,
+    tourTypes,
+    reviews,
+  };
+}

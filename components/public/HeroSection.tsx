@@ -7,6 +7,7 @@ import { renderUiRichText, stripHtmlTags, applyUiVars } from "@/lib/rich-text";
 import Editable from "@/components/live-edit/Editable";
 import HeroBackground from "@/components/public/HeroBackground";
 import EditableBanner, { type BannerData } from "@/components/live-edit/EditableBanner";
+import HeroBannerRotator from "@/components/public/HeroBannerRotator";
 import EditableIcon from "@/components/live-edit/EditableIcon";
 import { renderIconByName } from "@/lib/icons";
 import { useLiveEdit } from "@/components/live-edit/LiveEditProvider";
@@ -29,13 +30,15 @@ function parseBanners(strings: Record<string, { it: string; en: string }>): Bann
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
-  return ids.map((id) => ({
-    id,
-    text_it: strings[`banner.${id}.text`]?.it ?? "",
-    text_en: strings[`banner.${id}.text`]?.en ?? "",
-    icon: strings[`banner.${id}.icon`]?.it ?? "GraduationCap",
-    style: (strings[`banner.${id}.style`]?.it as BannerData["style"]) ?? "neutral",
-  }));
+  return ids
+    .map((id) => ({
+      id,
+      text_it: strings[`banner.${id}.text`]?.it ?? "",
+      text_en: strings[`banner.${id}.text`]?.en ?? "",
+      icon: strings[`banner.${id}.icon`]?.it ?? "GraduationCap",
+      style: (strings[`banner.${id}.style`]?.it as BannerData["style"]) ?? "neutral",
+    }))
+    .filter((b) => b.text_it.trim() !== "" || b.text_en.trim() !== "");
 }
 
 const HIGHLIGHT_DEFAULTS = [
@@ -56,7 +59,7 @@ function EditableHighlight({
   const localIcon = strings[h.iconKey]?.it || h.defaultIcon;
 
   return (
-    <div className="flex items-center sm:items-start gap-2 sm:gap-3 text-xs sm:text-sm text-text-main bg-white/80 backdrop-blur-md border border-black/[0.04] rounded-2xl p-2 xs:p-2.5 sm:p-3.5 hover:bg-white hover:border-terracotta/30 hover:shadow-md transition-all duration-300 relative z-1 min-w-0">
+    <div className="flex items-center sm:items-start gap-2 sm:gap-3 text-xs sm:text-sm text-text-main bg-white/80 dark:bg-[#1a140e]/85 backdrop-blur-md border border-black/[0.04] dark:border-white/[0.08] rounded-2xl p-2 xs:p-2.5 sm:p-3.5 hover:bg-white dark:hover:bg-[#231b14] hover:border-terracotta/30 dark:hover:border-terracotta/40 hover:shadow-md transition-all duration-300 relative z-1 min-w-0">
       <div className="relative shrink-0 sm:mt-0.5">
         <EditableIcon
           id={`hero.highlight.${h.key}.icon`}
@@ -143,16 +146,16 @@ export default function HeroSection({ profile }: { profile: ProfileT | null }) {
 
       {/* ===== CONTENT ===== */}
       <div className="container-app relative z-10 w-full">
+        {/* BANNER IN CIMA ALLA HERO: A tutta larghezza contenitore, garantisce che il testo lungo stia comodamente su una sola riga */}
+        {banners.length > 0 && (
+          <div className="mb-3 sm:mb-4 lg:mb-5 w-full flex justify-center lg:justify-start">
+            <HeroBannerRotator banners={banners} lang={lang} />
+          </div>
+        )}
+
         <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-12 items-center">
-          {/* SINISTRA: Banners (order-1 mobile), Titolo, highlights e CTA (order-3 mobile) */}
+          {/* SINISTRA: Titolo, highlights e CTA (order-3 mobile) */}
           <div className="contents lg:flex lg:flex-col lg:col-span-7 lg:justify-center lg:order-1 max-w-[720px]">
-            {banners.length > 0 && (
-              <div className="order-1 lg:order-none mb-3 sm:mb-4 lg:mb-5 flex flex-wrap justify-center lg:justify-start gap-2 sm:gap-2.5 w-full">
-                {banners.map((banner) => (
-                  <EditableBanner key={banner.id} banner={banner} lang={lang} />
-                ))}
-              </div>
-            )}
 
             {/* BLOCCO TESTO, HIGHLIGHTS E CTA (su mobile dopo il logo) */}
             <div className="order-3 lg:order-none flex flex-col w-full">
@@ -257,137 +260,161 @@ export default function HeroSection({ profile }: { profile: ProfileT | null }) {
         </div>
 
         {/* ===== STATS BAR IN BASSO (Modificabile in Live Edit) ===== */}
-        <div className="mt-6 sm:mt-14 pt-4 sm:pt-8 border-t border-black/[0.06] grid grid-cols-2 md:grid-cols-4 gap-2 xs:gap-3 sm:gap-6 text-center w-full">
+        <div className="mt-6 sm:mt-14 pt-4 sm:pt-8 border-t border-black/[0.06] dark:border-white/[0.08] grid grid-cols-2 md:grid-cols-4 gap-2 xs:gap-3 sm:gap-6 text-center w-full">
           {/* Stat 1: Anni di Esperienza */}
-          <div className="p-1.5 xs:p-2 sm:p-3 min-w-0 flex flex-col justify-center items-center">
-            <Editable
-              id="hero.stat1.val"
-              label="Stat 1 - Numero / Anni"
-              kind="string"
-              stringKey="hero.stat1.val"
-              section="Hero"
-              values={stringValues(strings, "hero.stat1.val", `${years}+`)}
-              as="block"
-            >
-              <div
-                className="font-serif font-bold text-terracotta mb-0.5 sm:mb-1 whitespace-normal break-words md:whitespace-nowrap md:break-normal leading-tight sm:leading-[0.95] w-full text-base xs:text-xl sm:text-2xl md:text-4xl text-center"
-                title={strings["hero.stat1.val"]?.[lang] || `${years}+`}
+          <div className="p-1.5 xs:p-2 sm:p-3 min-w-0 flex flex-col justify-start items-center">
+            <div className="h-8 xs:h-9 sm:h-11 flex items-end justify-center w-full mb-1">
+              <Editable
+                id="hero.stat1.val"
+                label="Stat 1 - Numero / Anni"
+                kind="string"
+                stringKey="hero.stat1.val"
+                section="Hero"
+                values={stringValues(strings, "hero.stat1.val", `${years}+`)}
+                as="block"
+                className="w-full"
               >
-                {strings["hero.stat1.val"]?.[lang] || `${years}+`}
-              </div>
-            </Editable>
-            <Editable
-              id="hero.stat1.label"
-              label="Stat 1 - Etichetta"
-              kind="string"
-              stringKey="hero.stat1.label"
-              section="Hero"
-              values={stringValues(strings, "hero.stat1.label", "Anni di Esperienza", "Years Experience")}
-              as="block"
-            >
-              <div className="text-[9px] xs:text-[10px] sm:text-xs uppercase tracking-wider font-semibold text-text-muted leading-snug line-clamp-2 break-words w-full mx-auto">
-                {strings["hero.stat1.label"]?.[lang] || (lang === "it" ? "Anni di Esperienza" : "Years Experience")}
-              </div>
-            </Editable>
+                <div
+                  className="font-serif font-bold text-terracotta leading-none w-full text-base xs:text-xl sm:text-2xl md:text-4xl text-center"
+                  title={strings["hero.stat1.val"]?.[lang] || `${years}+`}
+                >
+                  {strings["hero.stat1.val"]?.[lang] || `${years}+`}
+                </div>
+              </Editable>
+            </div>
+            <div className="w-full flex items-start justify-center">
+              <Editable
+                id="hero.stat1.label"
+                label="Stat 1 - Etichetta"
+                kind="string"
+                stringKey="hero.stat1.label"
+                section="Hero"
+                values={stringValues(strings, "hero.stat1.label", "Anni di Esperienza", "Years Experience")}
+                as="block"
+                className="w-full"
+              >
+                <div className="text-[9px] xs:text-[10px] sm:text-xs uppercase tracking-wider font-semibold text-text-muted leading-snug line-clamp-2 break-words w-full mx-auto">
+                  {strings["hero.stat1.label"]?.[lang] || (lang === "it" ? "Anni di Esperienza" : "Years Experience")}
+                </div>
+              </Editable>
+            </div>
           </div>
 
           {/* Stat 2: Itinerari Condotti */}
-          <div className="p-1.5 xs:p-2 sm:p-3 min-w-0 flex flex-col justify-center items-center">
-            <Editable
-              id="hero.stat2.val"
-              label="Stat 2 - Numero / Itinerari"
-              kind="string"
-              stringKey="hero.stat2.val"
-              section="Hero"
-              values={stringValues(strings, "hero.stat2.val", "500+")}
-              as="block"
-            >
-              <div
-                className="font-serif font-bold text-terracotta-dark mb-0.5 sm:mb-1 leading-tight whitespace-normal break-words md:whitespace-nowrap md:break-normal w-full text-base xs:text-xl sm:text-2xl md:text-4xl text-center"
-                title={strings["hero.stat2.val"]?.[lang] || "500+"}
+          <div className="p-1.5 xs:p-2 sm:p-3 min-w-0 flex flex-col justify-start items-center">
+            <div className="h-8 xs:h-9 sm:h-11 flex items-end justify-center w-full mb-1">
+              <Editable
+                id="hero.stat2.val"
+                label="Stat 2 - Numero / Itinerari"
+                kind="string"
+                stringKey="hero.stat2.val"
+                section="Hero"
+                values={stringValues(strings, "hero.stat2.val", "500+")}
+                as="block"
+                className="w-full"
               >
-                {strings["hero.stat2.val"]?.[lang] || "500+"}
-              </div>
-            </Editable>
-            <Editable
-              id="hero.stat2.label"
-              label="Stat 2 - Etichetta"
-              kind="string"
-              stringKey="hero.stat2.label"
-              section="Hero"
-              values={stringValues(strings, "hero.stat2.label", "Itinerari Condotti", "Guided Tours")}
-              as="block"
-            >
-              <div className="text-[9px] xs:text-[10px] sm:text-xs uppercase tracking-wider font-semibold text-text-muted leading-snug line-clamp-2 break-words w-full mx-auto">
-                {strings["hero.stat2.label"]?.[lang] || (lang === "it" ? "Itinerari Condotti" : "Guided Tours")}
-              </div>
-            </Editable>
+                <div
+                  className="font-serif font-bold text-terracotta-dark leading-none w-full text-base xs:text-xl sm:text-2xl md:text-4xl text-center"
+                  title={strings["hero.stat2.val"]?.[lang] || "500+"}
+                >
+                  {strings["hero.stat2.val"]?.[lang] || "500+"}
+                </div>
+              </Editable>
+            </div>
+            <div className="w-full flex items-start justify-center">
+              <Editable
+                id="hero.stat2.label"
+                label="Stat 2 - Etichetta"
+                kind="string"
+                stringKey="hero.stat2.label"
+                section="Hero"
+                values={stringValues(strings, "hero.stat2.label", "Itinerari Condotti", "Guided Tours")}
+                as="block"
+                className="w-full"
+              >
+                <div className="text-[9px] xs:text-[10px] sm:text-xs uppercase tracking-wider font-semibold text-text-muted leading-snug line-clamp-2 break-words w-full mx-auto">
+                  {strings["hero.stat2.label"]?.[lang] || (lang === "it" ? "Itinerari Condotti" : "Guided Tours")}
+                </div>
+              </Editable>
+            </div>
           </div>
 
           {/* Stat 3: Tour su Misura */}
-          <div className="p-1.5 xs:p-2 sm:p-3 min-w-0 flex flex-col justify-center items-center">
-            <Editable
-              id="hero.stat3.val"
-              label="Stat 3 - Percentuale / Tour"
-              kind="string"
-              stringKey="hero.stat3.val"
-              section="Hero"
-              values={stringValues(strings, "hero.stat3.val", "100%")}
-              as="block"
-            >
-              <div
-                className="font-serif font-bold text-olive-dark mb-0.5 sm:mb-1 leading-tight whitespace-normal break-words md:whitespace-nowrap md:break-normal w-full text-base xs:text-xl sm:text-2xl md:text-4xl text-center"
-                title={strings["hero.stat3.val"]?.[lang] || "100%"}
+          <div className="p-1.5 xs:p-2 sm:p-3 min-w-0 flex flex-col justify-start items-center">
+            <div className="h-8 xs:h-9 sm:h-11 flex items-end justify-center w-full mb-1">
+              <Editable
+                id="hero.stat3.val"
+                label="Stat 3 - Percentuale / Tour"
+                kind="string"
+                stringKey="hero.stat3.val"
+                section="Hero"
+                values={stringValues(strings, "hero.stat3.val", "100%")}
+                as="block"
+                className="w-full"
               >
-                {strings["hero.stat3.val"]?.[lang] || "100%"}
-              </div>
-            </Editable>
-            <Editable
-              id="hero.stat3.label"
-              label="Stat 3 - Etichetta"
-              kind="string"
-              stringKey="hero.stat3.label"
-              section="Hero"
-              values={stringValues(strings, "hero.stat3.label", "Tour su Misura", "Tailor-made")}
-              as="block"
-            >
-              <div className="text-[9px] xs:text-[10px] sm:text-xs uppercase tracking-wider font-semibold text-text-muted leading-snug line-clamp-2 break-words w-full mx-auto">
-                {strings["hero.stat3.label"]?.[lang] || (lang === "it" ? "Tour su Misura" : "Tailor-made")}
-              </div>
-            </Editable>
+                <div
+                  className="font-serif font-bold text-olive-dark leading-none w-full text-base xs:text-xl sm:text-2xl md:text-4xl text-center"
+                  title={strings["hero.stat3.val"]?.[lang] || "100%"}
+                >
+                  {strings["hero.stat3.val"]?.[lang] || "100%"}
+                </div>
+              </Editable>
+            </div>
+            <div className="w-full flex items-start justify-center">
+              <Editable
+                id="hero.stat3.label"
+                label="Stat 3 - Etichetta"
+                kind="string"
+                stringKey="hero.stat3.label"
+                section="Hero"
+                values={stringValues(strings, "hero.stat3.label", "Tour su Misura", "Tailor-made")}
+                as="block"
+                className="w-full"
+              >
+                <div className="text-[9px] xs:text-[10px] sm:text-xs uppercase tracking-wider font-semibold text-text-muted leading-snug line-clamp-2 break-words w-full mx-auto">
+                  {strings["hero.stat3.label"]?.[lang] || (lang === "it" ? "Tour su Misura" : "Tailor-made")}
+                </div>
+              </Editable>
+            </div>
           </div>
 
           {/* Stat 4: Lingue */}
-          <div className="p-1.5 xs:p-2 sm:p-3 min-w-0 flex flex-col justify-center items-center">
-            <Editable
-              id="hero.stat4.val"
-              label="Stat 4 - Numero Lingue"
-              kind="string"
-              stringKey="hero.stat4.val"
-              section="Hero"
-              values={stringValues(strings, "hero.stat4.val", "3")}
-              as="block"
-            >
-              <div
-                className="font-serif font-bold text-blue-adriatic mb-0.5 sm:mb-1 leading-tight whitespace-normal break-words md:whitespace-nowrap md:break-normal w-full text-base xs:text-xl sm:text-2xl md:text-4xl text-center"
-                title={strings["hero.stat4.val"]?.[lang] || "3"}
+          <div className="p-1.5 xs:p-2 sm:p-3 min-w-0 flex flex-col justify-start items-center">
+            <div className="h-8 xs:h-9 sm:h-11 flex items-end justify-center w-full mb-1">
+              <Editable
+                id="hero.stat4.val"
+                label="Stat 4 - Numero Lingue"
+                kind="string"
+                stringKey="hero.stat4.val"
+                section="Hero"
+                values={stringValues(strings, "hero.stat4.val", "3")}
+                as="block"
+                className="w-full"
               >
-                {strings["hero.stat4.val"]?.[lang] || "3"}
-              </div>
-            </Editable>
-            <Editable
-              id="hero.stat4.label"
-              label="Stat 4 - Etichetta"
-              kind="string"
-              stringKey="hero.stat4.label"
-              section="Hero"
-              values={stringValues(strings, "hero.stat4.label", "Lingue (IT · EN · FR)", "Languages (IT · EN · FR)")}
-              as="block"
-            >
-              <div className="text-[9px] xs:text-[10px] sm:text-xs uppercase tracking-wider font-semibold text-text-muted leading-snug line-clamp-2 break-words w-full mx-auto">
-                {strings["hero.stat4.label"]?.[lang] || (lang === "it" ? "Lingue (IT · EN · FR)" : "Languages (IT · EN · FR)")}
-              </div>
-            </Editable>
+                <div
+                  className="font-serif font-bold text-blue-adriatic leading-none w-full text-base xs:text-xl sm:text-2xl md:text-4xl text-center"
+                  title={strings["hero.stat4.val"]?.[lang] || "3"}
+                >
+                  {strings["hero.stat4.val"]?.[lang] || "3"}
+                </div>
+              </Editable>
+            </div>
+            <div className="w-full flex items-start justify-center">
+              <Editable
+                id="hero.stat4.label"
+                label="Stat 4 - Etichetta"
+                kind="string"
+                stringKey="hero.stat4.label"
+                section="Hero"
+                values={stringValues(strings, "hero.stat4.label", "Lingue (IT · EN · FR)", "Languages (IT · EN · FR)")}
+                as="block"
+                className="w-full"
+              >
+                <div className="text-[9px] xs:text-[10px] sm:text-xs uppercase tracking-wider font-semibold text-text-muted leading-snug line-clamp-2 break-words w-full mx-auto">
+                  {strings["hero.stat4.label"]?.[lang] || (lang === "it" ? "Lingue (IT · EN · FR)" : "Languages (IT · EN · FR)")}
+                </div>
+              </Editable>
+            </div>
           </div>
         </div>
       </div>

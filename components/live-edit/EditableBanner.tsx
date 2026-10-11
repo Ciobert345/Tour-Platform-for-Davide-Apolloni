@@ -17,19 +17,19 @@ export interface BannerData {
   style: "olive" | "neutral" | "terracotta" | "dark";
 }
 
-// Style variants
+// Style variants with guaranteed high-contrast in both light and dark mode
 const STYLE_MAP = {
-  olive: "bg-olive/10 border border-olive/30 text-olive-dark",
-  neutral: "bg-bg-alt/90 border border-black/5 text-text-main backdrop-blur-sm",
-  terracotta: "bg-terracotta/10 border border-terracotta/30 text-terracotta-dark",
-  dark: "bg-bg-dark/80 border border-text-white/10 text-text-white backdrop-blur-sm",
+  olive: "bg-olive/10 dark:bg-olive/25 border border-olive/30 dark:border-olive/50 text-olive-dark dark:text-[#c4e5ad]",
+  neutral: "bg-bg-alt/90 dark:bg-[#352b23] border border-black/8 dark:border-white/15 text-text-main dark:text-[#fdf9f2] backdrop-blur-sm",
+  terracotta: "bg-terracotta/10 dark:bg-terracotta/25 border border-terracotta/30 dark:border-terracotta/50 text-terracotta-dark dark:text-[#f59b9e]",
+  dark: "bg-bg-dark/85 dark:bg-[#1c1611]/90 border border-text-white/15 dark:border-white/20 text-text-white dark:text-white backdrop-blur-sm",
 };
 
 const ICON_COLOR_MAP = {
-  olive: "text-terracotta",
-  neutral: "text-olive-dark",
-  terracotta: "text-terracotta",
-  dark: "text-terracotta",
+  olive: "text-terracotta dark:text-[#f59b9e]",
+  neutral: "text-olive-dark dark:text-[#e8b868]",
+  terracotta: "text-terracotta dark:text-[#f59b9e]",
+  dark: "text-terracotta dark:text-[#f59b9e]",
 };
 
 async function saveBannerField(
@@ -48,15 +48,21 @@ interface EditableBannerProps {
   banner: BannerData;
   lang: "it" | "en";
   readOnly?: boolean;
+  className?: string;
+  controls?: React.ReactNode;
 }
 
-export function EditableBanner({ banner, lang, readOnly }: EditableBannerProps) {
+export function EditableBanner({ banner, lang, readOnly, className, controls }: EditableBannerProps) {
   const liveEdit = useLiveEdit();
   const [pickerOpen, setPickerOpen] = useState(false);
   const [localIcon, setLocalIcon] = useState(banner.icon);
   const [saving, setSaving] = useState(false);
   const [coords, setCoords] = useState<{ top: number; left: number } | null>(null);
   const iconBtnRef = useRef<HTMLButtonElement>(null);
+
+  React.useEffect(() => {
+    setLocalIcon(banner.icon);
+  }, [banner.icon]);
 
   const text = lang === "it" ? banner.text_it : banner.text_en;
   const isEditable = liveEdit?.enabled && !readOnly;
@@ -132,21 +138,32 @@ export function EditableBanner({ banner, lang, readOnly }: EditableBannerProps) 
 
   if (!isEditable) {
     return (
-      <div className={cn("inline-flex items-center gap-2 px-4 py-2 rounded-sm text-sm font-semibold whitespace-normal sm:whitespace-nowrap text-center sm:text-left", styleClass)}>
+      <div
+        className={cn(
+          "inline-flex items-center gap-2 sm:gap-2.5 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-[13px] font-medium tracking-wide shadow-2xs backdrop-blur-md transition-all duration-300 max-w-full",
+          styleClass,
+          className
+        )}
+      >
         {renderIconByName(localIcon, { className: cn("w-4 h-4 shrink-0", iconColor) })}
-        <span>{renderWithLinks(text)}</span>
+        <div className="min-w-0 flex-1 overflow-x-auto scrollbar-hide py-0.5">
+          <span className="whitespace-nowrap block">{renderWithLinks(text)}</span>
+        </div>
+        {controls}
       </div>
     );
   }
 
   return (
-    <div className="relative inline-block">
-      <div className={cn(
-        "inline-flex items-center gap-2 px-4 py-2 rounded-sm text-sm font-semibold whitespace-nowrap cursor-pointer",
-        "ring-2 ring-offset-1 ring-[#9C1C1C]/40 hover:ring-[#9C1C1C] transition-all",
-        styleClass,
-        saving && "opacity-60"
-      )}>
+    <div className={cn("relative inline-block max-w-full", className)}>
+      <div
+        className={cn(
+          "inline-flex items-center gap-2 sm:gap-2.5 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-[13px] font-medium tracking-wide cursor-pointer shadow-2xs backdrop-blur-md max-w-full",
+          "ring-2 ring-offset-1 ring-[#9C1C1C]/40 hover:ring-[#9C1C1C] transition-all",
+          styleClass,
+          saving && "opacity-60"
+        )}
+      >
         {/* Icon — click to change */}
         <button
           ref={iconBtnRef}
@@ -154,7 +171,7 @@ export function EditableBanner({ banner, lang, readOnly }: EditableBannerProps) 
           title="Clicca per cambiare icona"
           onClick={togglePicker}
           className={cn(
-            "p-0.5 rounded transition-colors hover:bg-[#9C1C1C]/20",
+            "p-0.5 rounded transition-colors hover:bg-black/10 dark:hover:bg-white/15 shrink-0",
             iconColor
           )}
         >
@@ -162,14 +179,18 @@ export function EditableBanner({ banner, lang, readOnly }: EditableBannerProps) 
         </button>
 
         {/* Text — click to edit */}
-        <button
-          type="button"
-          title="Clicca per modificare il testo"
-          onClick={handleTextClick}
-          className="text-left hover:opacity-70 transition-opacity"
-        >
-          {renderWithLinks(text)}
-        </button>
+        <div className="min-w-0 flex-1 overflow-x-auto scrollbar-hide py-0.5">
+          <button
+            type="button"
+            title="Clicca per modificare il testo"
+            onClick={handleTextClick}
+            className="text-left hover:opacity-75 transition-opacity whitespace-nowrap block cursor-pointer"
+          >
+            {renderWithLinks(text)}
+          </button>
+        </div>
+
+        {controls}
       </div>
 
       {/* Icon picker popup in portal */}

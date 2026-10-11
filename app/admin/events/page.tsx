@@ -23,7 +23,7 @@ function AutoTranslateBadge({ state }: { state: "idle" | "loading" | "success" |
   if (state === "idle") return null;
   const map = {
     loading: { cls: "text-[#3D6E90] bg-[#3D6E90]/10", Icon: Loader2, spin: true, label: "Traduzione..." },
-    success: { cls: "text-[#4A6535] bg-[#4A6535]/10", Icon: CheckCircle2, spin: false, label: "Tradotto ✓" },
+    success: { cls: "text-[#C4923A] bg-[#C4923A]/10", Icon: CheckCircle2, spin: false, label: "Tradotto ✓" },
     error: { cls: "text-[#9C1C1C] bg-[#9C1C1C]/10", Icon: AlertCircle, spin: false, label: "Errore" },
   } as const;
   const conf = map[state];
@@ -50,7 +50,7 @@ const DEF: Row = {
 };
 
 const STATUSES = [
-  { v: "open", l: "Aperto", c: "bg-[#4A6535]/15 text-[#3A5228] border-[#4A6535]/30" },
+  { v: "open", l: "Aperto", c: "bg-[#C4923A]/15 text-[#8A5E1A] border-[#C4923A]/30" },
   { v: "last_places", l: "Ultimi posti", c: "bg-[#B22A2A]/15 text-[#9C1C1C] border-[#B22A2A]/30" },
   { v: "full", l: "Tutto esaurito", c: "bg-[#E9DCC4] text-[#3D2E1A] border-[#C4B49A]" },
   { v: "closed", l: "Chiuso", c: "bg-[#F0E8D6] text-[#7A6655] border-[#E9DCC4]" },
@@ -384,12 +384,12 @@ function EventModal({
       "w-full px-3 py-2 text-sm border rounded-sm bg-white focus:outline-none focus:ring-2 transition-colors",
       hasError
         ? "border-[#B22A2A] focus:ring-[#B22A2A]/30"
-        : "border-[#E9DCC4] focus:ring-[#4A6535]/30 focus:border-[#4A6535]"
+        : "border-[#E9DCC4] focus:ring-[#9C1C1C]/30 focus:border-[#9C1C1C]"
     );
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="admin-modal fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
         className="absolute inset-0 bg-[#1E160A]/40 backdrop-blur-sm"
         onClick={onClose}
@@ -560,7 +560,7 @@ function EventModal({
           {/* Sezione: Data e luogo */}
           <CollapsibleSection
             title="Data e luogo"
-            color="bg-[#4A6535]"
+            color="bg-[#C4923A]"
             defaultOpen={true}
           >
             <Grid2>
@@ -758,7 +758,7 @@ function EventModal({
                 />
               </Field>
               <Field label="Luoghi / Tappe" hint="Seleziona i luoghi dell'itinerario">
-                <div className="p-3 border border-[#E9DCC4] rounded-sm max-h-48 overflow-y-auto space-y-1.5 bg-[#F9F4EC]/50">
+                <div className="p-3 border border-[#E9DCC4] dark:border-[#382b20] rounded-sm max-h-48 overflow-y-auto space-y-1.5 bg-[#F9F4EC]/50 dark:bg-[#251e17]">
                   {places.length === 0 ? (
                     <p className="text-xs text-[#92816A] italic">
                       Nessun luogo disponibile. Aggiungili dalla sezione Luoghi.
@@ -767,11 +767,11 @@ function EventModal({
                     places.map((p: any) => (
                       <label
                         key={p.id}
-                        className="flex items-center gap-2 text-sm cursor-pointer px-1.5 py-0.5 rounded-sm hover:bg-white"
+                        className="flex items-center gap-2 text-sm cursor-pointer px-1.5 py-0.5 rounded-sm hover:bg-white dark:hover:bg-[#2c221a] text-[#1E160A] dark:text-[#f5ede2]"
                       >
                         <input
                           type="checkbox"
-                          className="accent-[#4A6535]"
+                          className="accent-[#9C1C1C]"
                           checked={selPlaces.includes(p.id)}
                           onChange={(e) =>
                             setSelPlaces(

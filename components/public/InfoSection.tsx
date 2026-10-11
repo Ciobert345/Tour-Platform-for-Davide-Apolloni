@@ -72,7 +72,7 @@ export default function InfoSection({ items }: { items: InfoT[] }) {
   const btnContactText = strings["info.box_btn_contact"]?.[lang] || (it ? "Scrivimi" : "Contact");
 
   return (
-    <section id="info" className="py-7 sm:py-14 md:py-20 scroll-mt-20 bg-[#F9F4EC] border-b border-black/5 relative overflow-hidden">
+    <section id="info" className="py-7 sm:py-14 md:py-20 scroll-mt-20 bg-[#F9F4EC] dark:bg-[#18130e] border-b border-black/5 dark:border-white/5 relative overflow-hidden">
       {/* Sfondo decorativo delicato */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-[#C4923A]/5 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#9C1C1C]/5 rounded-full blur-3xl pointer-events-none" />
@@ -93,13 +93,13 @@ export default function InfoSection({ items }: { items: InfoT[] }) {
                 section="FAQ"
                 values={stringValues(strings, "info.badge", it ? "FAQ & Dettagli Utili" : "FAQ & Useful Details")}
               >
-                <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wider bg-[#9C1C1C]/10 text-[#9C1C1C] border border-[#9C1C1C]/20 mb-2 sm:mb-3">
+                <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wider bg-[#9C1C1C]/10 dark:bg-[#9C1C1C]/20 text-[#9C1C1C] dark:text-[#f07f82] border border-[#9C1C1C]/20 dark:border-[#9C1C1C]/35 mb-2 sm:mb-3">
                   <EditableIcon
                     id="info.badge.icon"
                     iconName={strings["info.badge.icon"]?.it || "Compass"}
                     stringKey="info.badge.icon"
                     label="Icona Badge FAQ"
-                    iconProps={{ className: "w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#9C1C1C]" }}
+                    iconProps={{ className: "w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#9C1C1C] dark:text-[#f07f82]" }}
                   />
                   {badgeText}
                 </span>
@@ -114,7 +114,7 @@ export default function InfoSection({ items }: { items: InfoT[] }) {
                 values={stringValues(strings, "info.title", it ? "Domande Frequenti" : "Frequently Asked Questions")}
                 as="block"
               >
-                <h2 className="font-serif text-xl xs:text-2xl sm:text-4xl font-bold text-[#1E160A] tracking-tight leading-tight">
+                <h2 className="font-serif text-xl xs:text-2xl sm:text-4xl font-bold text-[#1E160A] dark:text-[#f5ede2] tracking-tight leading-tight">
                   {titleText}
                 </h2>
               </Editable>
@@ -134,14 +134,14 @@ export default function InfoSection({ items }: { items: InfoT[] }) {
                 )}
                 as="block"
               >
-                <p className="text-xs sm:text-sm text-[#7A6655] font-light leading-relaxed mt-1.5 sm:mt-2.5">
+                <p className="text-xs sm:text-sm text-[#7A6655] dark:text-[#c7b59f] font-light leading-relaxed mt-1.5 sm:mt-2.5">
                   {descText}
                 </p>
               </Editable>
             </div>
 
             {/* Box Assistenza & Contatto Rapido */}
-            <div className="bg-white p-3 sm:p-4 rounded-2xl border border-[#E9DCC4] shadow-xs space-y-2.5 sm:space-y-3">
+            <div className="bg-white dark:bg-[#1f1712] p-3 sm:p-4 rounded-2xl border border-[#E9DCC4] dark:border-white/10 shadow-xs space-y-2.5 sm:space-y-3">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-full bg-[#C4923A]/15 text-[#C4923A] flex items-center justify-center shrink-0">
                   <EditableIcon
@@ -161,7 +161,7 @@ export default function InfoSection({ items }: { items: InfoT[] }) {
                     section="FAQ"
                     values={stringValues(strings, "info.box_title", it ? "Altre domande?" : "Need more info?")}
                   >
-                    <p className="font-serif text-sm font-bold text-[#1E160A] leading-tight">
+                    <p className="font-serif text-sm font-bold text-[#1E160A] dark:text-[#f5ede2] leading-tight">
                       {boxTitle}
                     </p>
                   </Editable>
@@ -177,7 +177,7 @@ export default function InfoSection({ items }: { items: InfoT[] }) {
                       it ? "Rispondo sempre entro 24 ore." : "I reply within 24 hours."
                     )}
                   >
-                    <p className="text-[11px] text-[#7A6655] font-light">
+                    <p className="text-[11px] text-[#7A6655] dark:text-[#c7b59f] font-light">
                       {boxSubtitle}
                     </p>
                   </Editable>
@@ -217,14 +217,14 @@ export default function InfoSection({ items }: { items: InfoT[] }) {
                 >
                   <a
                     href="#contatti"
-                    className="flex-1 inline-flex items-center justify-center gap-1 px-3 py-1.5 bg-white border border-[#C4B49A] text-[#5C4C38] hover:bg-[#E9DCC4]/50 rounded-2xl text-[11px] font-semibold transition-colors"
+                    className="flex-1 inline-flex items-center justify-center gap-1 px-3 py-1.5 bg-white dark:bg-[#281f18] border border-[#C4B49A] dark:border-white/15 text-[#5C4C38] dark:text-[#e4d8cb] hover:bg-[#E9DCC4]/50 dark:hover:bg-[#33271f] rounded-2xl text-[11px] font-semibold transition-colors"
                   >
                     <EditableIcon
                       id="info.box_btn_contact.icon"
                       iconName={strings["info.box_btn_contact.icon"]?.it || "Mail"}
                       stringKey="info.box_btn_contact.icon"
                       label="Icona Pulsante Contatto (FAQ)"
-                      iconProps={{ className: "w-3 h-3 text-[#9C1C1C]" }}
+                      iconProps={{ className: "w-3 h-3 text-[#9C1C1C] dark:text-[#f07f82]" }}
                     />
                     {btnContactText}
                   </a>
@@ -236,12 +236,12 @@ export default function InfoSection({ items }: { items: InfoT[] }) {
           {/* COLONNA DESTRA: Accordion Editoriale Elegante */}
           <div className="lg:col-span-8">
             {filteredItems.length === 0 ? (
-              <div className="py-12 text-center text-xs text-[#7A6655] border border-dashed border-[#E9DCC4] rounded-2xl bg-white p-8">
+              <div className="py-12 text-center text-xs text-[#7A6655] dark:text-[#c7b59f] border border-dashed border-[#E9DCC4] dark:border-white/10 rounded-2xl bg-white dark:bg-[#1e1711] p-8">
                 <HelpCircle className="w-8 h-8 mx-auto mb-2 text-[#9C1C1C]/40" />
                 <p className="font-light">{t("info.empty")}</p>
               </div>
             ) : (
-              <div className="bg-white rounded-2xl border border-[#E9DCC4] divide-y divide-[#E9DCC4]/70 shadow-xs overflow-hidden">
+              <div className="bg-white dark:bg-[#1c1611] rounded-2xl border border-[#E9DCC4] dark:border-white/10 divide-y divide-[#E9DCC4]/70 dark:divide-white/10 shadow-xs overflow-hidden">
                 {filteredItems.map((it, idx) => {
                   const q = tFieldStr(it as any, "title", lang);
                   const a = tFieldStr(it as any, "content", lang);
@@ -253,7 +253,7 @@ export default function InfoSection({ items }: { items: InfoT[] }) {
                       key={it.id}
                       className={cn(
                         "transition-colors duration-200",
-                        isOpen ? "bg-[#FDFBF7]" : "hover:bg-[#FDFBF7]/50"
+                        isOpen ? "bg-[#FDFBF7] dark:bg-[#231a13]" : "hover:bg-[#FDFBF7]/50 dark:hover:bg-[#231a13]/50"
                       )}
                     >
                       {/* Bottone Domanda */}
@@ -268,7 +268,7 @@ export default function InfoSection({ items }: { items: InfoT[] }) {
                           <span
                             className={cn(
                               "font-serif text-xs sm:text-base font-bold shrink-0 w-5 sm:w-6 transition-colors mt-0.5 sm:mt-0",
-                              isOpen ? "text-[#9C1C1C]" : "text-[#C4923A]"
+                              isOpen ? "text-[#9C1C1C] dark:text-[#f07f82]" : "text-[#C4923A] dark:text-[#ebc57f]"
                             )}
                           >
                             {String(idx + 1).padStart(2, "0")}.
@@ -276,7 +276,7 @@ export default function InfoSection({ items }: { items: InfoT[] }) {
 
                           <div className="flex-1 min-w-0">
                             {cat && (
-                              <span className="text-[8.5px] sm:text-[9px] font-bold uppercase tracking-wider text-[#3D6E90] mb-0.5 block">
+                              <span className="text-[8.5px] sm:text-[9px] font-bold uppercase tracking-wider text-[#3D6E90] dark:text-[#8bc0e0] mb-0.5 block">
                                 {cat}
                               </span>
                             )}
@@ -294,7 +294,9 @@ export default function InfoSection({ items }: { items: InfoT[] }) {
                               <h3
                                 className={cn(
                                   "font-serif text-sm sm:text-[1.12rem] font-bold leading-snug transition-colors",
-                                  isOpen ? "text-[#9C1C1C]" : "text-[#1E160A] group-hover:text-[#9C1C1C]"
+                                  isOpen
+                                    ? "text-[#9C1C1C] dark:text-[#f07f82]"
+                                    : "text-[#1E160A] dark:text-[#f5ede2] group-hover:text-[#9C1C1C] dark:group-hover:text-[#f07f82]"
                                 )}
                               >
                                 {q}
@@ -309,7 +311,7 @@ export default function InfoSection({ items }: { items: InfoT[] }) {
                             "w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center shrink-0 border transition-all duration-200 mt-0.5 sm:mt-0",
                             isOpen
                               ? "bg-[#9C1C1C] border-[#9C1C1C] text-white rotate-180"
-                              : "border-[#E9DCC4] text-[#92816A] group-hover:border-[#C4923A] group-hover:text-[#1E160A]"
+                              : "border-[#E9DCC4] dark:border-white/15 text-[#92816A] dark:text-[#b8a48e] group-hover:border-[#C4923A] group-hover:text-[#1E160A] dark:group-hover:text-[#f5ede2]"
                           )}
                         >
                           <ChevronDown className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
@@ -324,7 +326,7 @@ export default function InfoSection({ items }: { items: InfoT[] }) {
                         )}
                       >
                         <div className="overflow-hidden">
-                          <div className="px-3 pb-3 pt-0 pl-8 sm:pl-15 sm:px-5 sm:pb-5 text-xs sm:text-[0.92rem] text-[#5C4C38] leading-relaxed font-light border-t border-black/5 bg-[#F9F4EC]/40">
+                          <div className="px-3 pb-3 pt-0 pl-8 sm:pl-15 sm:px-5 sm:pb-5 text-xs sm:text-[0.92rem] text-[#5C4C38] dark:text-[#cfc0ae] leading-relaxed font-light border-t border-black/5 dark:border-white/5 bg-[#F9F4EC]/40 dark:bg-[#15100c]/40">
                             <Editable
                               id={`faq-a-${it.id}`}
                               label={`Risposta FAQ: ${it.title_it || it.title_en || "Risposta"}`}

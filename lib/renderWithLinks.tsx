@@ -1,5 +1,6 @@
 import React from "react";
 import { cn } from "@/lib/utils";
+import { getAdaptiveDarkColor, getAdaptiveLightColor } from "@/lib/theme/colorUtils";
 
 const MARKDOWN_LINK_RE =
   /\[([^\]]+)\]\(((?:https?:\/\/|mailto:|tel:|\/|#)[^\s)]*)\)/gi;
@@ -90,6 +91,13 @@ function parseSpanStyle(styleAttr: string): {
           styleObj.fontFamily = resolved;
         }
       }
+    } else if (prop === "color") {
+      const darkColor = getAdaptiveDarkColor(val);
+      const lightColor = getAdaptiveLightColor(val);
+      (styleObj as any)["--span-color-light"] = lightColor;
+      (styleObj as any)["--span-color-dark"] = darkColor;
+      (styleObj as any).color = `var(--span-color-current, ${lightColor})`;
+      extraCls = extraCls ? `${extraCls} adaptive-color-span` : "adaptive-color-span";
     } else {
       const camel = prop.replace(/-([a-z])/g, (_, c) => c.toUpperCase()) as any;
       (styleObj as any)[camel] = val;
@@ -226,14 +234,14 @@ function renderTokens(
         </a>
       );
     } else if (tok.type === "span") {
-      const { style } = parseSpanStyle(tok.styleAttr);
+      const { style, className: spanClass } = parseSpanStyle(tok.styleAttr);
       const inner = renderTokens(
         tokenizeRichText(tok.content),
         `${baseKey}-sp-in-${k}`,
         linkOptions
       );
       out.push(
-        <span key={`${baseKey}-sp-${k++}`} style={style}>
+        <span key={`${baseKey}-sp-${k++}`} style={style} className={spanClass || undefined}>
           {inner}
         </span>
       );

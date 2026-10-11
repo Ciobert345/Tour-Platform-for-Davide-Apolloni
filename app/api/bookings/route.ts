@@ -9,6 +9,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database.types";
+import { loadAreaGeojson } from "@/lib/geo/area.server";
+import { isPointInOperatingArea, parseCoord } from "@/lib/geo/area";
+import { UUID_RE } from "@/lib/geo/constants";
 
 type BookingInsert = Database["public"]["Tables"]["bookings"]["Insert"];
 
@@ -122,6 +125,46 @@ export async function POST(req: NextRequest) {
       status: "new",
     };
 
+    const source = payload.source === "map" ? "map" : "form";
+    insert.source = source;
+
+    if (source === "map") {
+      const mapLat = parseCoord(payload.map_lat);
+      const mapLng = parseCoord(payload.map_lng);
+      if (mapLat == null || mapLng == null) {
+        return NextResponse.json(
+          { ok: false, error: "Coordinate mappa mancanti" },
+          { status: 422 }
+        );
+      }
+      const area = loadAreaGeojson();
+      if (!isPointInOperatingArea(mapLat, mapLng, area)) {
+        return NextResponse.json(
+          { ok: false, error: "Punto fuori dalla zona di operatività" },
+          { status: 422 }
+        );
+      }
+      insert.map_lat = mapLat;
+      insert.map_lng = mapLng;
+    }
+
+    const placeId =
+      typeof payload.place_id === "string" && UUID_RE.test(payload.place_id)
+        ? payload.place_id
+        : null;
+    const mapSpotId =
+      typeof payload.map_spot_id === "string" && UUID_RE.test(payload.map_spot_id)
+        ? payload.map_spot_id
+        : null;
+    if (placeId) {
+      const { data: pl } = await sb.from("places").select("id").eq("id", placeId).maybeSingle();
+      if (pl) insert.place_id = placeId;
+    }
+    if (mapSpotId) {
+      const { data: ms } = await sb.from("map_spots").select("id").eq("id", mapSpotId).maybeSingle();
+      if (ms) insert.map_spot_id = mapSpotId;
+    }
+
     const { data, error } = await (sb as any)
       .from("bookings")
       .insert([insert] as any)
@@ -192,6 +235,13 @@ export async function POST(req: NextRequest) {
         (saved.visit_language ?? insert.visit_language) === "en"
           ? tourType?.name_en ?? null
           : tourType?.name_it ?? tourType?.name_en ?? null,
+      source: insert.source ?? "form",
+      map_lat: insert.map_lat ?? null,
+      map_lng: insert.map_lng ?? null,
+      osm_url:
+        insert.map_lat != null && insert.map_lng != null
+          ? `https://www.openstreetmap.org/?mlat=${insert.map_lat}&mlon=${insert.map_lng}#map=14/${insert.map_lat}/${insert.map_lng}`
+          : null,
     } : null;
 
     let confirmStatus: { ok: boolean; email_sent: boolean; via?: string } = {

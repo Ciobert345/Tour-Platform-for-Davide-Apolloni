@@ -182,23 +182,23 @@ function CollapsibleSection({
 }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   return (
-    <div className="border border-[#E9DCC4] rounded-sm overflow-hidden shadow-sm">
+    <div className="border border-[#E9DCC4] dark:border-[#382b20] rounded-sm overflow-hidden shadow-sm">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center gap-3 px-4 py-3 bg-[#F9F4EC] hover:bg-[#F0E8D6] transition-colors text-left"
+        className="w-full flex items-center gap-3 px-4 py-3 bg-[#F9F4EC] dark:bg-[#261f18] hover:bg-[#F0E8D6] dark:hover:bg-[#2d2218] transition-colors text-left"
       >
         <span className={cn("w-1 h-5 rounded-full shrink-0", color)} />
-        <span className="flex-1 text-xs font-bold uppercase tracking-wider text-[#3D2E1A]">
+        <span className="flex-1 text-xs font-bold uppercase tracking-wider text-[#3D2E1A] dark:text-[#e8dccb]">
           {title}
         </span>
         {isOpen ? (
-          <ChevronDown className="w-4 h-4 text-[#92816A] shrink-0" />
+          <ChevronDown className="w-4 h-4 text-[#92816A] dark:text-[#a89582] shrink-0" />
         ) : (
-          <ChevronRight className="w-4 h-4 text-[#92816A] shrink-0" />
+          <ChevronRight className="w-4 h-4 text-[#92816A] dark:text-[#a89582] shrink-0" />
         )}
       </button>
-      {isOpen && <div className="p-3.5 space-y-3.5 bg-white">{children}</div>}
+      {isOpen && <div className="p-3.5 space-y-3.5 bg-white dark:bg-[#1c1611]">{children}</div>}
     </div>
   );
 }
@@ -209,20 +209,20 @@ function renderBodyPreview(text: string) {
     if (!trimmed) return <div key={i} className="h-2.5" />;
     if (trimmed.startsWith("**") && trimmed.endsWith("**") && trimmed.length > 4) {
       return (
-        <h3 key={i} className="font-bold text-[#1E160A] text-sm mt-4 mb-1 first:mt-0">
+        <h3 key={i} className="font-bold text-[#1E160A] dark:text-[#f5ede2] text-sm mt-4 mb-1 first:mt-0">
           {trimmed.slice(2, -2)}
         </h3>
       );
     }
     if (trimmed.startsWith("*") && trimmed.endsWith("*") && trimmed.length > 2) {
       return (
-        <p key={i} className="font-semibold text-[#5C4C38] text-sm mb-1">
+        <p key={i} className="font-semibold text-[#5C4C38] dark:text-[#c7b59f] text-sm mb-1">
           {trimmed.slice(1, -1)}
         </p>
       );
     }
     return (
-      <p key={i} className="text-sm text-[#5C4C38] leading-relaxed font-light mb-1">
+      <p key={i} className="text-sm text-[#5C4C38] dark:text-[#a89582] leading-relaxed font-light mb-1">
         {trimmed}
       </p>
     );
@@ -436,14 +436,14 @@ export default function AdminLegalPage() {
       {/* Header — allineato allo stile delle altre pagine admin (icona + eyebrow, titolo serif, sottotitolo, azione a destra) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="min-w-0">
-          <div className="flex items-center gap-1.5 text-[#9C1C1C]">
+          <div className="flex items-center gap-1.5 text-[#9C1C1C] dark:text-[#f07f82]">
             <Shield className="w-4 h-4" />
             <span className="text-xs font-bold uppercase tracking-wider">Documenti Legali</span>
           </div>
-          <h1 className="font-serif text-2xl md:text-3xl font-bold text-[#1E160A] mt-0.5 leading-tight">
+          <h1 className="font-serif text-2xl md:text-3xl font-bold text-[#1E160A] dark:text-[#f5ede2] mt-0.5 leading-tight">
             Privacy, Termini &amp; Cookie Policy
           </h1>
-          <p className="text-sm text-[#7A6655] mt-1 max-w-2xl">
+          <p className="text-sm text-[#7A6655] dark:text-[#c7b59f] mt-1 max-w-2xl">
             Modifica i documenti mostrati nel footer del sito. I campi italiani si traducono automaticamente in inglese dopo che smetti di scrivere.
           </p>
         </div>
@@ -490,9 +490,9 @@ export default function AdminLegalPage() {
       />
 
       {/* Card principale */}
-      <div className="bg-white border border-[#E9DCC4] rounded-md shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-[#1c1611] border border-[#E9DCC4] dark:border-[#382b20] rounded-md shadow-sm overflow-hidden">
         {/* ====== TAB BAR ====== */}
-        <div className="border-b border-[#E9DCC4] bg-[#FBF8F2] flex gap-1 px-3 overflow-x-auto">
+        <div className="border-b border-[#E9DCC4] dark:border-[#382b20] bg-[#FBF8F2] dark:bg-[#261f18] flex gap-1 px-3 overflow-x-auto">
           {DOC_KEYS.map((k) => {
             const M = DOC_META[k];
             const I = M.icon;
@@ -505,7 +505,7 @@ export default function AdminLegalPage() {
                 style={active ? { color: M.accent } : undefined}
                 className={cn(
                   "relative inline-flex items-center gap-1.5 px-3.5 py-3 text-xs font-bold uppercase tracking-wider transition-colors shrink-0",
-                  active ? "" : "text-[#92816A] hover:text-[#3D2E1A]"
+                  active ? "" : "text-[#92816A] dark:text-[#a89582] hover:text-[#3D2E1A] dark:hover:text-[#f5ede2]"
                 )}
               >
                 <I className="w-3.5 h-3.5" />
@@ -522,16 +522,16 @@ export default function AdminLegalPage() {
         </div>
 
         {loading ? (
-          <div className="py-14 text-center text-xs text-[#92816A]">
+          <div className="py-14 text-center text-xs text-[#92816A] dark:text-[#a89582]">
             <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-[#B22A2A]" />
             Caricamento documenti…
           </div>
         ) : (
           <div className="grid lg:grid-cols-12 gap-0">
             {/* —— SX: Form —— */}
-            <div className="lg:col-span-7 p-4 md:p-5 space-y-4 border-r border-[#F0E8D6]">
+            <div className="lg:col-span-7 p-4 md:p-5 space-y-4 border-r border-[#F0E8D6] dark:border-[#2d2218]">
               {/* Intestazione documento */}
-              <div className="flex items-center gap-2.5 pb-3 border-b border-[#F0E8D6]">
+              <div className="flex items-center gap-2.5 pb-3 border-b border-[#F0E8D6] dark:border-[#2d2218]">
                 <div className={cn("w-9 h-9 rounded-sm flex items-center justify-center shrink-0", Meta.accentBg)}>
                   <ActiveIcon className={cn("w-4.5 h-4.5", Meta.accentText)} />
                 </div>
@@ -539,7 +539,7 @@ export default function AdminLegalPage() {
                   <p className={cn("text-[10px] font-bold uppercase tracking-[0.18em]", Meta.accentText)}>
                     Documento attivo · Footer
                   </p>
-                  <h2 className="font-serif text-lg font-bold text-[#1E160A] leading-tight">
+                  <h2 className="font-serif text-lg font-bold text-[#1E160A] dark:text-[#f5ede2] leading-tight">
                     {Meta.label}
                   </h2>
                 </div>
@@ -572,7 +572,7 @@ export default function AdminLegalPage() {
                       {/* Spaziatore invisibile: allinea l'input con quello EN, che ha sopra badge + pulsante Traduci */}
                       <div className="h-7" aria-hidden="true" />
                       <input
-                        className="w-full px-3 py-2 text-sm border border-[#E9DCC4] rounded-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#4A6535]/30 focus:border-[#4A6535] transition-colors"
+                        className="w-full px-3 py-2 text-sm border border-[#E9DCC4] dark:border-[#382b20] rounded-sm bg-white dark:bg-[#261f18] text-[#1E160A] dark:text-[#f5ede2] focus:outline-none focus:ring-2 focus:ring-[#4A6535]/30 focus:border-[#4A6535] transition-colors"
                         value={doc.title_it}
                         onChange={(e) => updateDoc(activeTab, { title_it: e.target.value })}
                       />
@@ -603,7 +603,7 @@ export default function AdminLegalPage() {
                         </div>
                       </div>
                       <input
-                        className="w-full px-3 py-2 text-sm border border-[#E9DCC4] rounded-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#4A6535]/30 focus:border-[#4A6535] transition-colors"
+                        className="w-full px-3 py-2 text-sm border border-[#E9DCC4] dark:border-[#382b20] rounded-sm bg-white dark:bg-[#261f18] text-[#1E160A] dark:text-[#f5ede2] focus:outline-none focus:ring-2 focus:ring-[#4A6535]/30 focus:border-[#4A6535] transition-colors"
                         value={doc.title_en}
                         onChange={(e) => {
                           updateDoc(activeTab, { title_en: e.target.value });
@@ -643,14 +643,14 @@ export default function AdminLegalPage() {
                     }
                   >
                     <textarea
-                      className="w-full px-3 py-2 text-sm border border-[#E9DCC4] rounded-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#4A6535]/30 focus:border-[#4A6535] transition-colors min-h-[200px] font-mono leading-relaxed resize-y"
+                      className="w-full px-3 py-2 text-sm border border-[#E9DCC4] dark:border-[#382b20] rounded-sm bg-white dark:bg-[#261f18] text-[#1E160A] dark:text-[#f5ede2] focus:outline-none focus:ring-2 focus:ring-[#4A6535]/30 focus:border-[#4A6535] transition-colors min-h-[200px] font-mono leading-relaxed resize-y"
                       value={doc.body_it}
                       onChange={(e) => updateDoc(activeTab, { body_it: e.target.value })}
                       spellCheck={false}
                     />
                   </Field>
 
-                  <div className="h-px bg-gradient-to-r from-transparent via-[#E9DCC4] to-transparent" />
+                  <div className="h-px bg-gradient-to-r from-transparent via-[#E9DCC4] dark:via-[#382b20] to-transparent" />
 
                   <Field
                     label={
@@ -680,7 +680,7 @@ export default function AdminLegalPage() {
                         </div>
                       </div>
                       <textarea
-                        className="w-full px-3 py-2 text-sm border border-[#E9DCC4] rounded-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#4A6535]/30 focus:border-[#4A6535] transition-colors min-h-[200px] font-mono leading-relaxed resize-y"
+                        className="w-full px-3 py-2 text-sm border border-[#E9DCC4] dark:border-[#382b20] rounded-sm bg-white dark:bg-[#261f18] text-[#1E160A] dark:text-[#f5ede2] focus:outline-none focus:ring-2 focus:ring-[#4A6535]/30 focus:border-[#4A6535] transition-colors min-h-[200px] font-mono leading-relaxed resize-y"
                         value={doc.body_en}
                         onChange={(e) => {
                           updateDoc(activeTab, { body_en: e.target.value });
@@ -694,13 +694,13 @@ export default function AdminLegalPage() {
             </div>
 
             {/* —— DX: Preview —— */}
-            <div className="lg:col-span-5 p-4 md:p-5 bg-[#FAF7F1] flex flex-col">
+            <div className="lg:col-span-5 p-4 md:p-5 bg-[#FAF7F1] dark:bg-[#1d1712] flex flex-col">
               <div className="flex items-center justify-between pb-2.5 border-b border-black/5 shrink-0">
-                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#7A6655] flex items-center gap-1.5">
+                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#7A6655] dark:text-[#a89582] flex items-center gap-1.5">
                   <Eye className="w-3.5 h-3.5 text-[#C4923A]" />
                   Anteprima Modale
                 </p>
-                <div className="flex gap-1 bg-white border border-[#E9DCC4] p-0.5 rounded-sm">
+                <div className="flex gap-1 bg-white dark:bg-[#261f18] border border-[#E9DCC4] dark:border-[#382b20] p-0.5 rounded-sm">
                   {(["it", "en"] as const).map((L) => (
                     <button
                       key={L}
@@ -709,8 +709,8 @@ export default function AdminLegalPage() {
                       className={cn(
                         "px-3 py-1 rounded-sm text-[10px] font-bold uppercase tracking-wider transition-colors",
                         previewLang === L
-                          ? "bg-[#1E160A] text-white"
-                          : "text-[#7A6655] hover:bg-[#F9F4EC]"
+                          ? "bg-[#1E160A] dark:bg-[#f5ede2] text-white dark:text-[#1E160A]"
+                          : "text-[#7A6655] dark:text-[#a89582] hover:bg-[#F9F4EC] dark:hover:bg-[#2d2218]"
                       )}
                     >
                       {L === "it" ? "IT" : "EN"}
@@ -719,8 +719,8 @@ export default function AdminLegalPage() {
                 </div>
               </div>
 
-              <div className="mt-3 flex-1 min-h-0 flex flex-col border-2 border-[#E9DCC4] rounded-xl overflow-hidden shadow-lg bg-[#F9F4EC]">
-                <div className="flex items-center justify-between px-4 py-2.5 border-b border-black/8 bg-white shrink-0">
+              <div className="mt-3 flex-1 min-h-0 flex flex-col border-2 border-[#E9DCC4] dark:border-[#382b20] rounded-xl overflow-hidden shadow-lg bg-[#F9F4EC] dark:bg-[#1c1611]">
+                <div className="flex items-center justify-between px-4 py-2.5 border-b border-black/8 dark:border-white/8 bg-white dark:bg-[#261f18] shrink-0">
                   <div className="flex items-center gap-2.5">
                     <div className={cn("w-8 h-8 rounded-full flex items-center justify-center shrink-0", Meta.accentBg)}>
                       <ActiveIcon className={cn("w-4 h-4", Meta.accentText)} />
@@ -729,17 +729,17 @@ export default function AdminLegalPage() {
                       <p className={cn("text-[9px] font-bold uppercase tracking-[0.18em]", Meta.accentText)}>
                         {previewLang === "it" ? "Informazioni Legali" : "Legal Information"}
                       </p>
-                      <h3 className="font-serif text-base font-bold text-[#1E160A] leading-tight">
+                      <h3 className="font-serif text-base font-bold text-[#1E160A] dark:text-[#f5ede2] leading-tight">
                         {previewLang === "it" ? doc.title_it : doc.title_en}
                       </h3>
                     </div>
                   </div>
                 </div>
-                <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 bg-[#F9F4EC]">
+                <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 bg-[#F9F4EC] dark:bg-[#1c1611]">
                   {renderBodyPreview(previewLang === "it" ? doc.body_it : doc.body_en)}
                 </div>
-                <div className="px-4 py-2.5 border-t border-black/8 bg-white flex items-center justify-between shrink-0">
-                  <p className="text-[11px] text-[#92816A] font-light truncate pr-2">
+                <div className="px-4 py-2.5 border-t border-black/8 dark:border-white/8 bg-white dark:bg-[#261f18] flex items-center justify-between shrink-0">
+                  <p className="text-[11px] text-[#92816A] dark:text-[#a89582] font-light truncate pr-2">
                     {previewLang === "it"
                       ? "Davide Apolloni — Guida Turistica Autorizzata"
                       : "Davide Apolloni — Licensed Tourist Guide"}

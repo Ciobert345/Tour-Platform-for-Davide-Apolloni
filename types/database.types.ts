@@ -330,6 +330,8 @@ export interface Database {
           itinerary_it: string | null;
           itinerary_en: string | null;
           transport_options: string[] | null;
+          lat: number | null;
+          lng: number | null;
           sort_order: number;
           is_active: boolean;
           created_at: string;
@@ -356,12 +358,71 @@ export interface Database {
           itinerary_it?: string | null;
           itinerary_en?: string | null;
           transport_options?: string[] | null;
+          lat?: number | null;
+          lng?: number | null;
           sort_order?: number;
           is_active?: boolean;
           created_at?: string;
           updated_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["places"]["Insert"]>;
+      };
+
+      // ============== METE PROPOSTE (solo mappa, non nella home Tour) ==============
+      map_spots: {
+        Row: {
+          id: string;
+          slug: string;
+          name_it: string;
+          name_en: string;
+          short_description_it: string | null;
+          short_description_en: string | null;
+          long_description_it: string | null;
+          long_description_en: string | null;
+          lat: number;
+          lng: number;
+          cover_image_url: string | null;
+          tour_type_id: string | null;
+          place_id: string | null;
+          sort_order: number;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          slug: string;
+          name_it: string;
+          name_en: string;
+          short_description_it?: string | null;
+          short_description_en?: string | null;
+          long_description_it?: string | null;
+          long_description_en?: string | null;
+          lat: number;
+          lng: number;
+          cover_image_url?: string | null;
+          tour_type_id?: string | null;
+          place_id?: string | null;
+          sort_order?: number;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["map_spots"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "map_spots_tour_type_id_fkey";
+            columns: ["tour_type_id"];
+            referencedRelation: "tour_types";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "map_spots_place_id_fkey";
+            columns: ["place_id"];
+            referencedRelation: "places";
+            referencedColumns: ["id"];
+          },
+        ];
       };
 
       // ============== PLACE <-> TOUR TYPES (M:N) ==============
@@ -463,6 +524,8 @@ export interface Database {
           rating: number;
           status: "pending" | "approved" | "rejected";
           tour_type_id: string | null;
+          place_id: string | null;
+          map_spot_id: string | null;
           submitted_at: string;
           moderated_at: string | null;
           moderated_by: string | null;
@@ -476,6 +539,8 @@ export interface Database {
           rating: number;
           status?: "pending" | "approved" | "rejected";
           tour_type_id?: string | null;
+          place_id?: string | null;
+          map_spot_id?: string | null;
           submitted_at?: string;
           moderated_at?: string | null;
           moderated_by?: string | null;
@@ -501,6 +566,11 @@ export interface Database {
           gdpr_consent: boolean;
           status: "new" | "contacted" | "confirmed" | "archived";
           admin_notes: string | null;
+          source: "form" | "map";
+          map_lat: number | null;
+          map_lng: number | null;
+          place_id: string | null;
+          map_spot_id: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -520,6 +590,11 @@ export interface Database {
           gdpr_consent?: boolean;
           status?: "new" | "contacted" | "confirmed" | "archived";
           admin_notes?: string | null;
+          source?: "form" | "map";
+          map_lat?: number | null;
+          map_lng?: number | null;
+          place_id?: string | null;
+          map_spot_id?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -626,6 +701,8 @@ export interface Database {
 // ============================================================
 
 export type Lang = "it" | "en";
+
+export type BookingSource = "form" | "map";
 
 export function pickLang<T extends { it: string; en: string } | null | undefined>(
   row: T,

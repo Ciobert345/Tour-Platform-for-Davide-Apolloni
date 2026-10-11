@@ -110,7 +110,7 @@ export default function MaintenanceToggle() {
                 "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm text-[11px] font-bold uppercase tracking-wider border",
                 enabled
                   ? "bg-white/10 border-white/25 text-white"
-                  : "bg-[#4A6535]/10 border-[#4A6535]/25 text-[#4A6535]"
+                  : "bg-[#C4923A]/10 border-[#C4923A]/25 text-[#C4923A] dark:text-[#d4a84b]"
               )}
             >
               {loading ? (

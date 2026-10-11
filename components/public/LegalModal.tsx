@@ -284,7 +284,7 @@ export default function LegalModal({ page, onClose }: Props) {
       {/* Panel */}
       <div
         className={cn(
-          "relative bg-[#F9F4EC] w-full sm:max-w-2xl sm:rounded-sm shadow-2xl overflow-hidden transition-all duration-350 flex flex-col",
+          "relative bg-[#F9F4EC] dark:bg-[#1a140f] w-full sm:max-w-2xl sm:rounded-sm shadow-2xl overflow-hidden transition-all duration-350 flex flex-col border border-black/10 dark:border-[#382b20]",
           "max-h-[92vh] sm:max-h-[80vh]",
           page ? "translate-y-0" : "translate-y-8"
         )}
@@ -292,23 +292,23 @@ export default function LegalModal({ page, onClose }: Props) {
         aria-modal="true"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-[#E9DCC4] bg-white shrink-0">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-[#E9DCC4] dark:border-[#382b20] bg-white dark:bg-[#201811] shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-sm bg-[#B22A2A]/10 text-[#B22A2A] flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-sm bg-[#B22A2A]/10 text-[#B22A2A] dark:text-[#f07f82] flex items-center justify-center shrink-0">
               <Icon className="w-4 h-4" />
             </div>
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#B22A2A]">
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#B22A2A] dark:text-[#f07f82]">
                 {it ? "Informazioni Legali" : "Legal Information"}
               </p>
-              <h2 className="font-serif text-base sm:text-lg font-bold text-[#1E160A] leading-tight">
+              <h2 className="font-serif text-base sm:text-lg font-bold text-[#1E160A] dark:text-[#f5ede2] leading-tight">
                 {content ? (it ? content.title_it : content.title_en) : ""}
               </h2>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-sm flex items-center justify-center text-[#7A6655] hover:bg-[#E9DCC4] transition-colors shrink-0 cursor-pointer"
+            className="w-8 h-8 rounded-sm flex items-center justify-center text-[#7A6655] dark:text-[#c7b59f] hover:bg-[#E9DCC4] dark:hover:bg-[#382b20] transition-colors shrink-0 cursor-pointer"
             aria-label="Chiudi"
           >
             <X className="w-4 h-4" />
@@ -316,13 +316,13 @@ export default function LegalModal({ page, onClose }: Props) {
         </div>
 
         {/* Body */}
-        <div className="overflow-y-auto px-4 sm:px-6 py-4 sm:py-6 flex-1 bg-[#F9F4EC]">
+        <div className="overflow-y-auto px-4 sm:px-6 py-4 sm:py-6 flex-1 bg-[#F9F4EC] dark:bg-[#18120d] text-[#2b2018] dark:text-[#f5ede2]">
           {bodyReady && content && renderBody(it ? content.body_it : content.body_en)}
         </div>
 
         {/* Footer */}
-        <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-[#E9DCC4] bg-white shrink-0 flex items-center justify-between gap-2">
-          <p className="text-[10px] sm:text-[11px] text-[#92816A] font-medium truncate">
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-[#E9DCC4] dark:border-[#382b20] bg-white dark:bg-[#201811] shrink-0 flex items-center justify-between gap-2">
+          <p className="text-[10px] sm:text-[11px] text-[#92816A] dark:text-[#a89582] font-medium truncate">
             {it ? "Davide Apolloni — Guida Turistica Autorizzata" : "Davide Apolloni — Licensed Tourist Guide"}
           </p>
           <button

@@ -9,7 +9,7 @@ const translations = {
     "nav.tours": "I Tour",
     "nav.experiences": "Esperienze",
     "nav.ww1": "Grande Guerra",
-    "nav.media": "Galleria & Video",
+    "nav.media": "Media",
     "nav.contacts": "Contatti",
     "nav.book": "Prenota una visita",
 

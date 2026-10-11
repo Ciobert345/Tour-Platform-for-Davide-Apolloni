@@ -8,13 +8,14 @@ import TranslateButton from "@/components/admin/TranslateButton";
 import { TagInput } from "@/components/admin/TagInput";
 import {
   Map as MapIcon, Plus, Edit2, Trash2, Loader2, Eye,
-  AlertCircle, CheckCircle2, Info, ChevronDown, ChevronRight, X, AlertTriangle,
+  AlertCircle, CheckCircle2, Info, ChevronDown, ChevronRight, X, AlertTriangle, MapPin,
 } from "lucide-react";
 import supabase from "@/lib/supabase/browser";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import AdminTutorial from "@/components/admin/AdminTutorial";
 import { translateLongText } from "@/lib/translateClient";
+import CoordPicker from "@/components/admin/CoordPicker";
 
 type Row = any;
 type TT = any;
@@ -46,6 +47,7 @@ const DEF: Row = {
   long_description_it: "", long_description_en: "",
   cover_image_url: "", duration_hours: 2,
   difficulty: "easy", location_address: "", gps_lat: null, gps_lng: null,
+  lat: null, lng: null,
   highlights_it: [], highlights_en: [], tags_it: [], tags_en: [],
   min_participants: null, max_participants: null,
   transport_options: ["walk"], sort_order: 0,
@@ -133,6 +135,7 @@ function PlaceModal({
   errors, touched, showWarnings, saving, onSubmit,
   updateField, markTouched, setShowWarnings, getMissingRecommended, errorBannerRef,
   setErrors,
+  editSpots, setEditSpots,
 }: any) {
   const modalRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -288,7 +291,7 @@ function PlaceModal({
     const hasError = errors[key] && touched[key];
     return cn(
       "w-full px-3 py-2 text-sm border rounded-sm bg-white focus:outline-none focus:ring-2 transition-colors",
-      hasError ? "border-[#B22A2A] focus:ring-[#B22A2A]/30" : "border-[#E9DCC4] focus:ring-[#4A6535]/30 focus:border-[#4A6535]"
+      hasError ? "border-[#B22A2A] focus:ring-[#B22A2A]/30" : "border-[#E9DCC4] focus:ring-[#9C1C1C]/30 focus:border-[#9C1C1C]"
     );
   };
 
@@ -310,7 +313,7 @@ function PlaceModal({
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="admin-modal fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-[#1E160A]/40 backdrop-blur-sm" onClick={onClose} />
       <div ref={modalRef} className="relative bg-white rounded-lg shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden">
 
@@ -438,7 +441,7 @@ function PlaceModal({
           </CollapsibleSection>
 
           {/* Sezione: Descrizioni */}
-          <CollapsibleSection title="Descrizioni e Contenuti" color="bg-[#4A6535]" defaultOpen={true}>
+          <CollapsibleSection title="Descrizioni e Contenuti" color="bg-[#C4923A]" defaultOpen={true}>
             <Grid2>
               <Field
                 label={
@@ -620,13 +623,13 @@ function PlaceModal({
                   "grid sm:grid-cols-2 md:grid-cols-3 gap-2 p-3 border rounded-sm max-h-48 overflow-y-auto transition-colors",
                   errors.tour_types
                     ? "border-[#B22A2A] bg-[#B22A2A]/5"
-                    : "border-[#E9DCC4] bg-[#F9F4EC]/50"
+                    : "border-[#E9DCC4] dark:border-[#382b20] bg-[#F9F4EC]/50 dark:bg-[#251e17]"
                 )}
               >
                 {tt.map((t: any) => {
                   const on = editTT.includes(t.id);
                   return (
-                    <label key={t.id} className="flex items-center gap-2 cursor-pointer px-2 py-1 rounded-sm hover:bg-white text-sm">
+                    <label key={t.id} className="flex items-center gap-2 cursor-pointer px-2 py-1 rounded-sm hover:bg-white dark:hover:bg-[#2c221a] text-sm text-[#1E160A] dark:text-[#f5ede2]">
                       <input
                         type="checkbox"
                         checked={on}
@@ -641,7 +644,7 @@ function PlaceModal({
                             });
                           }
                         }}
-                        className="accent-[#4A6535]"
+                        className="accent-[#9C1C1C]"
                       />
                       {t.name_it}
                     </label>
@@ -650,10 +653,10 @@ function PlaceModal({
               </div>
             </Field>
             <Field label="Trasporti disponibili">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-3 border border-[#E9DCC4] rounded-sm bg-[#F9F4EC]/50">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-3 border border-[#E9DCC4] dark:border-[#382b20] rounded-sm bg-[#F9F4EC]/50 dark:bg-[#251e17]">
                 {TRANS.map((tx) => (
-                  <label key={tx} className="flex items-center gap-2 text-sm cursor-pointer">
-                    <input type="checkbox" className="accent-[#4A6535]"
+                  <label key={tx} className="flex items-center gap-2 text-sm cursor-pointer text-[#1E160A] dark:text-[#f5ede2]">
+                    <input type="checkbox" className="accent-[#9C1C1C]"
                       checked={(edit.transport_options || []).includes(tx)}
                       onChange={(e) => {
                         const cur = edit.transport_options || [];
@@ -703,6 +706,148 @@ function PlaceModal({
                 />
               </Field>
             </Grid2>
+          </CollapsibleSection>
+
+          <CollapsibleSection
+            title={`Posizione e Tappe sulla Mappa ${editSpots?.length ? `(${editSpots.length} tappe)` : ""}`}
+            color="bg-[#3D6E90]"
+            defaultOpen={false}
+          >
+            <div className="p-3 bg-[#F0E8D6]/40 dark:bg-[#251e17] rounded-sm border border-[#E9DCC4] dark:border-[#382b20] mb-4 text-xs text-[#5C4C38] dark:text-[#c7b59f]">
+              <p className="font-semibold text-[#1E160A] dark:text-[#f5ede2] mb-1">
+                📍 Gestione tappe e posizioni multiple
+              </p>
+              <p>
+                Se questo luogo rappresenta un tour con più tappe, ville o monumenti (ad esempio <em>"Palladio e le sue ville"</em> o <em>"Città murate"</em>), puoi inserire qui tutte le posizioni: <strong>sulla mappa pubblica comparirà un pin per ciascuna tappa</strong>, e cliccando su qualunque di esse si aprirà la scheda di questo tour!
+              </p>
+            </div>
+
+            {/* Coordinate Principali */}
+            <div className="mb-5 pb-5 border-b border-[#E9DCC4] dark:border-[#382b20]">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-[#7A6655] dark:text-[#a89582] mb-2">
+                Punto Principale di riferimento {editSpots?.length ? "(Opzionale se definisci le tappe)" : ""}
+              </h4>
+              <CoordPicker
+                lat={edit.lat != null && edit.lat !== "" ? Number(edit.lat) : null}
+                lng={edit.lng != null && edit.lng !== "" ? Number(edit.lng) : null}
+                onChange={(lat, lng) => {
+                  updateField("lat", lat);
+                  updateField("lng", lng);
+                }}
+              />
+            </div>
+
+            {/* Tappe Multiple */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-sm font-bold text-[#1E160A] dark:text-[#f5ede2]">
+                    Tappe / Sedi del tour ({editSpots?.length || 0})
+                  </h4>
+                  <p className="text-xs text-[#7A6655] dark:text-[#a89582]">
+                    Aggiungi ciascuna villa, castello o punto d'interesse specifico
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newSpot = {
+                      id: crypto.randomUUID(),
+                      name_it: "",
+                      name_en: "",
+                      lat: edit.lat || 45.438,
+                      lng: edit.lng || 10.991,
+                      cover_image_url: "",
+                      short_description_it: "",
+                    };
+                    setEditSpots([...(editSpots || []), newSpot]);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#9C1C1C] hover:bg-[#7A1616] text-white rounded-sm text-xs font-semibold shadow-sm transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Aggiungi tappa
+                </button>
+              </div>
+
+              {(!editSpots || editSpots.length === 0) ? (
+                <div className="p-4 rounded-sm border border-dashed border-[#E9DCC4] dark:border-[#382b20] text-center text-xs text-[#92816A] dark:text-[#a89582]">
+                  Nessuna tappa multipla aggiunta. Se il luogo ha una sola sede, usa il Punto Principale sopra. Se invece contiene più ville o monumenti, clicca su <strong>"+ Aggiungi tappa"</strong>.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {editSpots.map((spot: any, idx: number) => (
+                    <div
+                      key={spot.id || idx}
+                      className="p-3.5 rounded-sm border border-[#E9DCC4] dark:border-[#382b20] bg-white dark:bg-[#1f1812] shadow-sm space-y-3"
+                    >
+                      <div className="flex items-center justify-between gap-2 border-b border-[#F0E8D6] dark:border-[#2d2218] pb-2">
+                        <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#9C1C1C] dark:text-[#e07a5f]">
+                          <MapPin className="w-3.5 h-3.5" /> Tappa {idx + 1}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditSpots(editSpots.filter((_: any, i: number) => i !== idx));
+                          }}
+                          className="text-xs text-[#9C1C1C] hover:text-[#7A1616] flex items-center gap-1 font-medium"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" /> Rimuovi
+                        </button>
+                      </div>
+
+                      <div className="grid sm:grid-cols-2 gap-2.5">
+                        <Field label="Nome tappa IT (es. Villa Barbaro a Maser)">
+                          <input
+                            className={inputClass(`spot_${idx}_name_it`)}
+                            placeholder="Es. Villa Capra detta La Rotonda"
+                            value={spot.name_it || ""}
+                            onChange={(e) => {
+                              const updated = [...editSpots];
+                              updated[idx] = { ...updated[idx], name_it: e.target.value };
+                              setEditSpots(updated);
+                            }}
+                          />
+                        </Field>
+                        <Field label="Nome tappa EN">
+                          <input
+                            className={inputClass(`spot_${idx}_name_en`)}
+                            placeholder="Es. Villa Capra called La Rotonda"
+                            value={spot.name_en || ""}
+                            onChange={(e) => {
+                              const updated = [...editSpots];
+                              updated[idx] = { ...updated[idx], name_en: e.target.value };
+                              setEditSpots(updated);
+                            }}
+                          />
+                        </Field>
+                      </div>
+
+                      <CoordPicker
+                        lat={spot.lat != null ? Number(spot.lat) : null}
+                        lng={spot.lng != null ? Number(spot.lng) : null}
+                        onChange={(lat, lng) => {
+                          const updated = [...editSpots];
+                          updated[idx] = { ...updated[idx], lat, lng };
+                          setEditSpots(updated);
+                        }}
+                      />
+
+                      <Field label="Foto specifica della tappa (opzionale)">
+                        <input
+                          className={inputClass(`spot_${idx}_img`)}
+                          placeholder="https://... (se vuoto usa la copertina del tour)"
+                          value={spot.cover_image_url || ""}
+                          onChange={(e) => {
+                            const updated = [...editSpots];
+                            updated[idx] = { ...updated[idx], cover_image_url: e.target.value };
+                            setEditSpots(updated);
+                          }}
+                        />
+                      </Field>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </CollapsibleSection>
 
           {/* Sezione: Impostazioni */}
@@ -761,6 +906,7 @@ export default function PlacesPage() {
   const [loading, setLoading] = useState(true);
   const [edit, setEdit] = useState<Row | null>(null);
   const [editTT, setEditTT] = useState<string[]>([]);
+  const [editSpots, setEditSpots] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [filterUnassigned, setFilterUnassigned] = useState(false);
@@ -785,11 +931,12 @@ export default function PlacesPage() {
   const openNew = () => {
     setEdit({ ...DEF, sort_order: rows.length });
     setEditTT([]);
+    setEditSpots([]);
     setErrors({}); setTouched({}); setShowWarnings(false);
     setOpen(true);
   };
 
-  const openEdit = (r: Row) => {
+  const openEdit = async (r: Row) => {
     setEdit({
       ...r,
       highlights_it: toArray(r.highlights_it),
@@ -799,6 +946,15 @@ export default function PlacesPage() {
     });
     setEditTT(r.place_tour_types?.map((x: any) => x.tour_type_id) || []);
     setErrors({}); setTouched({}); setShowWarnings(false);
+
+    // Carica le tappe/spot collegate a questo luogo
+    const { data: spots } = await supabase
+      .from("map_spots")
+      .select("*")
+      .eq("place_id", r.id)
+      .order("sort_order");
+    setEditSpots(spots || []);
+
     setOpen(true);
   };
 
@@ -873,6 +1029,9 @@ export default function PlacesPage() {
       const id = edit.id || crypto.randomUUID();
       const { place_type, place_tour_types, ...restOfEdit } = edit;
 
+      const latNum = edit.lat === "" || edit.lat == null ? null : Number(edit.lat);
+      const lngNum = edit.lng === "" || edit.lng == null ? null : Number(edit.lng);
+      const hasPair = Number.isFinite(latNum) && Number.isFinite(lngNum);
       const payload = {
         ...restOfEdit,
         id,
@@ -880,6 +1039,8 @@ export default function PlacesPage() {
         sort_order: Number(edit.sort_order ?? 0),
         min_participants: edit.min_participants || null,
         max_participants: edit.max_participants || null,
+        lat: hasPair ? latNum : null,
+        lng: hasPair ? lngNum : null,
       };
 
       const { error } = await supabase.from("places").upsert(payload as any, { onConflict: "id" });
@@ -892,7 +1053,41 @@ export default function PlacesPage() {
         );
         if (err2) throw err2;
       }
-      notify("success", "Luogo salvato");
+
+      // Sincronizza tappe multiple / map_spots per questo luogo
+      if (edit.id) {
+        const currentSpotIds = (editSpots || []).map((s: any) => s.id).filter(Boolean);
+        if (currentSpotIds.length > 0) {
+          await supabase.from("map_spots").delete().eq("place_id", id).not("id", "in", `(${currentSpotIds.join(",")})`);
+        } else {
+          await supabase.from("map_spots").delete().eq("place_id", id);
+        }
+      }
+      if (editSpots && editSpots.length > 0) {
+        for (let idx = 0; idx < editSpots.length; idx++) {
+          const sp = editSpots[idx];
+          if (!sp.name_it || sp.lat == null || sp.lng == null) continue;
+          const spotSlug = sp.slug || `${String(sp.name_it).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}-${idx}`;
+          const spotPayload = {
+            id: sp.id || crypto.randomUUID(),
+            slug: spotSlug,
+            name_it: String(sp.name_it).trim(),
+            name_en: String(sp.name_en || sp.name_it).trim(),
+            short_description_it: sp.short_description_it || null,
+            short_description_en: sp.short_description_en || null,
+            lat: Number(sp.lat),
+            lng: Number(sp.lng),
+            cover_image_url: sp.cover_image_url || null,
+            place_id: id,
+            tour_type_id: editTT[0] || null,
+            sort_order: idx,
+            is_active: true,
+          };
+          await supabase.from("map_spots").upsert(spotPayload as any, { onConflict: "id" });
+        }
+      }
+
+      notify("success", "Luogo e tappe salvati con successo");
       setOpen(false); load();
     } catch (e: any) { notify("error", e.message); }
     finally { setSaving(false); }
@@ -1042,7 +1237,7 @@ export default function PlacesPage() {
                       <td className="px-4 py-3.5 whitespace-nowrap">
                         <div className="flex flex-wrap gap-1">
                           {r.is_active ? (
-                            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 bg-[#4A6535]/15 text-[#3A5228] rounded-sm">
+                            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 bg-[#C4923A]/15 text-[#8A5E1A] dark:text-[#d4a84b] rounded-sm">
                               Attivo
                             </span>
                           ) : (
@@ -1094,6 +1289,8 @@ export default function PlacesPage() {
         pt={pt}
         editTT={editTT}
         setEditTT={setEditTT}
+        editSpots={editSpots}
+        setEditSpots={setEditSpots}
         errors={errors}
         setErrors={setErrors}
         touched={touched}

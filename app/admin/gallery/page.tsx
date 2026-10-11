@@ -260,7 +260,7 @@ export default function AdminGalleryPage() {
       {msg && (
         <div className={cn(
           "p-3 rounded-sm text-sm flex items-center gap-2 border",
-          msg.type === "ok" ? "bg-[#4A6535]/10 text-[#3A5228] border-[#4A6535]/25" : "bg-[#9C1C1C]/10 text-[#9C1C1C] border-[#9C1C1C]/25"
+          msg.type === "ok" ? "bg-[#C4923A]/10 text-[#8A5E1A] dark:text-[#d4a84b] border-[#C4923A]/25" : "bg-[#9C1C1C]/10 text-[#9C1C1C] border-[#9C1C1C]/25"
         )}>
           <CheckCircle2 className="w-4 h-4" />
           {msg.text}
@@ -378,7 +378,7 @@ export default function AdminGalleryPage() {
       )}
 
       {draft && mounted && createPortal(
-        <div className="fixed inset-0 z-[9999] bg-black/45 backdrop-blur-sm overflow-y-auto p-4 sm:p-8 flex items-center justify-center">
+        <div className="admin-modal fixed inset-0 z-[9999] bg-black/45 backdrop-blur-sm overflow-y-auto p-4 sm:p-8 flex items-center justify-center">
           <div className="w-full max-w-2xl bg-white rounded-xl shadow-2xl border border-[#E9DCC4] p-5 sm:p-6 space-y-5 my-auto">
             <div className="flex justify-between gap-4">
               <div>
@@ -538,7 +538,7 @@ export default function AdminGalleryPage() {
               </div>
             </div>
 
-            <label className="inline-flex items-center gap-2 text-sm font-medium text-[#3D2E1A]">
+            <label className="inline-flex items-center gap-2 text-sm font-medium text-[#3D2E1A] dark:text-[#e8dccb]">
               <input
                 type="checkbox"
                 checked={draft.is_active}

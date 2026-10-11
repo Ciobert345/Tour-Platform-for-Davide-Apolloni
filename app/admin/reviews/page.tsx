@@ -25,11 +25,13 @@ const DEF: Row = {
   rating: 5,
   status: "pending",
   tour_type_id: null,
+  place_id: null,
+  map_spot_id: null,
 };
 
 const STATUSES = [
   { v: "pending", l: "In attesa", c: "bg-[#C4923A]/15 text-[#B89200] border-[#C4923A]/30", icon: Clock },
-  { v: "approved", l: "Approvata", c: "bg-[#4A6535]/15 text-[#3A5228] border-[#4A6535]/30", icon: CheckCircle2 },
+  { v: "approved", l: "Approvata", c: "bg-[#C4923A]/15 text-[#8A5E1A] border-[#C4923A]/30", icon: CheckCircle2 },
   { v: "rejected", l: "Respinta", c: "bg-[#9C1C1C]/10 text-[#9C1C1C] border-[#B22A2A]/30", icon: XCircle },
 ];
 
@@ -87,7 +89,7 @@ function CollapsibleSection({
 }
 
 function ReviewModal({
-  open, onClose, edit, tt, errors, touched, showWarnings, saving, onSubmit,
+  open, onClose, edit, tt, places, spots, errors, touched, showWarnings, saving, onSubmit,
   updateField, markTouched, setShowWarnings, getMissingRecommended, errorBannerRef,
 }: any) {
   const modalRef = useRef<HTMLDivElement>(null);
@@ -115,12 +117,12 @@ function ReviewModal({
     const hasError = errors[key] && touched[key];
     return cn(
       "w-full px-3 py-2 text-sm border rounded-sm bg-white focus:outline-none focus:ring-2 transition-colors",
-      hasError ? "border-[#B22A2A] focus:ring-[#B22A2A]/30" : "border-[#E9DCC4] focus:ring-[#4A6535]/30 focus:border-[#4A6535]"
+      hasError ? "border-[#B22A2A] focus:ring-[#B22A2A]/30" : "border-[#E9DCC4] focus:ring-[#9C1C1C]/30 focus:border-[#9C1C1C]"
     );
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="admin-modal fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-[#1E160A]/40 backdrop-blur-sm" onClick={onClose} />
       <div ref={modalRef} className="relative bg-white rounded-lg shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#E9DCC4] bg-white">
@@ -189,7 +191,7 @@ function ReviewModal({
             </Grid2>
           </CollapsibleSection>
 
-          <CollapsibleSection title="Contenuto recensione" color="bg-[#4A6535]" defaultOpen={true}>
+          <CollapsibleSection title="Contenuto recensione" color="bg-[#C4923A]" defaultOpen={true}>
             <Field label={<>Testo recensione <span className="text-[#B22A2A]">*</span></>} hint={`${(edit.review_text || "").length} caratteri`} error={errors.review_text && touched.review_text ? errors.review_text : undefined}>
               <textarea required rows={6} className={cn(inputClass("review_text"), "resize-y")} value={edit.review_text || ""} onChange={(e) => updateField("review_text", e.target.value)} onBlur={() => markTouched("review_text")} placeholder="Scrivi qui il testo della recensione..." />
             </Field>
@@ -206,6 +208,34 @@ function ReviewModal({
               <Field label="Stato moderazione">
                 <select className={inputClass("status")} value={edit.status || "pending"} onChange={(e) => updateField("status", e.target.value)}>
                   {STATUSES.map((s: any) => <option key={s.v} value={s.v}>{s.l}</option>)}
+                </select>
+              </Field>
+            </Grid2>
+            <Grid2>
+              <Field label="Luogo visitato (place)">
+                <select
+                  className={inputClass("place_id")}
+                  value={edit.place_id || ""}
+                  onChange={(e) => {
+                    updateField("place_id", e.target.value || null);
+                    if (e.target.value) updateField("map_spot_id", null);
+                  }}
+                >
+                  <option value="">— Nessuno —</option>
+                  {(places || []).map((p: any) => <option key={p.id} value={p.id}>{p.name_it}</option>)}
+                </select>
+              </Field>
+              <Field label="Meta proposta">
+                <select
+                  className={inputClass("map_spot_id")}
+                  value={edit.map_spot_id || ""}
+                  onChange={(e) => {
+                    updateField("map_spot_id", e.target.value || null);
+                    if (e.target.value) updateField("place_id", null);
+                  }}
+                >
+                  <option value="">— Nessuna —</option>
+                  {(spots || []).map((s: any) => <option key={s.id} value={s.id}>{s.name_it}</option>)}
                 </select>
               </Field>
             </Grid2>
@@ -236,6 +266,8 @@ export default function ReviewsPage() {
   const { notify } = useToast();
   const [rows, setRows] = useState<Row[]>([]);
   const [tt, setTt] = useState<TT[]>([]);
+  const [places, setPlaces] = useState<{ id: string; name_it: string }[]>([]);
+  const [spots, setSpots] = useState<{ id: string; name_it: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [edit, setEdit] = useState<Row | null>(null);
   const [open, setOpen] = useState(false);
@@ -268,11 +300,14 @@ export default function ReviewsPage() {
 
       setRows(normalizedRows);
 
-      const { data: ttData } = await supabase
-        .from("tour_types")
-        .select("id, name_it, name_en")
-        .eq("is_active", true);
+      const [{ data: ttData }, { data: placeData }, { data: spotData }] = await Promise.all([
+        supabase.from("tour_types").select("id, name_it, name_en").eq("is_active", true),
+        supabase.from("places").select("id, name_it").order("name_it"),
+        supabase.from("map_spots").select("id, name_it").order("name_it"),
+      ]);
       setTt(ttData ?? []);
+      setPlaces(placeData ?? []);
+      setSpots(spotData ?? []);
 
     } catch (error: any) {
       console.error("Errore caricamento recensioni:", error);
@@ -370,6 +405,8 @@ export default function ReviewsPage() {
         tour_type_name_it,
         tour_type_name_en,
         tour_type_color,
+        place_name_it,
+        map_spot_name_it,
         ...restOfEdit // Qui rimangono SOLO le colonne reali della tabella 'reviews'
       } = edit;
 
@@ -500,7 +537,7 @@ export default function ReviewsPage() {
                   <div className="flex shrink-0 flex-col gap-1">
                     {r.status === "pending" && (
                       <>
-                        <button onClick={() => quickStatus(r, "approved")} className="w-8 h-8 rounded-sm hover:bg-[#4A6535]/10 text-[#4A6535] flex items-center justify-center" title="Approva">
+                        <button onClick={() => quickStatus(r, "approved")} className="w-8 h-8 rounded-sm hover:bg-[#C4923A]/10 text-[#C4923A] dark:text-[#d4a84b] flex items-center justify-center" title="Approva">
                           <CheckCircle2 className="w-4 h-4" />
                         </button>
                         <button onClick={() => quickStatus(r, "rejected")} className="w-8 h-8 rounded-sm hover:bg-[#9C1C1C]/10 text-[#9C1C1C] flex items-center justify-center" title="Rifiuta">
@@ -527,6 +564,8 @@ export default function ReviewsPage() {
         onClose={() => setOpen(false)}
         edit={edit}
         tt={tt}
+        places={places}
+        spots={spots}
         errors={errors}
         touched={touched}
         showWarnings={showWarnings}

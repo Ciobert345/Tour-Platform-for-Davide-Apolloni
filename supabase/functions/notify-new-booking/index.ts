@@ -98,6 +98,11 @@ serve(async (req) => {
       return t ? (map[t] ?? t) : "—";
     })();
     const destination = stripHtml(record.preferred_destination || record.destination) || "—";
+    const osm_url = stripHtml(record.osm_url) || (
+      record.map_lat != null && record.map_lng != null
+        ? `https://www.openstreetmap.org/?mlat=${record.map_lat}&mlon=${record.map_lng}#map=14/${record.map_lat}/${record.map_lng}`
+        : ""
+    );
     const notes = stripHtml(record.notes) || "";
     const tour_type_name =
       stripHtml((record.tour_type as Record<string, unknown> | undefined)?.name_it) ||
@@ -125,7 +130,7 @@ serve(async (req) => {
       full_name, email, phone, booking_id, participants,
       visit_language, preferred_date, alternative_date,
       transport, destination, notes, tour_type_name, created_at,
-      adminEmail, adminPanelUrl, siteUrl,
+      adminEmail, adminPanelUrl, siteUrl, osm_url,
     });
 
     let email_sent = false;
@@ -219,6 +224,7 @@ type AdminEmailArgs = {
   adminEmail: string;
   adminPanelUrl: string;
   siteUrl: string;
+  osm_url?: string;
 };
 
 function row(label: string, value: string, highlight = false): string {
@@ -291,6 +297,7 @@ function buildAdminHtml(a: AdminEmailArgs): string {
       ${row("Partecipanti", participantsStr)}
       ${row("Lingua visita", langStr)}
       ${row("Trasporto", a.transport)}
+      ${a.osm_url ? row("Punto sulla mappa", `<a href="${a.osm_url}" style="color:#93161a;">Apri su OpenStreetMap</a>`) : ""}
     </table>
 
     ${notesBlock}

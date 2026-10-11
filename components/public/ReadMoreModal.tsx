@@ -61,7 +61,7 @@ export default function ReadMoreModal({
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
 
       <div
-        className="relative z-10 w-full sm:max-w-lg bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden max-h-[92dvh] flex flex-col"
+        className="relative z-10 w-full sm:max-w-lg bg-white dark:bg-[#1c1611] text-text-main border border-black/10 dark:border-white/10 rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden max-h-[92dvh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {cover ? (
@@ -90,7 +90,7 @@ export default function ReadMoreModal({
             <button
               type="button"
               onClick={onClose}
-              className="absolute top-3 left-3 w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/70 transition-colors"
+              className="absolute top-3 left-3 w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/70 transition-colors cursor-pointer"
               aria-label={closeLabel}
             >
               <X className="w-4 h-4" />
@@ -104,7 +104,7 @@ export default function ReadMoreModal({
             <button
               type="button"
               onClick={onClose}
-              className="w-8 h-8 shrink-0 rounded-full bg-black/5 flex items-center justify-center text-text-muted hover:bg-black/10 transition-colors"
+              className="w-8 h-8 shrink-0 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center text-text-muted hover:bg-black/10 dark:hover:bg-white/15 transition-colors cursor-pointer"
               aria-label={closeLabel}
             >
               <X className="w-4 h-4" />
@@ -120,7 +120,7 @@ export default function ReadMoreModal({
         </div>
 
         {footer && (
-          <div className="shrink-0 px-5 sm:px-6 py-4 border-t border-black/5 bg-white">
+          <div className="shrink-0 px-5 sm:px-6 py-4 border-t border-black/5 dark:border-white/10 bg-white dark:bg-[#1c1611]">
             {footer}
           </div>
         )}

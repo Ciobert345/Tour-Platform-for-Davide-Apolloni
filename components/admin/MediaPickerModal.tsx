@@ -170,22 +170,22 @@ export default function MediaPickerModal({
         urlInput.includes("vimeo.com")));
 
   return (
-    <div className="bg-white border border-[#E9DCC4] rounded-md shadow-xl overflow-hidden flex flex-col space-y-4 p-4">
+    <div className="bg-white dark:bg-[#1a140e] border border-[#E9DCC4] dark:border-white/10 rounded-md shadow-xl overflow-hidden flex flex-col space-y-4 p-4">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-[#F0E8D6] pb-3">
+      <div className="flex items-center justify-between border-b border-[#F0E8D6] dark:border-white/10 pb-3">
         <div className="flex items-center gap-2">
           {isVideoFile ? (
             <Video className="w-5 h-5 text-[#B22A2A]" />
           ) : (
             <ImageIcon className="w-5 h-5 text-[#B22A2A]" />
           )}
-          <h3 className="font-serif font-semibold text-[#1E160A] text-sm">{title}</h3>
+          <h3 className="font-serif font-semibold text-[#1E160A] dark:text-[#f5ede2] text-sm">{title}</h3>
         </div>
         {onClose && (
           <button
             type="button"
             onClick={onClose}
-            className="w-7 h-7 rounded-full hover:bg-[#F0E8D6] flex items-center justify-center text-[#92816A] hover:text-[#3D2E1A]"
+            className="w-7 h-7 rounded-full hover:bg-[#F0E8D6] dark:hover:bg-[#281f18] flex items-center justify-center text-[#92816A] hover:text-[#3D2E1A] dark:hover:text-[#f5ede2]"
           >
             <X className="w-4 h-4" />
           </button>
@@ -193,15 +193,15 @@ export default function MediaPickerModal({
       </div>
 
       {/* Tabs */}
-      <div className="flex rounded-sm bg-[#F0E8D6] p-0.5 border border-[#E9DCC4]">
+      <div className="flex rounded-sm bg-[#F0E8D6] dark:bg-[#251d16] p-0.5 border border-[#E9DCC4] dark:border-white/10">
         <button
           type="button"
           onClick={() => setActiveTab("upload")}
           className={cn(
             "flex-1 py-1.5 text-xs font-semibold rounded-sm transition-all flex items-center justify-center gap-1.5",
             activeTab === "upload"
-              ? "bg-white text-[#1E160A] shadow-sm"
-              : "text-[#7A6655] hover:text-[#2E2010]"
+              ? "bg-white dark:bg-[#1a140e] text-[#1E160A] dark:text-[#f5ede2] shadow-sm"
+              : "text-[#7A6655] dark:text-[#b8a48e] hover:text-[#2E2010] dark:hover:text-[#f5ede2]"
           )}
         >
           <Upload className="w-3.5 h-3.5" />
@@ -215,8 +215,8 @@ export default function MediaPickerModal({
             className={cn(
               "flex-1 py-1.5 text-xs font-semibold rounded-sm transition-all flex items-center justify-center gap-1.5",
               activeTab === "presets"
-                ? "bg-white text-[#1E160A] shadow-sm"
-                : "text-[#7A6655] hover:text-[#2E2010]"
+                ? "bg-white dark:bg-[#1a140e] text-[#1E160A] dark:text-[#f5ede2] shadow-sm"
+                : "text-[#7A6655] dark:text-[#b8a48e] hover:text-[#2E2010] dark:hover:text-[#f5ede2]"
             )}
           >
             <Sparkles className="w-3.5 h-3.5 text-[#B22A2A]" />
@@ -230,8 +230,8 @@ export default function MediaPickerModal({
           className={cn(
             "flex-1 py-1.5 text-xs font-semibold rounded-sm transition-all flex items-center justify-center gap-1.5",
             activeTab === "url"
-              ? "bg-white text-[#1E160A] shadow-sm"
-              : "text-[#7A6655] hover:text-[#2E2010]"
+              ? "bg-white dark:bg-[#1a140e] text-[#1E160A] dark:text-[#f5ede2] shadow-sm"
+              : "text-[#7A6655] dark:text-[#b8a48e] hover:text-[#2E2010] dark:hover:text-[#f5ede2]"
           )}
         >
           <Link2 className="w-3.5 h-3.5" />
@@ -247,7 +247,7 @@ export default function MediaPickerModal({
           onClick={() => fileInputRef.current?.click()}
           className={cn(
             "border-2 border-dashed rounded-md p-6 text-center cursor-pointer transition-all",
-            "hover:border-[#B22A2A] hover:bg-[#B22A2A]/5 bg-[#F9F4EC]/50",
+            "hover:border-[#B22A2A] hover:bg-[#B22A2A]/5 bg-[#F9F4EC]/50 dark:bg-[#221a14]/50 border-[#E9DCC4] dark:border-white/10",
             uploading && "opacity-75 pointer-events-none"
           )}
         >
@@ -275,15 +275,15 @@ export default function MediaPickerModal({
             )}
           </div>
 
-          <p className="text-xs font-bold text-[#2E2010] mb-1">
+          <p className="text-xs font-bold text-[#2E2010] dark:text-[#f5ede2] mb-1">
             {uploading ? "Caricamento in corso…" : "Trascina qui il file o Clicca per sfogliare"}
           </p>
-          <p className="text-[11px] text-[#92816A]">
+          <p className="text-[11px] text-[#92816A] dark:text-[#b8a48e]">
             Supporta JPG, PNG, WebP {isVideo && ", MP4 video"} fino a 50MB
           </p>
 
           {uploading && (
-            <div className="w-full bg-[#E9DCC4] h-1.5 rounded-full mt-4 overflow-hidden">
+            <div className="w-full bg-[#E9DCC4] dark:bg-white/10 h-1.5 rounded-full mt-4 overflow-hidden">
               <div
                 className="bg-[#B22A2A] h-full transition-all duration-300"
                 style={{ width: `${uploadProgress}%` }}
@@ -298,7 +298,7 @@ export default function MediaPickerModal({
         <div className="space-y-4 max-h-64 overflow-y-auto pr-1">
           {CURATED_PRESETS.map((group) => (
             <div key={group.category} className="space-y-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#92816A] block">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#92816A] dark:text-[#b8a48e] block">
                 {group.category}
               </span>
               <div className="grid grid-cols-2 gap-2">
@@ -315,8 +315,8 @@ export default function MediaPickerModal({
                       className={cn(
                         "group relative rounded-sm overflow-hidden border text-left p-1 transition-all",
                         isSelected
-                          ? "border-[#B22A2A] ring-2 ring-[#B22A2A]/40 bg-white"
-                          : "border-[#E9DCC4] hover:border-[#92816A] bg-[#F9F4EC]"
+                          ? "border-[#B22A2A] ring-2 ring-[#B22A2A]/40 bg-white dark:bg-[#1a140e]"
+                          : "border-[#E9DCC4] dark:border-white/10 hover:border-[#92816A] bg-[#F9F4EC] dark:bg-[#231b14]"
                       )}
                     >
                       <div className="relative aspect-video w-full rounded-xs overflow-hidden mb-1">
@@ -332,7 +332,7 @@ export default function MediaPickerModal({
                           </div>
                         )}
                       </div>
-                      <p className="text-[10px] font-semibold text-[#3D2E1A] truncate px-1">
+                      <p className="text-[10px] font-semibold text-[#3D2E1A] dark:text-[#f5ede2] truncate px-1">
                         {item.title}
                       </p>
                     </button>
@@ -348,7 +348,7 @@ export default function MediaPickerModal({
       {activeTab === "url" && (
         <div className="space-y-3">
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#3D2E1A] mb-1">
+            <label className="block text-xs font-bold uppercase tracking-wider text-[#3D2E1A] dark:text-[#f5ede2] mb-1">
               URL Immagine o Video
             </label>
             <div className="flex gap-2">
@@ -368,12 +368,12 @@ export default function MediaPickerModal({
 
       {/* Video Poster Image (if video) */}
       {isVideoFile && onPosterChange && (
-        <div className="p-3 bg-[#F9F4EC] border border-[#E9DCC4] rounded-sm space-y-2">
-          <label className="block text-[11px] font-bold uppercase tracking-wider text-[#3D2E1A]">
+        <div className="p-3 bg-[#F9F4EC] dark:bg-[#231b14] border border-[#E9DCC4] dark:border-white/10 rounded-sm space-y-2">
+          <label className="block text-[11px] font-bold uppercase tracking-wider text-[#3D2E1A] dark:text-[#f5ede2]">
             Copertina Poster del Video (Immagine)
           </label>
           <input
-            className="inpt text-xs font-mono w-full bg-white"
+            className="inpt text-xs font-mono w-full bg-white dark:bg-[#1a140e]"
             value={posterInput}
             onChange={(e) => {
               setPosterInput(e.target.value);

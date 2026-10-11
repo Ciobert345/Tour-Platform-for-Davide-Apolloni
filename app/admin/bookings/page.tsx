@@ -38,7 +38,7 @@ const DEF: Row = {
 const STATUSES = [
   { v: "new", l: "Nuova", c: "bg-[#B22A2A]/10 text-[#9C1C1C] border-[#B22A2A]/20", dot: "bg-[#B22A2A]" },
   { v: "contacted", l: "Contattata", c: "bg-[#3D6E90]/10 text-[#244D68] border-[#3D6E90]/20", dot: "bg-[#3D6E90]" },
-  { v: "confirmed", l: "Confermata", c: "bg-[#4A6535]/15 text-[#3A5228] border-[#4A6535]/30", dot: "bg-[#4A6535]" },
+  { v: "confirmed", l: "Confermata", c: "bg-[#C4923A]/15 text-[#8A5E1A] border-[#C4923A]/30", dot: "bg-[#C4923A]" },
   { v: "archived", l: "Archiviata", c: "bg-[#F0E8D6] text-[#5C4C38] border-[#E9DCC4]", dot: "bg-[#92816A]" },
 ];
 
@@ -121,7 +121,7 @@ function ActionMenu({ booking, onStatusChange, onEdit, onDelete }: any) {
         createPortal(
           <div
             ref={menuRef}
-            className="fixed w-64 bg-white rounded-sm shadow-lg border border-[#E9DCC4] overflow-hidden z-[150]"
+            className="admin-modal fixed w-64 bg-white rounded-sm shadow-lg border border-[#E9DCC4] overflow-hidden z-[150]"
             style={{ top: `${position.top}px`, left: `${position.left}px` }}
           >
             <div className="px-3 py-2 border-b border-[#F0E8D6]">
@@ -133,7 +133,7 @@ function ActionMenu({ booking, onStatusChange, onEdit, onDelete }: any) {
                 </button>
               )}
               {(booking.status === "new" || booking.status === "contacted") && (
-                <button onClick={() => handleAction(() => onStatusChange(booking, "confirmed"))} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[#3A5228] hover:bg-[#4A6535]/5 rounded-sm transition-colors text-left">
+                <button onClick={() => handleAction(() => onStatusChange(booking, "confirmed"))} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[#8A5E1A] hover:bg-[#C4923A]/5 rounded-sm transition-colors text-left">
                   <CheckCircle2 className="w-4 h-4 shrink-0" />
                   <div><p className="font-medium">Conferma Prenotazione</p><p className="text-[10px] text-[#7A6655]">Richiesta accettata</p></div>
                 </button>
@@ -212,7 +212,7 @@ function BookingModal({ open, onClose, edit, tt, transportModes, saving, onSubmi
   const inputClass = "w-full px-3 py-2 text-sm border border-[#E9DCC4] rounded-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#B22A2A]/30 focus:border-[#B22A2A] transition-colors";
 
   return createPortal(
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+    <div className="admin-modal fixed inset-0 z-[200] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-[#1E160A]/40 backdrop-blur-sm" onClick={onClose} />
       <div ref={modalRef} className="relative bg-white rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
         
@@ -248,7 +248,7 @@ function BookingModal({ open, onClose, edit, tt, transportModes, saving, onSubmi
           </CollapsibleSection>
 
           {/* Sezione: Dettagli tour */}
-          <CollapsibleSection title="Dettagli tour" color="bg-[#4A6535]" defaultOpen={true}>
+          <CollapsibleSection title="Dettagli tour" color="bg-[#C4923A]" defaultOpen={true}>
             <Grid2>
               <Field label="Tipologia tour">
                 <select className={inputClass} value={edit.tour_type_id || ""} onChange={(e) => updateField("tour_type_id", e.target.value || null)}>
@@ -562,7 +562,22 @@ export default function BookingsPage() {
                             {r.preferred_destination}
                           </p>
                         )}
-                        {!r.tour_type && !r.preferred_destination && <span className="text-xs text-[#92816A]">—</span>}
+                        {r.source === "map" && (
+                          <span className="mt-1 inline-flex items-center text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm bg-[#C4923A]/15 text-[#8A5E1A] border border-[#C4923A]/30">
+                            da mappa
+                          </span>
+                        )}
+                        {r.map_lat != null && r.map_lng != null && (
+                          <a
+                            href={`https://www.openstreetmap.org/?mlat=${r.map_lat}&mlon=${r.map_lng}#map=14/${r.map_lat}/${r.map_lng}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-1 block text-[11px] text-[#3D6E90] hover:underline"
+                          >
+                            Apri su OpenStreetMap
+                          </a>
+                        )}
+                        {!r.tour_type && !r.preferred_destination && r.source !== "map" && <span className="text-xs text-[#92816A]">—</span>}
                       </td>
                       <td className="px-5 py-3.5 align-top">
                         {r.preferred_date ? (
