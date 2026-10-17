@@ -305,7 +305,7 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
               <User className="w-4 h-4" />
             </div>
             <span className="text-[9.5px] leading-none mt-0.5 tracking-tight font-medium">
-              Chi sono
+              {t("nav.mobile.about", lang === "en" ? "About" : "Chi sono")}
             </span>
           </a>
 
@@ -329,7 +329,7 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
               <Compass className="w-4 h-4" />
             </div>
             <span className="text-[9.5px] leading-none mt-0.5 tracking-tight font-medium">
-              Tour
+              {t("nav.mobile.tours", lang === "en" ? "Tours" : "Tour")}
             </span>
           </a>
 
@@ -353,7 +353,7 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
               <Sparkles className="w-4 h-4" />
             </div>
             <span className="text-[9.5px] leading-none mt-0.5 tracking-tight font-medium">
-              Esclusive
+              {t("nav.mobile.exclusive", lang === "en" ? "Experiences" : "Esperienze")}
             </span>
           </a>
 
@@ -377,7 +377,7 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                 <Map className="w-4 h-4 text-terracotta dark:text-[#fca59d]" />
               </div>
               <span className="text-[9.5px] leading-none mt-0.5 tracking-tight font-semibold text-terracotta dark:text-[#fca59d]">
-                Mappa
+                {t("nav.mobile.map", lang === "en" ? "Map" : "Mappa")}
               </span>
             </a>
           )}
@@ -404,7 +404,7 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
               <Calendar className="w-4 h-4 text-terracotta dark:text-[#fca59d]" />
             </div>
             <span className="text-[9.5px] leading-none mt-0.5 tracking-tight font-semibold">
-              Prenota
+              {t("nav.mobile.book", lang === "en" ? "Book" : "Prenota")}
             </span>
           </a>
         </div>

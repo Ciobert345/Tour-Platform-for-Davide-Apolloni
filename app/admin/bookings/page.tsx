@@ -8,7 +8,7 @@ import {
   CalendarCheck, Plus, Edit2, Trash2, Loader2,
   Mail, Phone, MapPin, Users, Languages,
   Clock, CheckCircle2, Archive, Filter, MoreVertical, X,
-  ChevronDown, ChevronRight,
+  ChevronDown, ChevronRight, FileText,
 } from "lucide-react";
 import supabase from "@/lib/supabase/browser";
 import { cn, formatDate } from "@/lib/utils";
@@ -599,10 +599,18 @@ export default function BookingsPage() {
                         {r.notes ? (
                           <div className="space-y-1">
                             <p className="text-[11px] text-[#5C4C38] line-clamp-3 italic">"{r.notes}"</p>
-                            {r.admin_notes && <p className="text-[10px] text-[#92816A] line-clamp-2 border-t border-[#F0E8D6] pt-1 mt-1">📝 {r.admin_notes}</p>}
+                            {r.admin_notes && (
+                              <p className="text-[10px] text-[#92816A] line-clamp-2 border-t border-[#F0E8D6] pt-1 mt-1 flex items-center gap-1">
+                                <FileText className="w-3 h-3 shrink-0 text-[#92816A]" />
+                                <span>{r.admin_notes}</span>
+                              </p>
+                            )}
                           </div>
                         ) : r.admin_notes ? (
-                          <p className="text-[10px] text-[#92816A] line-clamp-2">📝 {r.admin_notes}</p>
+                          <p className="text-[10px] text-[#92816A] line-clamp-2 flex items-center gap-1">
+                            <FileText className="w-3 h-3 shrink-0 text-[#92816A]" />
+                            <span>{r.admin_notes}</span>
+                          </p>
                         ) : <span className="text-xs text-[#C4B49A]">—</span>}
                       </td>
                       <td className="px-5 py-3.5 align-top">

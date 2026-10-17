@@ -27,14 +27,85 @@ type ExtMeta = { value?: string; hidden?: string };
 
 export async function GET(req: NextRequest) {
   const ip = clientIp(req);
-  if (!rateLimitIp(`photos:${ip}`, 30, 60_000)) {
+  if (!rateLimitIp(`photos:${ip}`, 45, 60_000)) {
     return NextResponse.json({ ok: false, error: "Troppe richieste" }, { status: 429 });
   }
 
+  const rawQuery = (req.nextUrl.searchParams.get("query") || req.nextUrl.searchParams.get("name") || "").trim();
   const lat = parseCoord(req.nextUrl.searchParams.get("lat"));
   const lng = parseCoord(req.nextUrl.searchParams.get("lng"));
+
+  // 1. Ricerca diretta per NOME / TITOLO della tappa o del monumento (se presente)
+  if (rawQuery.length >= 2) {
+    const cleanQuery = rawQuery
+      .replace(/["\x22\x27«»]/g, "")
+      .replace(/\s*\([^)]*\)\s*/g, " ")
+      .trim();
+
+    const qCacheKey = `q:${cleanQuery.toLowerCase()}`;
+    const qHit = mem.get(qCacheKey);
+    if (qHit) return NextResponse.json({ ok: true, photos: qHit, cached: true });
+
+    try {
+      const searchUrl = new URL("https://it.wikipedia.org/w/api.php");
+      searchUrl.searchParams.set("action", "query");
+      searchUrl.searchParams.set("generator", "search");
+      searchUrl.searchParams.set("gsrsearch", cleanQuery);
+      searchUrl.searchParams.set("gsrlimit", "3");
+      searchUrl.searchParams.set("prop", "pageimages|description");
+      searchUrl.searchParams.set("piprop", "thumbnail");
+      searchUrl.searchParams.set("pithumbsize", "900");
+      searchUrl.searchParams.set("format", "json");
+
+      const res = await fetch(searchUrl.toString(), {
+        headers: { "User-Agent": geoUserAgent(), Accept: "application/json" },
+        next: { revalidate: 86400 },
+        signal: AbortSignal.timeout(8000),
+      });
+
+      if (res.ok) {
+        const json = (await res.json()) as {
+          query?: {
+            pages?: Record<
+              string,
+              {
+                title?: string;
+                description?: string;
+                thumbnail?: { source?: string };
+              }
+            >;
+          };
+        };
+
+        const pages = Object.values(json.query?.pages ?? {});
+        const namePhotos: CommonsPhoto[] = [];
+        for (const page of pages) {
+          if (!page.thumbnail?.source) continue;
+          namePhotos.push({
+            url: page.thumbnail.source,
+            thumbUrl: page.thumbnail.source,
+            title: page.title || cleanQuery,
+            author: page.description ? `Bene storico-culturale: ${page.description}` : null,
+            license: "Wikipedia / CC BY-SA",
+            licenseUrl: `https://it.wikipedia.org/wiki/${encodeURIComponent(page.title || "")}`,
+            descriptionUrl: `https://it.wikipedia.org/wiki/${encodeURIComponent(page.title || "")}`,
+          });
+          if (namePhotos.length >= 4) break;
+        }
+
+        if (namePhotos.length > 0) {
+          mem.set(qCacheKey, namePhotos);
+          return NextResponse.json({ ok: true, photos: namePhotos });
+        }
+      }
+    } catch (err) {
+      console.warn("[geo/photos by name]", (err as Error).message);
+    }
+  }
+
+  // 2. Se non abbiamo query o non ha trovato risultati, cerca per coordinate GPS
   if (lat == null || lng == null) {
-    return NextResponse.json({ ok: false, error: "Coordinate non valide" }, { status: 400 });
+    return NextResponse.json({ ok: true, photos: [] });
   }
 
   const area = loadAreaGeojson();
@@ -49,7 +120,7 @@ export async function GET(req: NextRequest) {
   if (hit) return NextResponse.json({ ok: true, photos: hit, cached: true });
 
   try {
-    // 1. Cerca prima voci enciclopediche e monumenti storici / città su Wikipedia
+    // Cerca voci enciclopediche e monumenti storici / città su Wikipedia vicine alle coordinate
     const geoUrl = new URL("https://it.wikipedia.org/w/api.php");
     geoUrl.searchParams.set("action", "query");
     geoUrl.searchParams.set("list", "geosearch");

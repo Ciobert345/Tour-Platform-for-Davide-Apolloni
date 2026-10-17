@@ -18,7 +18,6 @@ import {
   Layers,
   Images,
   Shield,
-  MapPinned,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ThemeToggle from "@/components/common/ThemeToggle";
@@ -49,11 +48,7 @@ const NAV_GROUPS: { id: string; label?: string; items: NavItem[] }[] = [
       { href: "/admin/places", label: "Luoghi", icon: MapIcon },
     ],
   },
-  {
-    id: "mappa",
-    label: "Mappa",
-    items: [{ href: "/admin/map-spots", label: "Mete proposte", icon: MapPinned }],
-  },
+
   {
     id: "gestione",
     label: "Gestione",

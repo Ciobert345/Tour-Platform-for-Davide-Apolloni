@@ -8,12 +8,13 @@ import TranslateButton from "@/components/admin/TranslateButton";
 import { TagInput } from "@/components/admin/TagInput";
 import {
   Map as MapIcon, Plus, Edit2, Trash2, Loader2, Eye,
-  AlertCircle, CheckCircle2, Info, ChevronDown, ChevronRight, X, AlertTriangle, MapPin,
+  AlertCircle, CheckCircle2, Info, ChevronDown, ChevronRight, X, AlertTriangle, MapPin, Upload,
 } from "lucide-react";
 import supabase from "@/lib/supabase/browser";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import AdminTutorial from "@/components/admin/AdminTutorial";
+import MapSectionToggle from "@/components/admin/MapSectionToggle";
 import { translateLongText } from "@/lib/translateClient";
 import CoordPicker from "@/components/admin/CoordPicker";
 
@@ -152,6 +153,42 @@ function PlaceModal({
   const [translatingFullDesc, setTranslatingFullDesc] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [translatingHighlights, setTranslatingHighlights] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [translatingTags, setTranslatingTags] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [uploadingSpotIdx, setUploadingSpotIdx] = useState<number | null>(null);
+  const [uploadingCover, setUploadingCover] = useState(false);
+
+  const handleSpotImageUpload = async (file: File, idx: number) => {
+    setUploadingSpotIdx(idx);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const json = await res.json();
+      if (!res.ok || json.error) throw new Error(json.error || "Errore caricamento immagine");
+      const updated = [...(editSpots || [])];
+      updated[idx] = { ...updated[idx], cover_image_url: json.url };
+      setEditSpots(updated);
+    } catch (err: any) {
+      alert(err.message || "Errore durante il caricamento");
+    } finally {
+      setUploadingSpotIdx(null);
+    }
+  };
+
+  const handleCoverUpload = async (file: File) => {
+    setUploadingCover(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const json = await res.json();
+      if (!res.ok || json.error) throw new Error(json.error || "Errore caricamento immagine");
+      updateField("cover_image_url", json.url);
+    } catch (err: any) {
+      alert(err.message || "Errore durante il caricamento");
+    } finally {
+      setUploadingCover(false);
+    }
+  };
 
   useEffect(() => {
     if (open) {
@@ -714,8 +751,8 @@ function PlaceModal({
             defaultOpen={false}
           >
             <div className="p-3 bg-[#F0E8D6]/40 dark:bg-[#251e17] rounded-sm border border-[#E9DCC4] dark:border-[#382b20] mb-4 text-xs text-[#5C4C38] dark:text-[#c7b59f]">
-              <p className="font-semibold text-[#1E160A] dark:text-[#f5ede2] mb-1">
-                📍 Gestione tappe e posizioni multiple
+              <p className="font-semibold text-[#1E160A] dark:text-[#f5ede2] mb-1 flex items-center gap-1.5">
+                <MapPin className="w-4 h-4 text-[#9C1C1C]" /> Gestione tappe e posizioni multiple
               </p>
               <p>
                 Se questo luogo rappresenta un tour con più tappe, ville o monumenti (ad esempio <em>"Palladio e le sue ville"</em> o <em>"Città murate"</em>), puoi inserire qui tutte le posizioni: <strong>sulla mappa pubblica comparirà un pin per ciascuna tappa</strong>, e cliccando su qualunque di esse si aprirà la scheda di questo tour!
@@ -742,10 +779,10 @@ function PlaceModal({
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className="text-sm font-bold text-[#1E160A] dark:text-[#f5ede2]">
-                    Tappe / Sedi del tour ({editSpots?.length || 0})
+                    Tappe / Sedi del tour ({editSpots?.length || 0}) — Illimitate
                   </h4>
                   <p className="text-xs text-[#7A6655] dark:text-[#a89582]">
-                    Aggiungi ciascuna villa, castello o punto d'interesse specifico
+                    Aggiungi ciascuna villa, castello o punto d'interesse specifico senza limiti di numero
                   </p>
                 </div>
                 <button
@@ -831,18 +868,89 @@ function PlaceModal({
                         }}
                       />
 
-                      <Field label="Foto specifica della tappa (opzionale)">
-                        <input
-                          className={inputClass(`spot_${idx}_img`)}
-                          placeholder="https://... (se vuoto usa la copertina del tour)"
-                          value={spot.cover_image_url || ""}
-                          onChange={(e) => {
-                            const updated = [...editSpots];
-                            updated[idx] = { ...updated[idx], cover_image_url: e.target.value };
-                            setEditSpots(updated);
-                          }}
-                        />
-                      </Field>
+                      <div className="space-y-1.5">
+                        <label className="text-[11px] font-bold uppercase tracking-wider text-[#7A6655] dark:text-[#a89582] flex items-center justify-between">
+                          <span>Foto specifica della tappa (Priorità 1 - File o Link)</span>
+                          {spot.cover_image_url && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const updated = [...editSpots];
+                                updated[idx] = { ...updated[idx], cover_image_url: "" };
+                                setEditSpots(updated);
+                              }}
+                              className="text-[10px] text-[#9C1C1C] hover:underline font-semibold"
+                            >
+                              Rimuovi foto
+                            </button>
+                          )}
+                        </label>
+                        <div className="flex gap-2 items-center">
+                          <input
+                            disabled={uploadingSpotIdx === idx}
+                            className={cn(inputClass(`spot_${idx}_img`), "flex-1", uploadingSpotIdx === idx && "opacity-60")}
+                            placeholder={uploadingSpotIdx === idx ? "Caricamento file in corso..." : "Incolla link foto (URL) o carica file dal dispositivo"}
+                            value={spot.cover_image_url || ""}
+                            onChange={(e) => {
+                              const updated = [...editSpots];
+                              updated[idx] = { ...updated[idx], cover_image_url: e.target.value };
+                              setEditSpots(updated);
+                            }}
+                          />
+                          <label className={cn(
+                            "px-3 py-2 bg-[#F0E8D6] hover:bg-[#E2D5BE] dark:bg-[#2d2218] dark:hover:bg-[#382b20] text-[#3D2E1A] dark:text-[#f5ede2] text-xs font-semibold rounded-sm border border-[#E9DCC4] dark:border-[#382b20] cursor-pointer inline-flex items-center gap-1.5 shrink-0 transition-colors",
+                            uploadingSpotIdx === idx && "pointer-events-none opacity-60"
+                          )}>
+                            {uploadingSpotIdx === idx ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin text-[#9C1C1C]" />
+                            ) : (
+                              <Upload className="w-3.5 h-3.5" />
+                            )}
+                            <span>{uploadingSpotIdx === idx ? "Caricamento..." : "Carica file"}</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              disabled={uploadingSpotIdx === idx}
+                              className="hidden"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleSpotImageUpload(file, idx);
+                                e.target.value = "";
+                              }}
+                            />
+                          </label>
+                        </div>
+                        {spot.cover_image_url ? (
+                          <div className="flex items-center gap-3 p-2 rounded-sm bg-[#FAF4EB] dark:bg-[#251e17] border border-[#E9DCC4] dark:border-[#382b20] mt-1.5">
+                            <div className="relative w-20 h-14 rounded overflow-hidden border border-[#D8C7B4] dark:border-[#3E2D1F] shrink-0 bg-black/5">
+                              <img
+                                src={spot.cover_image_url}
+                                alt="Anteprima tappa"
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  (e.target as HTMLElement).style.display = "none";
+                                }}
+                              />
+                            </div>
+                            <div className="text-[11px] leading-tight text-[#5C4C38] dark:text-[#c7b59f]">
+                              <p className="font-bold text-[#4A6535] dark:text-[#7ba65e] flex items-center gap-1.5">
+                                <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                                <span>Foto personalizzata attiva</span>
+                              </p>
+                              <p className="text-[10px] text-[#7A6655] dark:text-[#a89582] mt-0.5">
+                                Questa foto ha la priorità sulla mappa rispetto alla ricerca automatica Wikipedia.
+                              </p>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-[10px] text-[#7A6655] dark:text-[#a89582] italic px-1 pt-0.5 flex items-start gap-1.5">
+                            <Info className="w-3.5 h-3.5 shrink-0 mt-0.5 text-[#8A5A2B] dark:text-[#c7a17a]" />
+                            <span>
+                              <strong>Nessuna foto manuale:</strong> la mappa cercherà in autonomia l&apos;immagine da Wikipedia/Commons per <em>{spot.name_it || "questa tappa"}</em> in base al nome e alle coordinate.
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -853,8 +961,45 @@ function PlaceModal({
           {/* Sezione: Impostazioni */}
           <CollapsibleSection title="Impostazioni" color="bg-[#92816A]" defaultOpen={false}>
             <Grid2>
-              <Field label="URL immagine copertina" hint={<>Lascia vuoto o usa <span className="text-[#C4923A] text-[10px] font-normal normal-case">(consigliato)</span></>}>
-                <input className={inputClass("cover_image_url")} value={edit.cover_image_url || ""} onChange={(e) => updateField("cover_image_url", e.target.value)} placeholder="https://..." />
+              <Field label="URL immagine copertina" hint={<>Lascia vuoto o carica foto dal dispositivo</>}>
+                <div className="flex gap-2 items-center">
+                  <input
+                    className={cn(inputClass("cover_image_url"), "flex-1")}
+                    value={edit.cover_image_url || ""}
+                    onChange={(e) => updateField("cover_image_url", e.target.value)}
+                    placeholder="https://..."
+                  />
+                  <label className="px-3 py-2 bg-[#F0E8D6] hover:bg-[#E2D5BE] dark:bg-[#2d2218] dark:hover:bg-[#382b20] text-[#3D2E1A] dark:text-[#f5ede2] text-xs font-semibold rounded-sm border border-[#E9DCC4] dark:border-[#382b20] cursor-pointer inline-flex items-center gap-1.5 shrink-0 transition-colors">
+                    {uploadingCover ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#9C1C1C]" />
+                    ) : (
+                      <Upload className="w-3.5 h-3.5" />
+                    )}
+                    <span>Carica</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleCoverUpload(file);
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
+                </div>
+                {edit.cover_image_url && (
+                  <div className="relative w-28 h-20 rounded border border-[#E9DCC4] dark:border-[#382b20] overflow-hidden mt-1.5 bg-[#FAF4EB] dark:bg-[#251e17]">
+                    <img
+                      src={edit.cover_image_url}
+                      alt="Anteprima copertina"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = "none";
+                      }}
+                    />
+                  </div>
+                )}
               </Field>
               <Field label="Ordine di visualizzazione">
                 <input type="number" className={inputClass("sort_order")} value={edit.sort_order ?? 0} onChange={(e) => updateField("sort_order", Number(e.target.value))} />
@@ -1067,9 +1212,14 @@ export default function PlacesPage() {
         for (let idx = 0; idx < editSpots.length; idx++) {
           const sp = editSpots[idx];
           if (!sp.name_it || sp.lat == null || sp.lng == null) continue;
-          const spotSlug = sp.slug || `${String(sp.name_it).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}-${idx}`;
+          const spotId = sp.id || crypto.randomUUID();
+          const cleanName = String(sp.name_it)
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-|-$/g, "");
+          const spotSlug = sp.slug || `${cleanName || "tappa"}-${spotId.slice(0, 8)}`;
           const spotPayload = {
-            id: sp.id || crypto.randomUUID(),
+            id: spotId,
             slug: spotSlug,
             name_it: String(sp.name_it).trim(),
             name_en: String(sp.name_en || sp.name_it).trim(),
@@ -1077,13 +1227,17 @@ export default function PlacesPage() {
             short_description_en: sp.short_description_en || null,
             lat: Number(sp.lat),
             lng: Number(sp.lng),
-            cover_image_url: sp.cover_image_url || null,
+            cover_image_url: sp.cover_image_url && String(sp.cover_image_url).trim() ? String(sp.cover_image_url).trim() : null,
             place_id: id,
             tour_type_id: editTT[0] || null,
             sort_order: idx,
             is_active: true,
           };
-          await supabase.from("map_spots").upsert(spotPayload as any, { onConflict: "id" });
+          const { error: spotErr } = await supabase.from("map_spots").upsert(spotPayload as any, { onConflict: "id" });
+          if (spotErr) {
+            console.error("Errore salvataggio tappa map_spot:", spotErr);
+            throw new Error(`Errore salvataggio tappa "${sp.name_it}": ${spotErr.message}`);
+          }
         }
       }
 
@@ -1126,6 +1280,8 @@ export default function PlacesPage() {
         ]}
         defaultOpen={false}
       />
+      {/* ======== Visibilità Mappa e Banner Teaser ======== */}
+      <MapSectionToggle />
       <div className="bg-white border border-[#E9DCC4] rounded-sm shadow-sm overflow-hidden">
         <div className="px-5 py-4 border-b border-[#E9DCC4] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3 flex-wrap">

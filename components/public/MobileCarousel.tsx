@@ -78,7 +78,7 @@ export default function MobileCarousel({
     <>
       {/* Barra frecce — solo desktop, solo in modalità scroll */}
       {isDesktopScroll && !hideArrows && (
-        <div className="hidden md:flex items-center justify-end gap-2 mb-3">
+        <div className="hidden md:flex items-center justify-end gap-2 mb-3 relative z-20">
           <button
             type="button"
             onClick={() => scrollByStep(-1)}
@@ -122,7 +122,7 @@ export default function MobileCarousel({
           isDesktopScroll ? "md:overscroll-x-contain" : "md:touch-auto",
           "-mx-4 px-4 sm:-mx-5 sm:px-5 scroll-pl-4 sm:scroll-pl-5",
           isDesktopScroll ? "" : "md:mx-0 md:px-0",
-          "pb-3 md:pb-0",
+          "pt-12 pb-10 -mt-12 -mb-10",
           isSingle && "justify-center",
           className
         )}

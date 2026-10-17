@@ -325,6 +325,7 @@ export type PublicMapSiblingSpot = {
   name_en: string;
   lat: number;
   lng: number;
+  cover_image_url?: string | null;
 };
 
 export type PublicMapSpot = Database["public"]["Tables"]["map_spots"]["Row"] & {
@@ -449,6 +450,7 @@ export async function fetchPublicMapData(sb: Supabase = createClient()) {
             name_en: x.name_en,
             lat: Number(x.lat),
             lng: Number(x.lng),
+            cover_image_url: x.cover_image_url || null,
           }))
       : [];
 

@@ -1,11 +1,126 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLang, useT } from "@/lib/i18n/LanguageProvider";
 import type { PublicMapPlace, PublicMapReview, PublicMapSpot, PublicMapEvent } from "@/lib/data/public";
 import type { Database } from "@/types/database.types";
 import type { MapSelection, CommonsPhoto } from "@/components/map/MapExplorer";
-import { Star, X, Calendar, Users, MapPin, Clock, ArrowRight, Compass, Check, ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
+import { Star, X, Calendar, Users, MapPin, Clock, ArrowRight, Compass, Check, ChevronLeft, ChevronRight, ExternalLink, ImageOff } from "lucide-react";
+
+// ─── COVER IMAGE (with error fallback and name/coordinate-based fetch) ────────────────
+function CoverImage({
+  src,
+  alt,
+  searchName,
+  lang,
+  lat,
+  lng,
+}: {
+  src: string | null;
+  alt: string;
+  searchName?: string | null;
+  lang: string;
+  lat?: number | null;
+  lng?: number | null;
+}) {
+  const [errored, setErrored] = useState(false);
+  const [fetchedUrl, setFetchedUrl] = useState<string | null>(null);
+  const [fetching, setFetching] = useState(false);
+  const [fetchDone, setFetchDone] = useState(false);
+
+  // Resetta lo stato ogni volta che cambiano i parametri di input della tappa
+  useEffect(() => {
+    setErrored(false);
+    setFetchedUrl(null);
+  }, [src, searchName, lat, lng]);
+
+  useEffect(() => {
+    // Se abbiamo già un src valido e non ha dato errore, usa l'immagine manuale senza fare fetch
+    if (src && !errored) {
+      setFetching(false);
+      setFetchDone(true);
+      return;
+    }
+
+    let cancelled = false;
+    setFetching(true);
+    setFetchDone(false);
+
+    const queryParam = searchName ? `&query=${encodeURIComponent(searchName)}` : "";
+    const coordParam = lat != null && lng != null ? `lat=${lat}&lng=${lng}` : "";
+    const params = coordParam ? `${coordParam}${queryParam}` : queryParam.replace(/^&/, "");
+
+    if (!params) {
+      setFetching(false);
+      setFetchDone(true);
+      return;
+    }
+
+    fetch(`/api/geo/photos?${params}`)
+      .then((r) => r.json())
+      .then((json) => {
+        if (!cancelled && json.photos?.[0]?.url) {
+          setFetchedUrl(json.photos[0].url);
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) {
+          setFetching(false);
+          setFetchDone(true);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [src, errored, searchName, lat, lng]);
+
+  const displaySrc = !errored && src ? src : fetchedUrl;
+
+  if (fetching && !displaySrc) {
+    return (
+      <div className="w-full h-44 rounded-xl mb-3 bg-black/5 dark:bg-white/5 animate-pulse flex items-center justify-center text-xs text-[#7A6655] dark:text-[#a89582]">
+        <span className="opacity-70">{lang === "it" ? "Ricerca automatica foto..." : "Searching photo automatically..."}</span>
+      </div>
+    );
+  }
+
+  if (!displaySrc) {
+    return (
+      <div className="w-full h-36 rounded-xl mb-3 bg-black/[0.03] dark:bg-white/[0.04] flex flex-col items-center justify-center gap-2 border border-dashed border-black/15 dark:border-white/15">
+        <ImageOff className="w-6 h-6 text-[#7A6655] dark:text-[#a89582] opacity-40" />
+        <span className="text-xs text-[#7A6655] dark:text-[#a89582] font-medium">
+          {lang === "it" ? "Immagine non disponibile" : "Image not available"}
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative mb-3 group">
+      <img
+        key={displaySrc}
+        src={displaySrc}
+        alt={alt}
+        className="w-full h-44 object-cover rounded-xl shadow-sm"
+        loading="lazy"
+        onError={() => {
+          if (displaySrc === src) {
+            // Se la foto manuale (link o file) fallisce, fallback automatico su Wikipedia
+            setErrored(true);
+          } else {
+            setFetchedUrl(null);
+          }
+        }}
+      />
+      {/* Badge discreto fonte immagine: Foto caricata vs Ricerca automatica */}
+      <span className="absolute bottom-2 right-2 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-xs text-[10px] text-white/90 font-medium pointer-events-none">
+        {!errored && src ? (lang === "it" ? "Foto ufficiale" : "Official photo") : "Wikipedia / Commons"}
+      </span>
+    </div>
+  );
+}
 
 // ─── LIGHTBOX ──────────────────────────────────────────────────────────────────
 function PhotoLightbox({ photos, initialIndex, onClose }: { photos: CommonsPhoto[]; initialIndex: number; onClose: () => void }) {
@@ -229,6 +344,7 @@ export default function MapSidePanel({
   onClose,
   onBook,
   onSelectSpotId,
+  onSelectPlaceId,
 }: {
   selection: MapSelection | null;
   places?: PublicMapPlace[];
@@ -238,6 +354,7 @@ export default function MapSidePanel({
   onClose: () => void;
   onBook: () => void;
   onSelectSpotId?: (spotId: string) => void;
+  onSelectPlaceId?: (placeId: string) => void;
 }) {
   const t = useT();
   const { lang } = useLang();
@@ -339,9 +456,14 @@ export default function MapSidePanel({
         }
         onClose={onClose}
       >
-        {ev.cover_image_url && (
-          <img src={ev.cover_image_url} alt="" className="w-full h-44 object-cover rounded-xl mb-3 shadow-sm" loading="lazy" />
-        )}
+        <CoverImage
+          src={ev.cover_image_url || null}
+          alt={evTitle}
+          searchName={ev.title_it || ev.place_name_it}
+          lang={lang}
+          lat={Number(ev.lat) || null}
+          lng={Number(ev.lng) || null}
+        />
 
         <div className="flex flex-wrap items-center gap-1.5 mb-3">
           {tt && (
@@ -413,7 +535,11 @@ export default function MapSidePanel({
     (lang === "it" ? item.short_description_it : item.short_description_en) ||
     (parentPlace ? (lang === "it" ? parentPlace.short_description_it : parentPlace.short_description_en) : "");
 
-  const coverImg = item.cover_image_url || parentPlace?.cover_image_url;
+  // Per gli spot: usa SOLO l'immagine specifica della tappa (cover_image_url dello spot)
+  // Se assente, NON usare la copertina del tour padre: cercheremo l'immagine per nome della tappa
+  const coverImg = selection.kind === "spot"
+    ? item.cover_image_url || null
+    : item.cover_image_url || null;
 
   const related = reviews.filter((r) => {
     if (selection.kind === "place") return r.place_id === item.id;
@@ -436,18 +562,32 @@ export default function MapSidePanel({
       title={
         <div>
           {parentName && (
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#9C1C1C] dark:text-[#e07a5f] block mb-0.5">
-              Tour: {parentName}
-            </span>
+            <button
+              type="button"
+              onClick={() => {
+                const pid = parentPlace?.id || (selection.kind === "spot" ? selection.item.place_id : null);
+                if (pid) onSelectPlaceId?.(pid);
+              }}
+              className="text-[11px] font-bold uppercase tracking-wider text-[#9C1C1C] dark:text-[#e07a5f] hover:underline flex items-center gap-1 mb-0.5 text-left cursor-pointer group"
+            >
+              <span>Tour: {parentName}</span>
+              <ChevronLeft className="w-3 h-3 rotate-180 opacity-60 group-hover:opacity-100 transition-opacity" />
+            </button>
           )}
           <span>{name}</span>
         </div>
       }
       onClose={onClose}
     >
-      {coverImg && (
-        <img src={coverImg} alt="" className="w-full h-44 object-cover rounded-xl mb-3 shadow-sm" loading="lazy" />
-      )}
+      <CoverImage
+        key={`${selection.kind}-${item.id}-${coverImg || ""}`}
+        src={coverImg}
+        alt={name}
+        searchName={item.name_it || item.name_en}
+        lang={lang}
+        lat={Number(item.lat) || null}
+        lng={Number(item.lng) || null}
+      />
       {tt && (
         <span className="inline-block text-[10px] font-bold uppercase tracking-wider text-white px-2.5 py-0.5 rounded-full mb-2 shadow-sm" style={{ backgroundColor: tt.color }}>
           {lang === "it" ? tt.name_it : tt.name_en}
@@ -464,47 +604,131 @@ export default function MapSidePanel({
             <p><strong>{t("map.difficulty", "Difficoltà")}:</strong> {selection.kind === "place" ? selection.item.difficulty : parentPlace?.difficulty}</p>
           )}
           {parentPlace && (
-            <p className="text-[#9C1C1C] dark:text-[#e07a5f] font-medium pt-1 flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => {
+                const pid = parentPlace.id || (selection.kind === "spot" ? selection.item.place_id : null);
+                if (pid) onSelectPlaceId?.(pid);
+              }}
+              className="text-[#9C1C1C] dark:text-[#e07a5f] hover:underline font-medium pt-1 flex items-center gap-1.5 text-left cursor-pointer"
+            >
               <MapPin className="w-3.5 h-3.5 shrink-0" />
-              <span>Tappa dell&apos;itinerario &ldquo;{parentName}&rdquo;</span>
-            </p>
+              <span>Tappa dell&apos;itinerario &ldquo;{parentName}&rdquo; (Vedi panoramica tour)</span>
+            </button>
           )}
         </div>
       )}
 
       {siblingSpots && siblingSpots.length > 0 && (
-        <div className="mt-3 pt-3 border-t border-black/10 dark:border-white/10">
-          <h4 className="text-[11px] font-bold uppercase tracking-wider text-[#7A6655] dark:text-[#a89582] mb-2 flex items-center gap-1.5">
-            <Compass className="w-3.5 h-3.5 text-[#9C1C1C]" />
-            {t("map.tourStops", "Tappe di questo tour")} ({siblingSpots.length + (selection.kind === "spot" ? 1 : 0)})
-          </h4>
-          <div className="flex flex-wrap gap-1.5">
-            {selection.kind === "spot" && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-[#9C1C1C] text-white shadow-sm">
-                <Check className="w-3 h-3" /> {name}
-              </span>
-            )}
-            {siblingSpots.map((sb) => (
-              <button
-                key={sb.id}
-                type="button"
-                onClick={() => onSelectSpotId?.(sb.id)}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-white/80 dark:bg-[#251e17] text-[#5C4C38] dark:text-[#d6c5b0] border border-black/10 dark:border-white/10 hover:border-[#9C1C1C] hover:text-[#9C1C1C] transition-all shadow-xs"
-              >
-                <MapPin className="w-3 h-3 text-[#9C1C1C]" />
-                <span>{lang === "it" ? sb.name_it : sb.name_en}</span>
-              </button>
-            ))}
+        <div className="mt-3.5 pt-3.5 border-t border-black/10 dark:border-white/10 space-y-2">
+          <div className="flex items-center justify-between">
+            <h4 className="text-[11px] font-bold uppercase tracking-wider text-[#7A6655] dark:text-[#a89582] flex items-center gap-1.5">
+              <Compass className="w-3.5 h-3.5 text-[#9C1C1C]" />
+              {t("map.tourStops", "Tappe di questo tour")} ({siblingSpots.length + (selection.kind === "spot" ? 1 : 0)})
+            </h4>
+            <span className="text-[10px] text-[#7A6655] dark:text-[#a89582] opacity-75">
+              {selection.kind === "place"
+                ? (lang === "it" ? "Seleziona una tappa per vederla" : "Select a stop to view it")
+                : (lang === "it" ? "Altre tappe del tour" : "Other tour stops")}
+            </span>
           </div>
+
+          {selection.kind === "place" ? (
+            <div className="space-y-1.5 max-h-56 overflow-y-auto pr-0.5 custom-scrollbar">
+              {siblingSpots.map((sb, idx) => (
+                <button
+                  key={sb.id}
+                  type="button"
+                  onClick={() => onSelectSpotId?.(sb.id)}
+                  className="w-full flex items-center gap-2.5 p-2 rounded-xl bg-white/70 dark:bg-[#251e17] hover:bg-white dark:hover:bg-[#2e2319] text-[#5C4C38] dark:text-[#d6c5b0] border border-black/10 dark:border-white/10 hover:border-[#9C1C1C] hover:text-[#9C1C1C] dark:hover:text-[#fca59d] transition-all shadow-xs text-left group cursor-pointer"
+                >
+                  {sb.cover_image_url ? (
+                    <img
+                      src={sb.cover_image_url}
+                      alt={lang === "it" ? sb.name_it : sb.name_en}
+                      className="w-10 h-10 rounded-lg object-cover shrink-0 border border-black/10 dark:border-white/10"
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = "none";
+                      }}
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-lg bg-[#4A6535]/15 text-[#4A6535] dark:text-[#7ba65e] flex items-center justify-center shrink-0 font-bold text-xs">
+                      {idx + 1}
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-semibold text-[#1E160A] dark:text-[#f5ede2] group-hover:text-[#9C1C1C] dark:group-hover:text-[#fca59d] truncate">
+                      {lang === "it" ? sb.name_it : sb.name_en}
+                    </p>
+                    <p className="text-[10px] text-[#7A6655] dark:text-[#a89582] flex items-center gap-1">
+                      <MapPin className="w-3 h-3 text-[#9C1C1C] shrink-0" />
+                      <span>
+                        {lang === "it" ? `Tappa ${idx + 1}` : `Stop ${idx + 1}`}
+                        {" · "}
+                        {sb.cover_image_url ? (lang === "it" ? "Foto caricata" : "Custom photo") : (lang === "it" ? "Foto automatica" : "Auto photo")}
+                      </span>
+                    </p>
+                  </div>
+                  <ArrowRight className="w-3.5 h-3.5 text-[#7A6655] opacity-50 group-hover:opacity-100 group-hover:text-[#9C1C1C] group-hover:translate-x-0.5 transition-all shrink-0" />
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <div className="flex flex-wrap gap-1.5">
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-[#9C1C1C] text-white shadow-sm">
+                  <Check className="w-3 h-3" /> {name}
+                </span>
+                {siblingSpots.map((sb) => (
+                  <button
+                    key={sb.id}
+                    type="button"
+                    onClick={() => onSelectSpotId?.(sb.id)}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-white/80 dark:bg-[#251e17] text-[#5C4C38] dark:text-[#d6c5b0] border border-black/10 dark:border-white/10 hover:border-[#9C1C1C] hover:text-[#9C1C1C] transition-all shadow-xs cursor-pointer"
+                  >
+                    <MapPin className="w-3 h-3 text-[#9C1C1C]" />
+                    <span>{lang === "it" ? sb.name_it : sb.name_en}</span>
+                  </button>
+                ))}
+              </div>
+              {parentPlace && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const pid = parentPlace.id || (selection.kind === "spot" ? selection.item.place_id : null);
+                    if (pid) onSelectPlaceId?.(pid);
+                  }}
+                  className="text-[11px] text-[#7A6655] dark:text-[#a89582] hover:text-[#9C1C1C] dark:hover:text-[#fca59d] inline-flex items-center gap-1 hover:underline cursor-pointer pt-0.5"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                  <span>{lang === "it" ? `Torna a tutte le tappe di "${parentName}"` : `Back to all stops of "${parentName}"`}</span>
+                </button>
+              )}
+            </div>
+          )}
         </div>
       )}
 
-      {(selection.kind === "place" || parentPlace) && (
-        <a href={`/#tour`} className="text-xs font-semibold text-[#3D6E90] dark:text-[#6fa4ca] hover:underline mt-2.5 inline-flex items-center gap-1">
-          <span>{t("map.viewDetails", "Scopri tutti i dettagli del tour")}</span>
-          <ArrowRight className="w-3.5 h-3.5" />
-        </a>
-      )}
+      {(selection.kind === "place" || parentPlace) && (() => {
+        const targetTour = selection.kind === "place" ? item : parentPlace;
+        const targetParam = targetTour?.id || targetTour?.slug || targetTour?.name_it || "";
+        return (
+          <a
+            href="/#tour"
+            onClick={() => {
+              try {
+                sessionStorage.setItem("highlight_tour", targetParam);
+              } catch {
+                // ignore
+              }
+            }}
+            className="text-xs font-bold text-[#9C1C1C] dark:text-[#fca59d] hover:underline mt-2.5 inline-flex items-center gap-1 cursor-pointer"
+          >
+            <span>{t("map.viewDetails", "Vedi la scheda")}</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </a>
+        );
+      })()}
 
       <div className="mt-4 pt-3 border-t border-black/10 dark:border-white/10">
         <h3 className="text-xs font-bold uppercase tracking-wider text-[#7A6655] dark:text-[#a89582] mb-2 flex items-center justify-between">

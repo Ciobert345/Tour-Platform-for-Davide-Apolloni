@@ -66,9 +66,15 @@ function formatDateDisplay(dateStr: string, lang: "it" | "en") {
 export default function BookingFormSection({
   tourTypes,
   defaultHidden = false,
+  initialPrefill,
+  onSuccess,
+  embedMode = false,
 }: {
   tourTypes: TourTypeT[];
   defaultHidden?: boolean;
+  initialPrefill?: BookingPrefillData;
+  onSuccess?: () => void;
+  embedMode?: boolean;
 }) {
   const t = useT();
   const { lang } = useLang();
@@ -78,19 +84,26 @@ export default function BookingFormSection({
   const [transportModes, setTransportModes] = useState<TransportModeT[] | null>(null);
 
   // Controlled fields for prefill & state support
-  const [tourTypeId, setTourTypeId] = useState("");
-  const [destination, setDestination] = useState("");
-  const [preferredDate, setPreferredDate] = useState("");
+  const [tourTypeId, setTourTypeId] = useState(initialPrefill?.tourTypeId ?? "");
+  const [destination, setDestination] = useState(initialPrefill?.destination ?? "");
+  const [preferredDate, setPreferredDate] = useState(initialPrefill?.preferredDate ?? "");
   const [altDate, setAltDate] = useState("");
-  const [participants, setParticipants] = useState("");
-  const [transport, setTransport] = useState("");
+  const [participants, setParticipants] = useState(initialPrefill?.participants ? String(initialPrefill.participants) : "");
+  const [transport, setTransport] = useState(initialPrefill?.transport ?? "");
   const [visitLang, setVisitLang] = useState<"it" | "en">(lang);
-  const [notes, setNotes] = useState("");
-  const [mapSource, setMapSource] = useState<"form" | "map">("form");
-  const [mapLat, setMapLat] = useState<number | null>(null);
-  const [mapLng, setMapLng] = useState<number | null>(null);
-  const [mapPlaceId, setMapPlaceId] = useState<string | null>(null);
-  const [mapSpotId, setMapSpotId] = useState<string | null>(null);
+  const [notes, setNotes] = useState(initialPrefill?.notes ?? "");
+  const [mapSource, setMapSource] = useState<"form" | "map">(initialPrefill?.source ?? "form");
+  const [mapLat, setMapLat] = useState<number | null>(initialPrefill?.mapLat ?? null);
+  const [mapLng, setMapLng] = useState<number | null>(initialPrefill?.mapLng ?? null);
+  const [mapPlaceId, setMapPlaceId] = useState<string | null>(initialPrefill?.placeId ?? null);
+  const [mapSpotId, setMapSpotId] = useState<string | null>(initialPrefill?.mapSpotId ?? null);
+
+  // Badge prefill iniziale (se arriva dall'esterno)
+  const [prefillBadge, setPrefillBadge] = useState<{ destination?: string; tourTypeId?: string } | null>(
+    initialPrefill?.destination || initialPrefill?.tourTypeId
+      ? { destination: initialPrefill.destination, tourTypeId: initialPrefill.tourTypeId }
+      : null
+  );
 
   // Dropdown open states
   const [isTourTypeOpen, setIsTourTypeOpen] = useState(false);
@@ -129,7 +142,6 @@ export default function BookingFormSection({
 
   // Flag per animazione "flash" sul form dopo prefill
   const [prefillFlash, setPrefillFlash] = useState(false);
-  const [prefillBadge, setPrefillBadge] = useState<{ destination?: string; tourTypeId?: string } | null>(null);
   const formRef = useRef<HTMLFormElement | null>(null);
 
   // Ascolta l'evento davide:prefill-booking per pre-compilare il form
@@ -254,6 +266,7 @@ export default function BookingFormSection({
       setMapPlaceId(null);
       setMapSpotId(null);
       setPrefillBadge(null);
+      onSuccess?.();
     } catch (e: any) {
       console.error(e);
       setErr(e?.message || t("form.error"));
@@ -274,6 +287,698 @@ export default function BookingFormSection({
         ? "bg-[#9C1C1C] text-white shadow-xs font-bold"
         : "text-[#7A6655] dark:text-[#cbb59d] hover:text-[#3D2B1F] dark:hover:text-[#fdf9f2] hover:bg-black/5 dark:hover:bg-white/5"
     );
+
+  // The inner card (two-panel layout) — shared between page and embed mode
+  const card = (
+    <div className="bg-white dark:bg-bg-card rounded-2xl shadow-sm border border-black/10 dark:border-white/10 grid lg:grid-cols-12 relative">
+
+      {/* Pannello Sinistro: Sfondo Rosso Profondo Harmonized con overflow-hidden per i blur interni */}
+      <div
+        className="lg:col-span-4 p-3.5 sm:p-8 flex flex-col justify-between relative overflow-hidden shadow-xl rounded-t-2xl lg:rounded-tr-none lg:rounded-bl-2xl"
+        style={{
+          background: "linear-gradient(135deg, #7E191B 0%, #4A0E10 100%)",
+          color: "var(--text-white)",
+        }}
+      >
+        {/* Sfondo decorativo soffuso */}
+        <div
+          className="absolute -top-16 -right-16 w-48 h-48 rounded-full blur-3xl pointer-events-none"
+          style={{ backgroundColor: "var(--color-stone)", opacity: 0.15 }}
+        />
+        <div
+          className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full blur-3xl pointer-events-none"
+          style={{ backgroundColor: "#9C1C1C", opacity: 0.25 }}
+        />
+
+        <div className="relative z-10">
+          <div className="flex items-center justify-between lg:block mb-2 sm:mb-4">
+            <span
+              className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:py-1 rounded-md text-[10px] sm:text-[11px] font-bold uppercase tracking-wider border"
+              style={{
+                backgroundColor: "rgba(255, 255, 255, 0.12)",
+                color: "#F2E3D5",
+                borderColor: "rgba(255, 255, 255, 0.2)",
+              }}
+            >
+              <Award className="w-3 h-3 sm:w-3.5 sm:h-3.5" style={{ color: "#F2E3D5" }} />
+              {lang === "it" ? "Preventivo Gratuito" : "Free Custom Quote"}
+            </span>
+            <a
+              href="#contatti"
+              className="lg:hidden text-[10.5px] font-semibold underline inline-flex items-center gap-1"
+              style={{ color: "#F2E3D5" }}
+            >
+              <Phone className="w-3 h-3" />
+              {lang === "it" ? "Contatti diretti" : "Direct contacts"}
+            </a>
+          </div>
+
+          <h3
+            className="font-serif text-lg sm:text-2xl lg:text-3xl font-bold leading-tight mb-1 sm:mb-3"
+            style={{ color: "var(--text-white)" }}
+          >
+            {lang === "it" ? "Pianifichiamo la tua visita" : "Let's Plan Your Experience"}
+          </h3>
+
+          <p
+            className="hidden sm:block text-xs font-light leading-relaxed mb-3 sm:mb-6"
+            style={{ color: "rgba(255, 255, 255, 0.85)" }}
+          >
+            {lang === "it"
+              ? "Compila il modulo con le tue preferenze. Riceverai una proposta su misura con programma e tariffe chiare."
+              : "Fill in the form with your travel details. You'll receive a tailored itinerary with transparent rates."}
+          </p>
+
+          {/* Punti di forza compatti */}
+          <div className="flex flex-wrap sm:flex-col gap-2 sm:gap-3 pt-1.5 sm:pt-2 border-t border-white/15">
+            <div className="flex items-center gap-1.5 sm:gap-2 text-[10.5px] sm:text-xs" style={{ color: "rgba(255, 255, 255, 0.9)" }}>
+              <div
+                className="w-4 h-4 sm:w-5 sm:h-5 rounded-md flex items-center justify-center shrink-0 border"
+                style={{
+                  backgroundColor: "rgba(255, 255, 255, 0.15)",
+                  borderColor: "rgba(255, 255, 255, 0.25)",
+                  color: "#F2E3D5",
+                }}
+              >
+                <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+              </div>
+              <span>{lang === "it" ? "Risposta entro 24h" : "Reply within 24h"}</span>
+            </div>
+
+            <div className="flex items-center gap-1.5 sm:gap-2 text-[10.5px] sm:text-xs" style={{ color: "rgba(255, 255, 255, 0.9)" }}>
+              <div
+                className="w-4 h-4 sm:w-5 sm:h-5 rounded-md flex items-center justify-center shrink-0 border"
+                style={{
+                  backgroundColor: "rgba(255, 255, 255, 0.15)",
+                  borderColor: "rgba(255, 255, 255, 0.25)",
+                  color: "#F2E3D5",
+                }}
+              >
+                <Check className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+              </div>
+              <span>{lang === "it" ? "100% flessibile" : "100% flexible"}</span>
+            </div>
+
+            <div className="hidden sm:flex items-center gap-2 text-xs" style={{ color: "rgba(255, 255, 255, 0.9)" }}>
+              <div
+                className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 border"
+                style={{
+                  backgroundColor: "rgba(255, 255, 255, 0.15)",
+                  borderColor: "rgba(255, 255, 255, 0.25)",
+                  color: "#F2E3D5",
+                }}
+              >
+                <ShieldCheck className="w-3 h-3" />
+              </div>
+              <span>{lang === "it" ? "Guida abilitata senza intermediari" : "Certified direct guide, no extra fees"}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Box Contatto Diretto Rapido (Desktop) */}
+        <div className="hidden lg:flex mt-6 pt-5 border-t border-white/15 relative z-10 text-[11px] items-center justify-between" style={{ color: "rgba(255, 255, 255, 0.7)" }}>
+          <span>{lang === "it" ? "Hai urgenza?" : "Need urgent info?"}</span>
+          <a
+            href="#contatti"
+            className="font-semibold underline inline-flex items-center gap-1 hover:text-white transition-colors"
+            style={{ color: "#F2E3D5" }}
+          >
+            <Phone className="w-3 h-3" />
+            {lang === "it" ? "Contatti diretti" : "Direct contacts"}
+          </a>
+        </div>
+      </div>
+
+      {/* Pannello Destro: Form Orizzontale Compatto - nessun overflow-hidden per permettere ai popover di fluttuare */}
+      <div className="lg:col-span-8 p-3 sm:p-7 md:p-10 flex flex-col justify-center rounded-b-2xl lg:rounded-bl-none lg:rounded-tr-2xl bg-white dark:bg-[#1c1611] relative">
+        {/* Banner Interattivo di Notifica Pre-selezione Tour/Esperienza */}
+        {prefillBadge && (
+          <div
+            className="mb-3 animate-fade-in-up border rounded-lg p-2 sm:p-3 flex items-center justify-between gap-2 shadow-xs bg-[#9C1C1C]/10 dark:bg-[#9C1C1C]/20 border-[#9C1C1C]/25 dark:border-[#9C1C1C]/40"
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span
+                className="w-6 h-6 rounded-md flex items-center justify-center shrink-0 border bg-[#9C1C1C]/15 border-[#9C1C1C]/35 text-[#9C1C1C] dark:text-[#f07f82]"
+              >
+                <Sparkles className="w-3.5 h-3.5 animate-pulse" />
+              </span>
+              <div className="min-w-0">
+                <span className="text-[9.5px] uppercase tracking-wider font-bold block text-[#9C1C1C] dark:text-[#f07f82]">
+                  {lang === "it" ? "Esperienza pre-compilata nel modulo" : "Tour pre-selected in form"}
+                </span>
+                <span className="text-xs sm:text-sm font-serif font-bold text-[#2B2018] dark:text-[#f5ede2] truncate block">
+                  {prefillBadge.destination || displayTT.find(t => t.id === prefillBadge.tourTypeId)?.name_it || "Tour selezionato"}
+                </span>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setPrefillBadge(null);
+                setDestination("");
+                setTourTypeId("");
+                setMapSource("form");
+                setMapLat(null);
+                setMapLng(null);
+                setMapPlaceId(null);
+                setMapSpotId(null);
+              }}
+              className="text-[#72553F] dark:text-[#c7b59f] hover:text-[#93161A] dark:hover:text-[#f07f82] text-xs px-2 py-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5 transition-colors shrink-0 font-bold cursor-pointer"
+              title={lang === "it" ? "Rimuovi pre-selezione" : "Clear selection"}
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+        <form
+          ref={formRef}
+          onSubmit={onSubmit}
+          noValidate
+          className={cn(
+            "space-y-2.5 sm:space-y-4 transition-all duration-500 rounded-xl relative",
+            prefillFlash && "ring-4 ring-[#9C1C1C]/40 shadow-2xl scale-[1.01] bg-[#9C1C1C]/5 p-2"
+          )}
+        >
+
+          {/* RIGA 1: Dati Personali
+                    Mobile: Nome + Telefono affiancati, Email a tutta larghezza (le email sono lunghe).
+                    Desktop: 3 colonne nell'ordine Nome / Email / Telefono. */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-2 gap-y-2.5 sm:gap-3 items-start">
+            <div className="flex flex-col order-1 sm:order-none">
+              <label className={LABEL_CLS}>
+                {t("form.name")} <span className="text-[#9C1C1C] ml-0.5">*</span>
+              </label>
+              <div className="relative">
+                <User className="w-3.5 h-3.5 text-[#92816A] absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  required
+                  name="full_name"
+                  type="text"
+                  placeholder={t("form.phName")}
+                  className={INPUT_CLS}
+                  minLength={2}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col col-span-2 order-3 sm:order-none sm:col-span-1">
+              <label className={LABEL_CLS}>
+                {t("form.email")} <span className="text-[#9C1C1C] ml-0.5">*</span>
+              </label>
+              <div className="relative">
+                <Mail className="w-3.5 h-3.5 text-[#92816A] absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  required
+                  name="email"
+                  type="email"
+                  placeholder={t("form.phEmail")}
+                  className={INPUT_CLS}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col order-2 sm:order-none">
+              <label className={LABEL_CLS}>
+                {t("form.phone")}
+              </label>
+              <div className="relative">
+                <Phone className="w-3.5 h-3.5 text-[#92816A] absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  name="phone"
+                  type="tel"
+                  placeholder={t("form.phPhone")}
+                  className={INPUT_CLS}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* RIGA 2: Scelta Itinerario
+                    Mobile: Tipologia + Destinazione affiancate, Lingua a tutta larghezza.
+                    Desktop: 3 colonne. */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-2 gap-y-2.5 sm:gap-3 items-start">
+            {/* Tipologia di Tour con Dropdown personalizzato ed esaustivo */}
+            <div className={cn("flex flex-col relative", isTourTypeOpen ? "z-30" : "z-20")} ref={tourTypeRef}>
+              <label className={LABEL_CLS}>
+                {t("form.category")} <span className="text-[#9C1C1C] ml-0.5">*</span>
+              </label>
+              <div className="relative">
+                <div className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 pointer-events-none z-10">
+                  {selectedTT ? (
+                    renderIconByName(selectedTT.icon, { className: "w-3.5 h-3.5 text-[#9C1C1C]" }, Compass)
+                  ) : (
+                    <Compass className="w-3.5 h-3.5 text-[#92816A]" />
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsTourTypeOpen((v) => !v);
+                    setIsTransportOpen(false);
+                  }}
+                  className={cn(UNIFIED_FIELD_CLS, "pl-8 sm:pl-9 pr-6 text-left flex items-center justify-between cursor-pointer")}
+                  aria-haspopup="listbox"
+                  aria-expanded={isTourTypeOpen}
+                >
+                  <span className={cn("truncate", selectedTT ? "font-semibold text-[#3D2B1F] dark:text-[#fdf9f2]" : "text-[#92816A] dark:text-[#d6c5b0]")}>
+                    {selectedTT ? tFieldStr(selectedTT as any, "name", lang) : `— ${lang === "it" ? "Tipologia" : "Tour type"} —`}
+                  </span>
+                  <ChevronDown className={cn("w-3.5 h-3.5 text-[#92816A] dark:text-[#d6c5b0] shrink-0 transition-transform duration-200", isTourTypeOpen && "rotate-180")} />
+                </button>
+
+                {/* Hidden input per submit del form con validazione */}
+                <input type="hidden" name="tour_type_id" value={tourTypeId} required />
+
+                {/* Dropdown Popover (rounded-2xl come la card del form; le voci interne usano rounded-lg per restare concentriche) */}
+                {isTourTypeOpen && (
+                  <div className="absolute top-full left-0 w-[280px] sm:w-[320px] max-w-[calc(100vw-36px)] mt-1.5 z-50 bg-white dark:bg-[#1f1711] border border-[#E9DCC4] dark:border-[#382b20] rounded-2xl shadow-xl p-1.5 max-h-72 overflow-y-auto space-y-1 animate-dropdown">
+                    <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-[#92816A] dark:text-[#a89582] border-b border-black/5 dark:border-white/5">
+                      {lang === "it" ? "Seleziona tipologia tour" : "Select tour type"}
+                    </div>
+                    {displayTT.map((tt) => {
+                      const isSelected = tt.id === tourTypeId;
+                      const desc = tFieldStr(tt as any, "description", lang);
+                      return (
+                        <button
+                          key={tt.id}
+                          type="button"
+                          onClick={() => {
+                            setTourTypeId(tt.id);
+                            setIsTourTypeOpen(false);
+                          }}
+                          className={cn(
+                            "w-full text-left p-2 rounded-lg transition-all flex items-start gap-2.5 cursor-pointer",
+                            isSelected
+                              ? "bg-[#9C1C1C]/10 border border-[#9C1C1C]/30"
+                              : "hover:bg-[#F9F4EC] dark:hover:bg-[#2c221a] border border-transparent"
+                          )}
+                        >
+                          <span
+                            className="w-7 h-7 rounded-md flex items-center justify-center shrink-0 mt-0.5"
+                            style={{
+                              backgroundColor: `${tt.color || "#9C1C1C"}20`,
+                              color: tt.color || "#9C1C1C",
+                            }}
+                          >
+                            {renderIconByName(tt.icon, { className: "w-3.5 h-3.5" }, Compass)}
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-1">
+                              <span className={cn("text-xs font-bold truncate", isSelected ? "text-[#9C1C1C] dark:text-[#f07f82]" : "text-[#3D2B1F] dark:text-[#f5ede2]")}>
+                                {tFieldStr(tt as any, "name", lang)}
+                              </span>
+                              {isSelected && <Check className="w-3.5 h-3.5 text-[#9C1C1C] dark:text-[#f07f82] shrink-0" />}
+                            </div>
+                            {desc && (
+                              <p className="text-[10.5px] text-[#7A6655] dark:text-[#c7b59f] leading-snug mt-0.5">
+                                {desc}
+                              </p>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Destinazione Preferita */}
+            <div className="flex flex-col">
+              <label className={LABEL_CLS}>
+                {t("form.destination")}
+              </label>
+              <div className="relative">
+                <MapPin className="w-3.5 h-3.5 text-[#92816A] absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  name="preferred_destination"
+                  type="text"
+                  value={destination}
+                  onChange={(e) => setDestination(e.target.value)}
+                  className={INPUT_CLS}
+                  placeholder={lang === "it" ? "es. Venezia, Asiago..." : "e.g. Venice, Asiago..."}
+                />
+              </div>
+            </div>
+
+            {/* Lingua della visita (Segmented Selector moderno) */}
+            <div className="flex flex-col col-span-2 sm:col-span-1">
+              <label className={cn(LABEL_CLS, "justify-between")}>
+                <span>{t("form.visitLang")}</span>
+                <span className="text-[9.5px] font-normal text-[#92816A] lowercase">
+                  {visitLang === "it" ? "in italiano" : "in english"}
+                </span>
+              </label>
+              <div className="flex items-center p-1 bg-[#F9F4EC]/75 dark:bg-[#2b2218] border border-[#E9DCC4] dark:border-white/15 rounded-lg h-9 sm:h-10 gap-1 transition-colors">
+                <button
+                  type="button"
+                  onClick={() => setVisitLang("it")}
+                  className={langBtn(visitLang === "it")}
+                >
+                  <span className="text-xs leading-none">🇮🇹</span>
+                  <span>Italiano</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setVisitLang("en")}
+                  className={langBtn(visitLang === "en")}
+                >
+                  <span className="text-xs leading-none">🇬🇧</span>
+                  <span>English</span>
+                </button>
+              </div>
+              <input type="hidden" name="visit_language" value={visitLang} />
+            </div>
+          </div>
+
+          {/* RIGA 3: Date, Partecipanti & Modalità di Spostamento - 2x2 su mobile, 4 colonne su desktop */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-2 gap-y-2.5 sm:gap-3 items-start">
+            {/* Data Preferita */}
+            <div className="flex flex-col">
+              <label className={cn(LABEL_CLS, "truncate")}>
+                {t("form.datePref")}
+              </label>
+              <div className="relative flex items-center w-full h-9 sm:h-10 pl-2.5 sm:pl-3 pr-2 bg-[#F9F4EC]/75 dark:bg-[#2b2218] border border-[#E9DCC4] dark:border-white/15 rounded-lg focus-within:border-[#9C1C1C] dark:focus-within:border-[#fca59d] focus-within:bg-white dark:focus-within:bg-[#34291f] hover:border-[#9C1C1C]/40 transition-colors cursor-pointer group">
+                <Calendar className="w-3.5 h-3.5 text-[#92816A] dark:text-[#d6c5b0] group-hover:text-[#9C1C1C] dark:group-hover:text-[#e05a50] transition-colors shrink-0 mr-2 pointer-events-none" />
+                <span
+                  className={cn(
+                    "text-xs font-sans truncate flex-1 select-none pointer-events-none",
+                    preferredDate ? "font-semibold text-[#3D2B1F] dark:text-[#fdf9f2]" : "text-[#92816A] dark:text-[#d6c5b0]"
+                  )}
+                >
+                  {preferredDate ? formatDateDisplay(preferredDate, lang) : (lang === "it" ? "gg/mm/aaaa" : "dd/mm/yyyy")}
+                </span>
+
+                {preferredDate && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      setPreferredDate("");
+                    }}
+                    className="relative z-20 w-5 h-5 rounded-full hover:bg-black/10 dark:hover:bg-white/10 flex items-center justify-center text-[#92816A] dark:text-[#d6c5b0] hover:text-[#9C1C1C] transition-colors cursor-pointer text-xs leading-none shrink-0"
+                    title={lang === "it" ? "Cancella data" : "Clear date"}
+                  >
+                    ✕
+                  </button>
+                )}
+
+                <input
+                  name="preferred_date"
+                  type="date"
+                  min={todayStr}
+                  value={preferredDate}
+                  onChange={(e) => setPreferredDate(e.target.value)}
+                  onClick={(e) => {
+                    try {
+                      (e.currentTarget as any).showPicker?.();
+                    } catch { }
+                  }}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  aria-label={t("form.datePref")}
+                />
+              </div>
+            </div>
+
+            {/* Data Alternativa */}
+            <div className="flex flex-col">
+              <label className={cn(LABEL_CLS, "truncate")}>
+                {lang === "it" ? "Data Alt." : "Alt. Date"}
+              </label>
+              <div className="relative flex items-center w-full h-9 sm:h-10 pl-2.5 sm:pl-3 pr-2 bg-[#F9F4EC]/75 dark:bg-[#2b2218] border border-[#E9DCC4] dark:border-white/15 rounded-lg focus-within:border-[#9C1C1C] dark:focus-within:border-[#fca59d] focus-within:bg-white dark:focus-within:bg-[#34291f] hover:border-[#9C1C1C]/40 transition-colors cursor-pointer group">
+                <Calendar className="w-3.5 h-3.5 text-[#92816A] dark:text-[#d6c5b0] group-hover:text-[#9C1C1C] dark:group-hover:text-[#e05a50] transition-colors shrink-0 mr-2 pointer-events-none" />
+                <span
+                  className={cn(
+                    "text-xs font-sans truncate flex-1 select-none pointer-events-none",
+                    altDate ? "font-semibold text-[#3D2B1F] dark:text-[#fdf9f2]" : "text-[#92816A] dark:text-[#d6c5b0]"
+                  )}
+                >
+                  {altDate ? formatDateDisplay(altDate, lang) : (lang === "it" ? "gg/mm/aaaa" : "dd/mm/yyyy")}
+                </span>
+
+                {altDate && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      setAltDate("");
+                    }}
+                    className="relative z-20 w-5 h-5 rounded-full hover:bg-black/10 dark:hover:bg-white/10 flex items-center justify-center text-[#92816A] dark:text-[#d6c5b0] hover:text-[#9C1C1C] transition-colors cursor-pointer text-xs leading-none shrink-0"
+                    title={lang === "it" ? "Cancella data" : "Clear date"}
+                  >
+                    ✕
+                  </button>
+                )}
+
+                <input
+                  name="alternative_date"
+                  type="date"
+                  min={preferredDate || todayStr}
+                  value={altDate}
+                  onChange={(e) => setAltDate(e.target.value)}
+                  onClick={(e) => {
+                    try {
+                      (e.currentTarget as any).showPicker?.();
+                    } catch { }
+                  }}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  aria-label={lang === "it" ? "Data Alternativa" : "Alternative Date"}
+                />
+              </div>
+            </div>
+
+            {/* Partecipanti con stepper compatto */}
+            <div className="flex flex-col">
+              <label className={cn(LABEL_CLS, "truncate")}>
+                {t("form.participants")}
+              </label>
+              <div className="flex items-center bg-[#F9F4EC]/75 dark:bg-[#2b2218] border border-[#E9DCC4] dark:border-white/15 rounded-lg overflow-hidden focus-within:border-[#9C1C1C] dark:focus-within:border-[#fca59d] focus-within:bg-white dark:focus-within:bg-[#34291f] transition-colors h-9 sm:h-10 px-1">
+                <Users className="w-3.5 h-3.5 text-[#92816A] dark:text-[#cbb59d] shrink-0 ml-1.5 pointer-events-none" />
+                <input
+                  name="participants"
+                  type="hidden"
+                  value={participants}
+                />
+                <button
+                  type="button"
+                  aria-label="Diminuisci partecipanti"
+                  onClick={() => setParticipants((v) => String(Math.max(1, Number(v || 1) - 1)))}
+                  className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 ml-1 rounded-md text-[#9C1C1C] dark:text-[#fca59d] bg-[#9C1C1C]/8 dark:bg-[#9C1C1C]/20 hover:bg-[#9C1C1C]/15 active:bg-[#9C1C1C]/25 transition-colors text-base font-bold leading-none select-none shrink-0 cursor-pointer"
+                >
+                  −
+                </button>
+                <span className="flex-1 text-center text-xs font-sans font-semibold text-[#3D2B1F] dark:text-[#fdf9f2] select-none min-w-[2ch]">
+                  {participants || "1"}
+                </span>
+                <button
+                  type="button"
+                  aria-label="Aumenta partecipanti"
+                  onClick={() => setParticipants((v) => String(Math.min(100, Number(v || 1) + 1)))}
+                  className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 mr-1 rounded-md text-[#9C1C1C] bg-[#9C1C1C]/8 hover:bg-[#9C1C1C]/15 active:bg-[#9C1C1C]/25 transition-colors text-base font-bold leading-none select-none shrink-0 cursor-pointer"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            {/* Modalità di Spostamento con spiegazione e slug visibili */}
+            <div className={cn("flex flex-col relative", isTransportOpen ? "z-30" : "z-20")} ref={transportRef}>
+              <label className={cn(LABEL_CLS, "truncate")}>
+                {lang === "it" ? "Spostamento" : "Transport"}
+              </label>
+              <div className="relative">
+                <div className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 pointer-events-none z-10">
+                  {selectedTM ? (
+                    <span style={{ color: selectedTM.color || "#9C1C1C" }}>
+                      {renderIconByName(selectedTM.icon_name, { className: "w-3.5 h-3.5" }, Footprints)}
+                    </span>
+                  ) : (
+                    <Footprints className="w-3.5 h-3.5 text-[#92816A]" />
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsTransportOpen((v) => !v);
+                    setIsTourTypeOpen(false);
+                  }}
+                  className={cn(UNIFIED_FIELD_CLS, "pl-8 sm:pl-9 pr-6 text-left flex items-center justify-between cursor-pointer")}
+                  aria-haspopup="listbox"
+                  aria-expanded={isTransportOpen}
+                >
+                  <span className={cn("truncate", selectedTM ? "font-semibold text-[#3D2B1F] dark:text-[#fdf9f2]" : "text-[#92816A] dark:text-[#d6c5b0]")}>
+                    {selectedTM ? (lang === "it" ? selectedTM.name_it : selectedTM.name_en) : `— ${lang === "it" ? "Mezzo" : "Mode"} —`}
+                  </span>
+                  <div className="flex items-center gap-1 shrink-0 ml-1">
+                    {selectedTM && (
+                      <span className="font-mono text-[9px] uppercase px-1 py-0.2 rounded bg-black/5 dark:bg-white/10 text-[#7A6655] dark:text-[#d6c5b0] hidden xs:inline-block">
+                        {selectedTM.slug}
+                      </span>
+                    )}
+                    <ChevronDown className={cn("w-3.5 h-3.5 text-[#92816A] dark:text-[#d6c5b0] shrink-0 transition-transform duration-200", isTransportOpen && "rotate-180")} />
+                  </div>
+                </button>
+
+                {/* Hidden input per submit del form */}
+                <input type="hidden" name="transport" value={transport} />
+
+                {/* Dropdown Popover con spiegazione e slug per ogni modalità */}
+                {isTransportOpen && (
+                  <div className="absolute top-full right-0 w-[285px] sm:w-[340px] md:w-[370px] max-w-[calc(100vw-36px)] mt-1.5 z-50 bg-white dark:bg-[#1f1711] border border-[#E9DCC4] dark:border-[#382b20] rounded-2xl shadow-xl p-1.5 max-h-80 overflow-y-auto space-y-1 animate-dropdown">
+                    <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-[#92816A] dark:text-[#a89582] border-b border-black/5 dark:border-white/5 flex items-center justify-between">
+                      <span>{lang === "it" ? "Modalità di spostamento" : "Transport mode"}</span>
+                      <span className="font-mono text-[9px] lowercase bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded-md text-[#7A6655] dark:text-[#c7b59f]">slug</span>
+                    </div>
+
+                    {displayTransport.map((tm) => {
+                      const isSelected = tm.slug === transport;
+                      const desc = getTransportDescription(tm, lang);
+                      return (
+                        <button
+                          key={tm.slug}
+                          type="button"
+                          onClick={() => {
+                            setTransport(tm.slug);
+                            setIsTransportOpen(false);
+                          }}
+                          className={cn(
+                            "w-full text-left p-2 rounded-lg transition-all flex items-start gap-2.5 cursor-pointer",
+                            isSelected
+                              ? "bg-[#9C1C1C]/10 border border-[#9C1C1C]/30"
+                              : "hover:bg-[#F9F4EC] dark:hover:bg-[#2c221a] border border-transparent"
+                          )}
+                        >
+                          <span
+                            className="w-7 h-7 rounded-md flex items-center justify-center shrink-0 mt-0.5"
+                            style={{
+                              backgroundColor: `${tm.color || "#9C1C1C"}20`,
+                              color: tm.color || "#9C1C1C",
+                            }}
+                          >
+                            {renderIconByName(tm.icon_name, { className: "w-3.5 h-3.5" }, Footprints)}
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-1.5">
+                              <span className={cn("text-xs font-bold truncate", isSelected ? "text-[#9C1C1C] dark:text-[#f07f82]" : "text-[#3D2B1F] dark:text-[#f5ede2]")}>
+                                {lang === "it" ? tm.name_it : tm.name_en}
+                              </span>
+                              <span className="text-[9.5px] font-mono px-1.5 py-0.5 rounded-md bg-black/5 dark:bg-white/10 text-[#7A6655] dark:text-[#c7b59f] shrink-0">
+                                {tm.slug}
+                              </span>
+                            </div>
+                            {desc && (
+                              <p className="text-[11px] text-[#7A6655] dark:text-[#c7b59f] leading-snug mt-0.5">
+                                {desc}
+                              </p>
+                            )}
+                          </div>
+                          {isSelected && (
+                            <Check className="w-3.5 h-3.5 text-[#9C1C1C] dark:text-[#f07f82] shrink-0 mt-1" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Info strip della modalità selezionata - posizionata sotto la riga senza disallineare i campi */}
+          {selectedTM && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#F9F4EC]/75 dark:bg-[#2b2218] border border-[#E9DCC4] dark:border-white/15 text-[11px] text-[#7A6655] dark:text-[#d6c5b0] animate-dropdown">
+              <span className="font-mono text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-[#9C1C1C]/10 text-[#9C1C1C] dark:text-[#f59b9e] shrink-0">
+                {selectedTM.slug}
+              </span>
+              <span className="font-semibold text-[#3D2B1F] dark:text-[#fdf9f2] shrink-0">
+                {lang === "it" ? selectedTM.name_it : selectedTM.name_en}:
+              </span>
+              <span className="truncate">
+                {getTransportDescription(selectedTM, lang)}
+              </span>
+            </div>
+          )}
+
+          {/* RIGA 4: Note / Richieste particolari */}
+          <div>
+            <label className={cn(LABEL_CLS, "gap-1.5")}>
+              <FileText className="w-3.5 h-3.5 text-[#9C1C1C] dark:text-[#f59b9e]" />
+              {t("form.notes")}
+            </label>
+            <textarea
+              name="notes"
+              rows={2}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="w-full text-xs p-2 sm:p-2.5 bg-[#F9F4EC]/75 dark:bg-[#2b2218] border border-[#E9DCC4] dark:border-white/15 text-[#1E160A] dark:text-[#fdf9f2] rounded-lg focus:bg-white dark:focus:bg-[#34291f] focus:border-[#9C1C1C] dark:focus:border-[#fca59d] focus:outline-none transition-colors resize-y leading-relaxed placeholder:text-[#92816A] dark:placeholder:text-[#a89582]"
+              placeholder={t("form.phNotes")}
+            />
+          </div>
+
+          {/* GDPR Checkbox */}
+          <div className="flex items-start gap-2.5 pt-0.5 sm:pt-1">
+            <input
+              id="gdpr-check"
+              type="checkbox"
+              checked={checked}
+              onChange={(e) => {
+                setChecked(e.target.checked);
+                if (e.target.checked && err === t("form.gdpr")) setErr("");
+              }}
+              className="mt-0.5 w-3.5 h-3.5 text-[#9C1C1C] border-[#C4B49A] rounded-xs focus:ring-[#9C1C1C] cursor-pointer shrink-0"
+            />
+            <label htmlFor="gdpr-check" className="text-[11px] text-[#7A6655] cursor-pointer leading-tight">
+              <span className="text-[#9C1C1C] font-bold">* </span>
+              {lang === "it"
+                ? "Autorizzo il trattamento dei dati personali ai sensi del GDPR per ricevere il preventivo richiesto."
+                : "I authorize the processing of my personal data under GDPR exclusively to receive this quote."}
+            </label>
+          </div>
+
+          {/* Messaggi di Stato */}
+          {state === "success" && (
+            <div className="bg-[#4A6535]/15 border border-[#4A6535]/40 text-[#2F4220] p-3 rounded-lg text-xs font-semibold flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-[#4A6535] shrink-0" />
+              <span>{t("form.success")}</span>
+            </div>
+          )}
+          {state === "error" && (
+            <div className="bg-[#9C1C1C]/15 border border-[#9C1C1C]/40 text-[#9C1C1C] p-3 rounded-lg text-xs font-semibold flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-[#9C1C1C] shrink-0" />
+              <span>{err || t("form.error")}</span>
+            </div>
+          )}
+
+          {/* RIGA SUBMIT FOOTER */}
+          <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 border-t border-black/5">
+            <p className="text-[11px] text-[#92816A] flex items-center gap-1.5 font-light">
+              <ShieldCheck className="w-3.5 h-3.5 text-[#4A6535]" />
+              {lang === "it" ? "Dati protetti e riservati." : "Your data is strictly confidential."}
+            </p>
+
+            <button
+              type="submit"
+              disabled={state === "loading"}
+              className={cn(
+                "inline-flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-2.5 bg-[#9C1C1C] text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-[#6E1212] shadow-sm transition-all cursor-pointer",
+                state === "loading" && "opacity-70 cursor-not-allowed"
+              )}
+            >
+              <Send className="w-3.5 h-3.5" />
+              {state === "loading" ? t("form.submitting") : t("form.submit")}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+
+  if (embedMode) return card;
 
   return (
     <section id="prenota" className="section scroll-mt-24 bg-[#F9F4EC] dark:bg-bg-main border-t border-black/5 dark:border-white/5" style={defaultHidden ? { display: "none" } : undefined}>
@@ -297,693 +1002,7 @@ export default function BookingFormSection({
           hint="Le richieste inviate dai clienti vengono ricevute e gestite in Prenotazioni nella Dashboard."
           defaultHidden={defaultHidden}
         >
-          {/* Card Orizzontale Compatta - rounded-2xl uniforme con FAQ e resto del sito, senza overflow-hidden per evitare clipping dei dropdown */}
-          <div className="bg-white dark:bg-bg-card rounded-2xl shadow-sm border border-black/10 dark:border-white/10 grid lg:grid-cols-12 relative">
-
-            {/* Pannello Sinistro: Sfondo Rosso Profondo Harmonized con overflow-hidden per i blur interni */}
-            <div
-              className="lg:col-span-4 p-3.5 sm:p-8 flex flex-col justify-between relative overflow-hidden shadow-xl rounded-t-2xl lg:rounded-tr-none lg:rounded-bl-2xl"
-              style={{
-                background: "linear-gradient(135deg, #7E191B 0%, #4A0E10 100%)",
-                color: "var(--text-white)",
-              }}
-            >
-              {/* Sfondo decorativo soffuso */}
-              <div
-                className="absolute -top-16 -right-16 w-48 h-48 rounded-full blur-3xl pointer-events-none"
-                style={{ backgroundColor: "var(--color-stone)", opacity: 0.15 }}
-              />
-              <div
-                className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full blur-3xl pointer-events-none"
-                style={{ backgroundColor: "#9C1C1C", opacity: 0.25 }}
-              />
-
-              <div className="relative z-10">
-                <div className="flex items-center justify-between lg:block mb-2 sm:mb-4">
-                  <span
-                    className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:py-1 rounded-md text-[10px] sm:text-[11px] font-bold uppercase tracking-wider border"
-                    style={{
-                      backgroundColor: "rgba(255, 255, 255, 0.12)",
-                      color: "#F2E3D5",
-                      borderColor: "rgba(255, 255, 255, 0.2)",
-                    }}
-                  >
-                    <Award className="w-3 h-3 sm:w-3.5 sm:h-3.5" style={{ color: "#F2E3D5" }} />
-                    {lang === "it" ? "Preventivo Gratuito" : "Free Custom Quote"}
-                  </span>
-                  <a
-                    href="#contatti"
-                    className="lg:hidden text-[10.5px] font-semibold underline inline-flex items-center gap-1"
-                    style={{ color: "#F2E3D5" }}
-                  >
-                    <Phone className="w-3 h-3" />
-                    {lang === "it" ? "Contatti diretti" : "Direct contacts"}
-                  </a>
-                </div>
-
-                <h3
-                  className="font-serif text-lg sm:text-2xl lg:text-3xl font-bold leading-tight mb-1 sm:mb-3"
-                  style={{ color: "var(--text-white)" }}
-                >
-                  {lang === "it" ? "Pianifichiamo la tua visita" : "Let's Plan Your Experience"}
-                </h3>
-
-                <p
-                  className="hidden sm:block text-xs font-light leading-relaxed mb-3 sm:mb-6"
-                  style={{ color: "rgba(255, 255, 255, 0.85)" }}
-                >
-                  {lang === "it"
-                    ? "Compila il modulo con le tue preferenze. Riceverai una proposta su misura con programma e tariffe chiare."
-                    : "Fill in the form with your travel details. You'll receive a tailored itinerary with transparent rates."}
-                </p>
-
-                {/* Punti di forza compatti */}
-                <div className="flex flex-wrap sm:flex-col gap-2 sm:gap-3 pt-1.5 sm:pt-2 border-t border-white/15">
-                  <div className="flex items-center gap-1.5 sm:gap-2 text-[10.5px] sm:text-xs" style={{ color: "rgba(255, 255, 255, 0.9)" }}>
-                    <div
-                      className="w-4 h-4 sm:w-5 sm:h-5 rounded-md flex items-center justify-center shrink-0 border"
-                      style={{
-                        backgroundColor: "rgba(255, 255, 255, 0.15)",
-                        borderColor: "rgba(255, 255, 255, 0.25)",
-                        color: "#F2E3D5",
-                      }}
-                    >
-                      <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                    </div>
-                    <span>{lang === "it" ? "Risposta entro 24h" : "Reply within 24h"}</span>
-                  </div>
-
-                  <div className="flex items-center gap-1.5 sm:gap-2 text-[10.5px] sm:text-xs" style={{ color: "rgba(255, 255, 255, 0.9)" }}>
-                    <div
-                      className="w-4 h-4 sm:w-5 sm:h-5 rounded-md flex items-center justify-center shrink-0 border"
-                      style={{
-                        backgroundColor: "rgba(255, 255, 255, 0.15)",
-                        borderColor: "rgba(255, 255, 255, 0.25)",
-                        color: "#F2E3D5",
-                      }}
-                    >
-                      <Check className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                    </div>
-                    <span>{lang === "it" ? "100% flessibile" : "100% flexible"}</span>
-                  </div>
-
-                  <div className="hidden sm:flex items-center gap-2 text-xs" style={{ color: "rgba(255, 255, 255, 0.9)" }}>
-                    <div
-                      className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 border"
-                      style={{
-                        backgroundColor: "rgba(255, 255, 255, 0.15)",
-                        borderColor: "rgba(255, 255, 255, 0.25)",
-                        color: "#F2E3D5",
-                      }}
-                    >
-                      <ShieldCheck className="w-3 h-3" />
-                    </div>
-                    <span>{lang === "it" ? "Guida abilitata senza intermediari" : "Certified direct guide, no extra fees"}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Box Contatto Diretto Rapido (Desktop) */}
-              <div className="hidden lg:flex mt-6 pt-5 border-t border-white/15 relative z-10 text-[11px] items-center justify-between" style={{ color: "rgba(255, 255, 255, 0.7)" }}>
-                <span>{lang === "it" ? "Hai urgenza?" : "Need urgent info?"}</span>
-                <a
-                  href="#contatti"
-                  className="font-semibold underline inline-flex items-center gap-1 hover:text-white transition-colors"
-                  style={{ color: "#F2E3D5" }}
-                >
-                  <Phone className="w-3 h-3" />
-                  {lang === "it" ? "Contatti diretti" : "Direct contacts"}
-                </a>
-              </div>
-            </div>
-
-            {/* Pannello Destro: Form Orizzontale Compatto - nessun overflow-hidden per permettere ai popover di fluttuare */}
-            <div className="lg:col-span-8 p-3 sm:p-7 md:p-10 flex flex-col justify-center rounded-b-2xl lg:rounded-bl-none lg:rounded-tr-2xl bg-white dark:bg-[#1c1611] relative">
-              {/* Banner Interattivo di Notifica Pre-selezione Tour/Esperienza */}
-              {prefillBadge && (
-                <div
-                  className="mb-3 animate-fade-in-up border rounded-lg p-2 sm:p-3 flex items-center justify-between gap-2 shadow-xs bg-[#9C1C1C]/10 dark:bg-[#9C1C1C]/20 border-[#9C1C1C]/25 dark:border-[#9C1C1C]/40"
-                >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <span
-                      className="w-6 h-6 rounded-md flex items-center justify-center shrink-0 border bg-[#9C1C1C]/15 border-[#9C1C1C]/35 text-[#9C1C1C] dark:text-[#f07f82]"
-                    >
-                      <Sparkles className="w-3.5 h-3.5 animate-pulse" />
-                    </span>
-                    <div className="min-w-0">
-                      <span className="text-[9.5px] uppercase tracking-wider font-bold block text-[#9C1C1C] dark:text-[#f07f82]">
-                        {lang === "it" ? "Esperienza pre-compilata nel modulo" : "Tour pre-selected in form"}
-                      </span>
-                      <span className="text-xs sm:text-sm font-serif font-bold text-[#2B2018] dark:text-[#f5ede2] truncate block">
-                        {prefillBadge.destination || displayTT.find(t => t.id === prefillBadge.tourTypeId)?.name_it || "Tour selezionato"}
-                      </span>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPrefillBadge(null);
-                      setDestination("");
-                      setTourTypeId("");
-                      setMapSource("form");
-                      setMapLat(null);
-                      setMapLng(null);
-                      setMapPlaceId(null);
-                      setMapSpotId(null);
-                    }}
-                    className="text-[#72553F] dark:text-[#c7b59f] hover:text-[#93161A] dark:hover:text-[#f07f82] text-xs px-2 py-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5 transition-colors shrink-0 font-bold cursor-pointer"
-                    title={lang === "it" ? "Rimuovi pre-selezione" : "Clear selection"}
-                  >
-                    ✕
-                  </button>
-                </div>
-              )}
-
-              <form
-                ref={formRef}
-                onSubmit={onSubmit}
-                noValidate
-                className={cn(
-                  "space-y-2.5 sm:space-y-4 transition-all duration-500 rounded-xl relative",
-                  prefillFlash && "ring-4 ring-[#9C1C1C]/40 shadow-2xl scale-[1.01] bg-[#9C1C1C]/5 p-2"
-                )}
-              >
-
-                {/* RIGA 1: Dati Personali
-                    Mobile: Nome + Telefono affiancati, Email a tutta larghezza (le email sono lunghe).
-                    Desktop: 3 colonne nell'ordine Nome / Email / Telefono. */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-2 gap-y-2.5 sm:gap-3 items-start">
-                  <div className="flex flex-col order-1 sm:order-none">
-                    <label className={LABEL_CLS}>
-                      {t("form.name")} <span className="text-[#9C1C1C] ml-0.5">*</span>
-                    </label>
-                    <div className="relative">
-                      <User className="w-3.5 h-3.5 text-[#92816A] absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                      <input
-                        required
-                        name="full_name"
-                        type="text"
-                        placeholder={t("form.phName")}
-                        className={INPUT_CLS}
-                        minLength={2}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col col-span-2 order-3 sm:order-none sm:col-span-1">
-                    <label className={LABEL_CLS}>
-                      {t("form.email")} <span className="text-[#9C1C1C] ml-0.5">*</span>
-                    </label>
-                    <div className="relative">
-                      <Mail className="w-3.5 h-3.5 text-[#92816A] absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                      <input
-                        required
-                        name="email"
-                        type="email"
-                        placeholder={t("form.phEmail")}
-                        className={INPUT_CLS}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col order-2 sm:order-none">
-                    <label className={LABEL_CLS}>
-                      {t("form.phone")}
-                    </label>
-                    <div className="relative">
-                      <Phone className="w-3.5 h-3.5 text-[#92816A] absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                      <input
-                        name="phone"
-                        type="tel"
-                        placeholder={t("form.phPhone")}
-                        className={INPUT_CLS}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* RIGA 2: Scelta Itinerario
-                    Mobile: Tipologia + Destinazione affiancate, Lingua a tutta larghezza.
-                    Desktop: 3 colonne. */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-2 gap-y-2.5 sm:gap-3 items-start">
-                  {/* Tipologia di Tour con Dropdown personalizzato ed esaustivo */}
-                  <div className={cn("flex flex-col relative", isTourTypeOpen ? "z-30" : "z-20")} ref={tourTypeRef}>
-                    <label className={LABEL_CLS}>
-                      {t("form.category")} <span className="text-[#9C1C1C] ml-0.5">*</span>
-                    </label>
-                    <div className="relative">
-                      <div className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 pointer-events-none z-10">
-                        {selectedTT ? (
-                          renderIconByName(selectedTT.icon, { className: "w-3.5 h-3.5 text-[#9C1C1C]" }, Compass)
-                        ) : (
-                          <Compass className="w-3.5 h-3.5 text-[#92816A]" />
-                        )}
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsTourTypeOpen((v) => !v);
-                          setIsTransportOpen(false);
-                        }}
-                        className={cn(UNIFIED_FIELD_CLS, "pl-8 sm:pl-9 pr-6 text-left flex items-center justify-between cursor-pointer")}
-                        aria-haspopup="listbox"
-                        aria-expanded={isTourTypeOpen}
-                      >
-                        <span className={cn("truncate", selectedTT ? "font-semibold text-[#3D2B1F] dark:text-[#fdf9f2]" : "text-[#92816A] dark:text-[#d6c5b0]")}>
-                          {selectedTT ? tFieldStr(selectedTT as any, "name", lang) : `— ${lang === "it" ? "Tipologia" : "Tour type"} —`}
-                        </span>
-                        <ChevronDown className={cn("w-3.5 h-3.5 text-[#92816A] dark:text-[#d6c5b0] shrink-0 transition-transform duration-200", isTourTypeOpen && "rotate-180")} />
-                      </button>
-
-                      {/* Hidden input per submit del form con validazione */}
-                      <input type="hidden" name="tour_type_id" value={tourTypeId} required />
-
-                      {/* Dropdown Popover (rounded-2xl come la card del form; le voci interne usano rounded-lg per restare concentriche) */}
-                      {isTourTypeOpen && (
-                        <div className="absolute top-full left-0 w-[280px] sm:w-[320px] max-w-[calc(100vw-36px)] mt-1.5 z-50 bg-white dark:bg-[#1f1711] border border-[#E9DCC4] dark:border-[#382b20] rounded-2xl shadow-xl p-1.5 max-h-72 overflow-y-auto space-y-1 animate-dropdown">
-                          <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-[#92816A] dark:text-[#a89582] border-b border-black/5 dark:border-white/5">
-                            {lang === "it" ? "Seleziona tipologia tour" : "Select tour type"}
-                          </div>
-                          {displayTT.map((tt) => {
-                            const isSelected = tt.id === tourTypeId;
-                            const desc = tFieldStr(tt as any, "description", lang);
-                            return (
-                              <button
-                                key={tt.id}
-                                type="button"
-                                onClick={() => {
-                                  setTourTypeId(tt.id);
-                                  setIsTourTypeOpen(false);
-                                }}
-                                className={cn(
-                                  "w-full text-left p-2 rounded-lg transition-all flex items-start gap-2.5 cursor-pointer",
-                                  isSelected
-                                    ? "bg-[#9C1C1C]/10 border border-[#9C1C1C]/30"
-                                    : "hover:bg-[#F9F4EC] dark:hover:bg-[#2c221a] border border-transparent"
-                                )}
-                              >
-                                <span
-                                  className="w-7 h-7 rounded-md flex items-center justify-center shrink-0 mt-0.5"
-                                  style={{
-                                    backgroundColor: `${tt.color || "#9C1C1C"}20`,
-                                    color: tt.color || "#9C1C1C",
-                                  }}
-                                >
-                                  {renderIconByName(tt.icon, { className: "w-3.5 h-3.5" }, Compass)}
-                                </span>
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center justify-between gap-1">
-                                    <span className={cn("text-xs font-bold truncate", isSelected ? "text-[#9C1C1C] dark:text-[#f07f82]" : "text-[#3D2B1F] dark:text-[#f5ede2]")}>
-                                      {tFieldStr(tt as any, "name", lang)}
-                                    </span>
-                                    {isSelected && <Check className="w-3.5 h-3.5 text-[#9C1C1C] dark:text-[#f07f82] shrink-0" />}
-                                  </div>
-                                  {desc && (
-                                    <p className="text-[10.5px] text-[#7A6655] dark:text-[#c7b59f] leading-snug mt-0.5">
-                                      {desc}
-                                    </p>
-                                  )}
-                                </div>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Destinazione Preferita */}
-                  <div className="flex flex-col">
-                    <label className={LABEL_CLS}>
-                      {t("form.destination")}
-                    </label>
-                    <div className="relative">
-                      <MapPin className="w-3.5 h-3.5 text-[#92816A] absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                      <input
-                        name="preferred_destination"
-                        type="text"
-                        value={destination}
-                        onChange={(e) => setDestination(e.target.value)}
-                        className={INPUT_CLS}
-                        placeholder={lang === "it" ? "es. Venezia, Asiago..." : "e.g. Venice, Asiago..."}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Lingua della visita (Segmented Selector moderno) */}
-                  <div className="flex flex-col col-span-2 sm:col-span-1">
-                    <label className={cn(LABEL_CLS, "justify-between")}>
-                      <span>{t("form.visitLang")}</span>
-                      <span className="text-[9.5px] font-normal text-[#92816A] lowercase">
-                        {visitLang === "it" ? "in italiano" : "in english"}
-                      </span>
-                    </label>
-                    <div className="flex items-center p-1 bg-[#F9F4EC]/75 dark:bg-[#2b2218] border border-[#E9DCC4] dark:border-white/15 rounded-lg h-9 sm:h-10 gap-1 transition-colors">
-                      <button
-                        type="button"
-                        onClick={() => setVisitLang("it")}
-                        className={langBtn(visitLang === "it")}
-                      >
-                        <span className="text-xs leading-none">🇮🇹</span>
-                        <span>Italiano</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setVisitLang("en")}
-                        className={langBtn(visitLang === "en")}
-                      >
-                        <span className="text-xs leading-none">🇬🇧</span>
-                        <span>English</span>
-                      </button>
-                    </div>
-                    <input type="hidden" name="visit_language" value={visitLang} />
-                  </div>
-                </div>
-
-                {/* RIGA 3: Date, Partecipanti & Modalità di Spostamento - 2x2 su mobile, 4 colonne su desktop */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-2 gap-y-2.5 sm:gap-3 items-start">
-                  {/* Data Preferita */}
-                  <div className="flex flex-col">
-                    <label className={cn(LABEL_CLS, "truncate")}>
-                      {t("form.datePref")}
-                    </label>
-                    <div className="relative flex items-center w-full h-9 sm:h-10 pl-2.5 sm:pl-3 pr-2 bg-[#F9F4EC]/75 dark:bg-[#2b2218] border border-[#E9DCC4] dark:border-white/15 rounded-lg focus-within:border-[#9C1C1C] dark:focus-within:border-[#fca59d] focus-within:bg-white dark:focus-within:bg-[#34291f] hover:border-[#9C1C1C]/40 transition-colors cursor-pointer group">
-                      <Calendar className="w-3.5 h-3.5 text-[#92816A] dark:text-[#d6c5b0] group-hover:text-[#9C1C1C] dark:group-hover:text-[#e05a50] transition-colors shrink-0 mr-2 pointer-events-none" />
-                      <span
-                        className={cn(
-                          "text-xs font-sans truncate flex-1 select-none pointer-events-none",
-                          preferredDate ? "font-semibold text-[#3D2B1F] dark:text-[#fdf9f2]" : "text-[#92816A] dark:text-[#d6c5b0]"
-                        )}
-                      >
-                        {preferredDate ? formatDateDisplay(preferredDate, lang) : (lang === "it" ? "gg/mm/aaaa" : "dd/mm/yyyy")}
-                      </span>
-
-                      {preferredDate && (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            setPreferredDate("");
-                          }}
-                          className="relative z-20 w-5 h-5 rounded-full hover:bg-black/10 dark:hover:bg-white/10 flex items-center justify-center text-[#92816A] dark:text-[#d6c5b0] hover:text-[#9C1C1C] transition-colors cursor-pointer text-xs leading-none shrink-0"
-                          title={lang === "it" ? "Cancella data" : "Clear date"}
-                        >
-                          ✕
-                        </button>
-                      )}
-
-                      <input
-                        name="preferred_date"
-                        type="date"
-                        min={todayStr}
-                        value={preferredDate}
-                        onChange={(e) => setPreferredDate(e.target.value)}
-                        onClick={(e) => {
-                          try {
-                            (e.currentTarget as any).showPicker?.();
-                          } catch { }
-                        }}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                        aria-label={t("form.datePref")}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Data Alternativa */}
-                  <div className="flex flex-col">
-                    <label className={cn(LABEL_CLS, "truncate")}>
-                      {lang === "it" ? "Data Alt." : "Alt. Date"}
-                    </label>
-                    <div className="relative flex items-center w-full h-9 sm:h-10 pl-2.5 sm:pl-3 pr-2 bg-[#F9F4EC]/75 dark:bg-[#2b2218] border border-[#E9DCC4] dark:border-white/15 rounded-lg focus-within:border-[#9C1C1C] dark:focus-within:border-[#fca59d] focus-within:bg-white dark:focus-within:bg-[#34291f] hover:border-[#9C1C1C]/40 transition-colors cursor-pointer group">
-                      <Calendar className="w-3.5 h-3.5 text-[#92816A] dark:text-[#d6c5b0] group-hover:text-[#9C1C1C] dark:group-hover:text-[#e05a50] transition-colors shrink-0 mr-2 pointer-events-none" />
-                      <span
-                        className={cn(
-                          "text-xs font-sans truncate flex-1 select-none pointer-events-none",
-                          altDate ? "font-semibold text-[#3D2B1F] dark:text-[#fdf9f2]" : "text-[#92816A] dark:text-[#d6c5b0]"
-                        )}
-                      >
-                        {altDate ? formatDateDisplay(altDate, lang) : (lang === "it" ? "gg/mm/aaaa" : "dd/mm/yyyy")}
-                      </span>
-
-                      {altDate && (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            setAltDate("");
-                          }}
-                          className="relative z-20 w-5 h-5 rounded-full hover:bg-black/10 dark:hover:bg-white/10 flex items-center justify-center text-[#92816A] dark:text-[#d6c5b0] hover:text-[#9C1C1C] transition-colors cursor-pointer text-xs leading-none shrink-0"
-                          title={lang === "it" ? "Cancella data" : "Clear date"}
-                        >
-                          ✕
-                        </button>
-                      )}
-
-                      <input
-                        name="alternative_date"
-                        type="date"
-                        min={preferredDate || todayStr}
-                        value={altDate}
-                        onChange={(e) => setAltDate(e.target.value)}
-                        onClick={(e) => {
-                          try {
-                            (e.currentTarget as any).showPicker?.();
-                          } catch { }
-                        }}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                        aria-label={lang === "it" ? "Data Alternativa" : "Alternative Date"}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Partecipanti con stepper compatto */}
-                  <div className="flex flex-col">
-                    <label className={cn(LABEL_CLS, "truncate")}>
-                      {t("form.participants")}
-                    </label>
-                    <div className="flex items-center bg-[#F9F4EC]/75 dark:bg-[#2b2218] border border-[#E9DCC4] dark:border-white/15 rounded-lg overflow-hidden focus-within:border-[#9C1C1C] dark:focus-within:border-[#fca59d] focus-within:bg-white dark:focus-within:bg-[#34291f] transition-colors h-9 sm:h-10 px-1">
-                      <Users className="w-3.5 h-3.5 text-[#92816A] dark:text-[#cbb59d] shrink-0 ml-1.5 pointer-events-none" />
-                      <input
-                        name="participants"
-                        type="hidden"
-                        value={participants}
-                      />
-                      <button
-                        type="button"
-                        aria-label="Diminuisci partecipanti"
-                        onClick={() => setParticipants((v) => String(Math.max(1, Number(v || 1) - 1)))}
-                        className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 ml-1 rounded-md text-[#9C1C1C] dark:text-[#fca59d] bg-[#9C1C1C]/8 dark:bg-[#9C1C1C]/20 hover:bg-[#9C1C1C]/15 active:bg-[#9C1C1C]/25 transition-colors text-base font-bold leading-none select-none shrink-0 cursor-pointer"
-                      >
-                        −
-                      </button>
-                      <span className="flex-1 text-center text-xs font-sans font-semibold text-[#3D2B1F] dark:text-[#fdf9f2] select-none min-w-[2ch]">
-                        {participants || "1"}
-                      </span>
-                      <button
-                        type="button"
-                        aria-label="Aumenta partecipanti"
-                        onClick={() => setParticipants((v) => String(Math.min(100, Number(v || 1) + 1)))}
-                        className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 mr-1 rounded-md text-[#9C1C1C] bg-[#9C1C1C]/8 hover:bg-[#9C1C1C]/15 active:bg-[#9C1C1C]/25 transition-colors text-base font-bold leading-none select-none shrink-0 cursor-pointer"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Modalità di Spostamento con spiegazione e slug visibili */}
-                  <div className={cn("flex flex-col relative", isTransportOpen ? "z-30" : "z-20")} ref={transportRef}>
-                    <label className={cn(LABEL_CLS, "truncate")}>
-                      {lang === "it" ? "Spostamento" : "Transport"}
-                    </label>
-                    <div className="relative">
-                      <div className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 pointer-events-none z-10">
-                        {selectedTM ? (
-                          <span style={{ color: selectedTM.color || "#9C1C1C" }}>
-                            {renderIconByName(selectedTM.icon_name, { className: "w-3.5 h-3.5" }, Footprints)}
-                          </span>
-                        ) : (
-                          <Footprints className="w-3.5 h-3.5 text-[#92816A]" />
-                        )}
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsTransportOpen((v) => !v);
-                          setIsTourTypeOpen(false);
-                        }}
-                        className={cn(UNIFIED_FIELD_CLS, "pl-8 sm:pl-9 pr-6 text-left flex items-center justify-between cursor-pointer")}
-                        aria-haspopup="listbox"
-                        aria-expanded={isTransportOpen}
-                      >
-                        <span className={cn("truncate", selectedTM ? "font-semibold text-[#3D2B1F] dark:text-[#fdf9f2]" : "text-[#92816A] dark:text-[#d6c5b0]")}>
-                          {selectedTM ? (lang === "it" ? selectedTM.name_it : selectedTM.name_en) : `— ${lang === "it" ? "Mezzo" : "Mode"} —`}
-                        </span>
-                        <div className="flex items-center gap-1 shrink-0 ml-1">
-                          {selectedTM && (
-                            <span className="font-mono text-[9px] uppercase px-1 py-0.2 rounded bg-black/5 dark:bg-white/10 text-[#7A6655] dark:text-[#d6c5b0] hidden xs:inline-block">
-                              {selectedTM.slug}
-                            </span>
-                          )}
-                          <ChevronDown className={cn("w-3.5 h-3.5 text-[#92816A] dark:text-[#d6c5b0] shrink-0 transition-transform duration-200", isTransportOpen && "rotate-180")} />
-                        </div>
-                      </button>
-
-                      {/* Hidden input per submit del form */}
-                      <input type="hidden" name="transport" value={transport} />
-
-                      {/* Dropdown Popover con spiegazione e slug per ogni modalità */}
-                      {isTransportOpen && (
-                        <div className="absolute top-full right-0 w-[285px] sm:w-[340px] md:w-[370px] max-w-[calc(100vw-36px)] mt-1.5 z-50 bg-white dark:bg-[#1f1711] border border-[#E9DCC4] dark:border-[#382b20] rounded-2xl shadow-xl p-1.5 max-h-80 overflow-y-auto space-y-1 animate-dropdown">
-                          <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-[#92816A] dark:text-[#a89582] border-b border-black/5 dark:border-white/5 flex items-center justify-between">
-                            <span>{lang === "it" ? "Modalità di spostamento" : "Transport mode"}</span>
-                            <span className="font-mono text-[9px] lowercase bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded-md text-[#7A6655] dark:text-[#c7b59f]">slug</span>
-                          </div>
-
-                          {displayTransport.map((tm) => {
-                            const isSelected = tm.slug === transport;
-                            const desc = getTransportDescription(tm, lang);
-                            return (
-                              <button
-                                key={tm.slug}
-                                type="button"
-                                onClick={() => {
-                                  setTransport(tm.slug);
-                                  setIsTransportOpen(false);
-                                }}
-                                className={cn(
-                                  "w-full text-left p-2 rounded-lg transition-all flex items-start gap-2.5 cursor-pointer",
-                                  isSelected
-                                    ? "bg-[#9C1C1C]/10 border border-[#9C1C1C]/30"
-                                    : "hover:bg-[#F9F4EC] dark:hover:bg-[#2c221a] border border-transparent"
-                                )}
-                              >
-                                <span
-                                  className="w-7 h-7 rounded-md flex items-center justify-center shrink-0 mt-0.5"
-                                  style={{
-                                    backgroundColor: `${tm.color || "#9C1C1C"}20`,
-                                    color: tm.color || "#9C1C1C",
-                                  }}
-                                >
-                                  {renderIconByName(tm.icon_name, { className: "w-3.5 h-3.5" }, Footprints)}
-                                </span>
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center justify-between gap-1.5">
-                                    <span className={cn("text-xs font-bold truncate", isSelected ? "text-[#9C1C1C] dark:text-[#f07f82]" : "text-[#3D2B1F] dark:text-[#f5ede2]")}>
-                                      {lang === "it" ? tm.name_it : tm.name_en}
-                                    </span>
-                                    <span className="text-[9.5px] font-mono px-1.5 py-0.5 rounded-md bg-black/5 dark:bg-white/10 text-[#7A6655] dark:text-[#c7b59f] shrink-0">
-                                      {tm.slug}
-                                    </span>
-                                  </div>
-                                  {desc && (
-                                    <p className="text-[11px] text-[#7A6655] dark:text-[#c7b59f] leading-snug mt-0.5">
-                                      {desc}
-                                    </p>
-                                  )}
-                                </div>
-                                {isSelected && (
-                                  <Check className="w-3.5 h-3.5 text-[#9C1C1C] dark:text-[#f07f82] shrink-0 mt-1" />
-                                )}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Info strip della modalità selezionata - posizionata sotto la riga senza disallineare i campi */}
-                {selectedTM && (
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#F9F4EC]/75 dark:bg-[#2b2218] border border-[#E9DCC4] dark:border-white/15 text-[11px] text-[#7A6655] dark:text-[#d6c5b0] animate-dropdown">
-                    <span className="font-mono text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-[#9C1C1C]/10 text-[#9C1C1C] dark:text-[#f59b9e] shrink-0">
-                      {selectedTM.slug}
-                    </span>
-                    <span className="font-semibold text-[#3D2B1F] dark:text-[#fdf9f2] shrink-0">
-                      {lang === "it" ? selectedTM.name_it : selectedTM.name_en}:
-                    </span>
-                    <span className="truncate">
-                      {getTransportDescription(selectedTM, lang)}
-                    </span>
-                  </div>
-                )}
-
-                {/* RIGA 4: Note / Richieste particolari */}
-                <div>
-                  <label className={cn(LABEL_CLS, "gap-1.5")}>
-                    <FileText className="w-3.5 h-3.5 text-[#9C1C1C] dark:text-[#f59b9e]" />
-                    {t("form.notes")}
-                  </label>
-                  <textarea
-                    name="notes"
-                    rows={2}
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    className="w-full text-xs p-2 sm:p-2.5 bg-[#F9F4EC]/75 dark:bg-[#2b2218] border border-[#E9DCC4] dark:border-white/15 text-[#1E160A] dark:text-[#fdf9f2] rounded-lg focus:bg-white dark:focus:bg-[#34291f] focus:border-[#9C1C1C] dark:focus:border-[#fca59d] focus:outline-none transition-colors resize-y leading-relaxed placeholder:text-[#92816A] dark:placeholder:text-[#a89582]"
-                    placeholder={t("form.phNotes")}
-                  />
-                </div>
-
-                {/* GDPR Checkbox */}
-                <div className="flex items-start gap-2.5 pt-0.5 sm:pt-1">
-                  <input
-                    id="gdpr-check"
-                    type="checkbox"
-                    checked={checked}
-                    onChange={(e) => {
-                      setChecked(e.target.checked);
-                      if (e.target.checked && err === t("form.gdpr")) setErr("");
-                    }}
-                    className="mt-0.5 w-3.5 h-3.5 text-[#9C1C1C] border-[#C4B49A] rounded-xs focus:ring-[#9C1C1C] cursor-pointer shrink-0"
-                  />
-                  <label htmlFor="gdpr-check" className="text-[11px] text-[#7A6655] cursor-pointer leading-tight">
-                    <span className="text-[#9C1C1C] font-bold">* </span>
-                    {lang === "it"
-                      ? "Autorizzo il trattamento dei dati personali ai sensi del GDPR per ricevere il preventivo richiesto."
-                      : "I authorize the processing of my personal data under GDPR exclusively to receive this quote."}
-                  </label>
-                </div>
-
-                {/* Messaggi di Stato */}
-                {state === "success" && (
-                  <div className="bg-[#4A6535]/15 border border-[#4A6535]/40 text-[#2F4220] p-3 rounded-lg text-xs font-semibold flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#4A6535] shrink-0" />
-                    <span>{t("form.success")}</span>
-                  </div>
-                )}
-                {state === "error" && (
-                  <div className="bg-[#9C1C1C]/15 border border-[#9C1C1C]/40 text-[#9C1C1C] p-3 rounded-lg text-xs font-semibold flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4 text-[#9C1C1C] shrink-0" />
-                    <span>{err || t("form.error")}</span>
-                  </div>
-                )}
-
-                {/* RIGA SUBMIT FOOTER */}
-                <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 border-t border-black/5">
-                  <p className="text-[11px] text-[#92816A] flex items-center gap-1.5 font-light">
-                    <ShieldCheck className="w-3.5 h-3.5 text-[#4A6535]" />
-                    {lang === "it" ? "Dati protetti e riservati." : "Your data is strictly confidential."}
-                  </p>
-
-                  <button
-                    type="submit"
-                    disabled={state === "loading"}
-                    className={cn(
-                      "inline-flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-2.5 bg-[#9C1C1C] text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-[#6E1212] shadow-sm transition-all cursor-pointer",
-                      state === "loading" && "opacity-70 cursor-not-allowed"
-                    )}
-                  >
-                    <Send className="w-3.5 h-3.5" />
-                    {state === "loading" ? t("form.submitting") : t("form.submit")}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
+          {card}
         </LiveEditSectionMask>
       </div>
     </section>

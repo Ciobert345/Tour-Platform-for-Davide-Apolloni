@@ -3,8 +3,8 @@
 import EditableSectionHeading from "@/components/live-edit/EditableSectionHeading";
 import LiveEditSectionMask from "@/components/live-edit/LiveEditSectionMask";
 import { useLang, useT } from "@/lib/i18n/LanguageProvider";
-import { Children, useEffect, useRef, useState, type ReactNode } from "react";
-import { tFieldStr, tArrField, placeFullDescription } from "@/lib/utils";
+import { Children, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { tFieldStr, tArrField, placeFullDescription, cn } from "@/lib/utils";
 import { renderWithLinks } from "@/lib/renderWithLinks";
 import { triggerBookingPrefill } from "@/lib/bookingPrefill";
 import { Clock, Calendar, Sparkles } from "lucide-react";
@@ -56,10 +56,113 @@ export default function ToursSection({
   // Guardia difensiva: places potrebbe arrivare undefined in edge case
   const safePlaces = Array.isArray(places) ? places : [];
 
-  // Filtra fuori i luoghi contrassegnati come esperienze esclusive
-  const standardPlaces = safePlaces.filter(
-    (p) => !p.place_tour_types?.some((pt) => pt.tour_type.is_exclusive)
+  // Filtra fuori i luoghi contrassegnati come esperienze esclusive (memoizzato per evitare re-render continui)
+  const standardPlaces = useMemo(
+    () => safePlaces.filter((p) => !p.place_tour_types?.some((pt) => pt.tour_type.is_exclusive)),
+    [safePlaces]
   );
+
+  const [highlightedTourId, setHighlightedTourId] = useState<string | null>(null);
+
+  // Timer dedicato di 5 secondi: fa svanire il bagliore e azzera lo stato
+  useEffect(() => {
+    if (!highlightedTourId) return;
+
+    const timer = setTimeout(() => {
+      setHighlightedTourId(null);
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [highlightedTourId]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    // 1. Legge il tour da evidenziare dal sessionStorage (impostato da "Vedi la scheda" nella mappa)
+    let rawQuery: string | null = null;
+    try {
+      rawQuery = sessionStorage.getItem("highlight_tour");
+      if (rawQuery) {
+        // CANCELLA SUBITO: token consumato al primo atterraggio, non potrà MAI più rieseguirsi al ricaricamento (F5)
+        sessionStorage.removeItem("highlight_tour");
+      }
+    } catch {
+      // ignore
+    }
+
+    // 2. Fallback se qualcuno apre direttamente un link esterno con ?tour=
+    if (!rawQuery) {
+      const params = new URLSearchParams(window.location.search);
+      rawQuery = params.get("tour") || params.get("select");
+      if (rawQuery) {
+        try {
+          window.history.replaceState(null, "", window.location.pathname + (window.location.hash || "#tour"));
+        } catch {
+          // ignore
+        }
+      }
+    }
+
+    if (!rawQuery) return;
+
+    const clean = (s: string | null) => (s ? decodeURIComponent(s).trim().toLowerCase() : "");
+    const qTour = clean(rawQuery);
+
+    // Ricerca in standardPlaces
+    const match = standardPlaces.find((p) => {
+      const pid = clean(p.id);
+      const pslug = clean(p.slug);
+      const pnameIt = clean(p.name_it);
+      const pnameEn = clean(p.name_en);
+
+      if (qTour && (pid === qTour || p.id === rawQuery)) return true;
+      if (qTour && pslug && (pslug === qTour || pslug.includes(qTour) || qTour.includes(pslug))) return true;
+      if (qTour && pnameIt && (pnameIt === qTour || pnameIt.includes(qTour) || qTour.includes(pnameIt))) return true;
+      if (qTour && pnameEn && (pnameEn === qTour || pnameEn.includes(qTour) || qTour.includes(pnameEn))) return true;
+      return false;
+    });
+
+    const matchedId = match ? match.id : null;
+
+    if (matchedId) {
+      setHighlightedTourId(matchedId);
+
+      const performScroll = () => {
+        const cardEl = document.getElementById(`tour-card-${matchedId}`);
+        const sectionEl = document.getElementById("tour");
+
+        if (cardEl) {
+          // 1. Centra verticalmente e orizzontalmente la card nella finestra
+          cardEl.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+
+          // 2. Perfeziona la centratura orizzontale nello scroller del carosello
+          const scroller = cardEl.closest(".overflow-x-auto") as HTMLElement | null;
+          if (scroller) {
+            const scrollerRect = scroller.getBoundingClientRect();
+            const cardRect = cardEl.getBoundingClientRect();
+            const currentScrollLeft = scroller.scrollLeft;
+            const cardOffsetInScroller = cardRect.left - scrollerRect.left + currentScrollLeft;
+            const targetLeft = cardOffsetInScroller - (scroller.clientWidth - cardRect.width) / 2;
+            scroller.scrollTo({ left: Math.max(0, targetLeft), behavior: "smooth" });
+          }
+        } else if (sectionEl) {
+          const sectionTop = sectionEl.getBoundingClientRect().top + window.scrollY - 70;
+          window.scrollTo({ top: Math.max(0, sectionTop), behavior: "smooth" });
+        }
+      };
+
+      performScroll();
+      const t1 = setTimeout(performScroll, 120);
+      const t2 = setTimeout(performScroll, 400);
+      const t3 = setTimeout(performScroll, 800);
+
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+        clearTimeout(t3);
+      };
+    }
+  }, [standardPlaces]);
 
   return (
     <section id="tour" className="section bg-bg-main" style={defaultHidden ? { display: "none" } : undefined}>
@@ -85,10 +188,10 @@ export default function ToursSection({
           defaultHidden={defaultHidden}
         >
           {standardPlaces.length === 0 ? (
-            <FallbackTourCards t={t} lang={lang} />
+            <FallbackTourCards t={t} lang={lang} highlightedId={highlightedTourId} />
           ) : (
             <PlaceCardsCarousel lang={lang}>
-              {standardPlaces.slice(0, 12).map((p, idx) => (
+              {standardPlaces.map((p, idx) => (
                 <PlaceCard
                   key={p.id}
                   place={p}
@@ -96,6 +199,7 @@ export default function ToursSection({
                   t={t}
                   ttId={p.place_tour_types?.[0]?.tour_type?.id}
                   fallbackIdx={idx}
+                  isHighlighted={highlightedTourId === p.id}
                 />
               ))}
             </PlaceCardsCarousel>
@@ -133,12 +237,14 @@ function PlaceCard({
   t,
   ttId,
   fallbackIdx = 0,
+  isHighlighted = false,
 }: {
   place: PlaceT;
   lang: Lang;
   t: TFn;
   ttId?: string;
   fallbackIdx?: number;
+  isHighlighted?: boolean;
 }) {
   const rawCover = place.cover_image_url?.trim();
   const cover =
@@ -173,6 +279,8 @@ function PlaceCard({
 
   return (
     <CardShell
+      id={`tour-card-${place.id}`}
+      isHighlighted={isHighlighted}
       cover={cover}
       alt={name || "Itinerario"}
       placeTypeName={placeTypeName}
@@ -275,6 +383,8 @@ function DescFade({ children }: { children: ReactNode }) {
    CardShell — layout condiviso (DB + fallback): stessa altezza sempre
    ========================================================= */
 function CardShell({
+  id,
+  isHighlighted = false,
   cover,
   alt,
   placeTypeName,
@@ -288,6 +398,8 @@ function CardShell({
   onBook,
   children,
 }: {
+  id?: string;
+  isHighlighted?: boolean;
   cover: string;
   alt: string;
   placeTypeName: string;
@@ -304,7 +416,19 @@ function CardShell({
   const bookLabel = t("tours.btnBook", lang === "it" ? "Prenota" : "Book");
 
   return (
-    <article className={CARD_CLASS}>
+    <article
+      id={id}
+      className={cn(
+        CARD_CLASS,
+        "relative transition-all duration-700 ease-out",
+        isHighlighted && [
+          "ring-4 ring-[#9C1C1C] dark:ring-[#C4923A]",
+          "border-[#9C1C1C] dark:border-[#C4923A]",
+          "shadow-[0_0_22px_rgba(156,28,28,0.55),0_0_8px_rgba(156,28,28,0.75)] dark:shadow-[0_0_24px_rgba(196,146,58,0.65),0_0_8px_rgba(196,146,58,0.85)]",
+          "z-20",
+        ]
+      )}
+    >
       <div className="relative h-44 sm:h-56 bg-stone/30 overflow-hidden shrink-0">
         <Image
           src={optimizeImageUrl(cover, 720, 75)}
@@ -316,11 +440,27 @@ function CardShell({
           className="object-cover transition-opacity duration-300"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-bg-dark/70 via-transparent to-transparent pointer-events-none" />
-        {placeTypeName && (
-          <span className="absolute top-3 right-3 sm:top-3.5 sm:right-3.5 bg-bg-dark/80 backdrop-blur-md text-text-white text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-sm border border-white/10 z-10">
-            {placeTypeName}
-          </span>
-        )}
+
+        {/* Intestazione badge dell'immagine: flex-nowrap per tenerli rigorosamente sulla stessa riga */}
+        <div className="absolute top-3 inset-x-3 sm:top-3.5 sm:inset-x-3.5 z-20 flex items-center justify-between gap-2 flex-nowrap pointer-events-none">
+          {isHighlighted && (
+            <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-sm bg-[#9C1C1C] dark:bg-[#C4923A] text-white text-[8.5px] sm:text-[9.5px] font-bold uppercase tracking-wider shadow-md border border-white/20 shrink-0 whitespace-nowrap">
+              <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white shrink-0" />
+              <span>{lang === "it" ? "Scheda selezionata" : "Selected tour"}</span>
+            </span>
+          )}
+          {placeTypeName && (
+            <span
+              title={placeTypeName}
+              className={cn(
+                "bg-bg-dark/80 backdrop-blur-md text-text-white text-[8.5px] sm:text-[9.5px] font-semibold uppercase tracking-wider px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-sm border border-white/10 shrink min-w-0 truncate text-right",
+                !isHighlighted && "ml-auto"
+              )}
+            >
+              {placeTypeName}
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="p-4 sm:p-6 flex flex-col grow">
@@ -377,7 +517,15 @@ function CardShell({
 /* =========================================================
    Fallback (se il DB non ha dati) — con modale come le card vere
    ========================================================= */
-function FallbackTourCards({ t, lang }: { t: TFn; lang: Lang }) {
+function FallbackTourCards({
+  t,
+  lang,
+  highlightedId,
+}: {
+  t: TFn;
+  lang: Lang;
+  highlightedId?: string | null;
+}) {
   const it = lang === "it";
   const cards = [
     {
@@ -415,7 +563,13 @@ function FallbackTourCards({ t, lang }: { t: TFn; lang: Lang }) {
   return (
     <PlaceCardsCarousel lang={lang}>
       {cards.map((c) => (
-        <FallbackCard key={c.slug} card={c} lang={lang} t={t} />
+        <FallbackCard
+          key={c.slug}
+          card={c}
+          lang={lang}
+          t={t}
+          isHighlighted={highlightedId === c.slug}
+        />
       ))}
     </PlaceCardsCarousel>
   );
@@ -425,15 +579,19 @@ function FallbackCard({
   card,
   lang,
   t,
+  isHighlighted = false,
 }: {
   card: { slug: string; tag: string; name: string; desc: string; tags: string[]; img: string };
   lang: Lang;
   t: TFn;
+  isHighlighted?: boolean;
 }) {
   const [modalOpen, setModalOpen] = useState(false);
 
   return (
     <CardShell
+      id={`tour-card-${card.slug}`}
+      isHighlighted={isHighlighted}
       cover={card.img}
       alt={card.name}
       placeTypeName={card.tag}

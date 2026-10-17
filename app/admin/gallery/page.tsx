@@ -444,13 +444,18 @@ export default function AdminGalleryPage() {
                 </label>
                 {draft.url && (
                   <div className="text-xs text-[#7A6655] bg-[#F9F4EC] p-3 rounded-sm border border-[#E9DCC4]">
-                    {draft.url.includes("youtube") || draft.url.includes("youtu.be")
-                      ? "✓ Rilevato: YouTube"
-                      : draft.url.includes("vimeo")
-                        ? "✓ Rilevato: Vimeo"
-                        : draft.url.endsWith(".mp4")
-                          ? "✓ Rilevato: File MP4 diretto"
-                          : "⚠️ Formato URL non riconosciuto. Assicurati che sia un link YouTube, Vimeo o un file .mp4"}
+                    {draft.url.includes("youtube") || draft.url.includes("youtu.be") ? (
+                      "✓ Rilevato: YouTube"
+                    ) : draft.url.includes("vimeo") ? (
+                      "✓ Rilevato: Vimeo"
+                    ) : draft.url.endsWith(".mp4") ? (
+                      "✓ Rilevato: File MP4 diretto"
+                    ) : (
+                      <span className="flex items-center gap-1.5 text-[#B89200]">
+                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                        Formato URL non riconosciuto. Assicurati che sia un link YouTube, Vimeo o un file .mp4
+                      </span>
+                    )}
                   </div>
                 )}
               </div>

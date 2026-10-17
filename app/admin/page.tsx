@@ -16,7 +16,6 @@ import { cn, formatDate, renderStars } from "@/lib/utils";
 
 import AdminTutorial from "@/components/admin/AdminTutorial";
 import MaintenanceToggle from "@/components/admin/MaintenanceToggle";
-import MapSectionToggle from "@/components/admin/MapSectionToggle";
 
 /* ============================================================
    DASHBOARD ADMIN — Server Component
@@ -78,9 +77,6 @@ export default async function AdminDashboard() {
 
       {/* ======== Modalita Manutenzione ======== */}
       <MaintenanceToggle />
-
-      {/* ======== Sezione e banner mappa pubblica ======== */}
-      <MapSectionToggle />
 
       {/* ======== Stat cards ======== */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

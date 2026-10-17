@@ -35,7 +35,12 @@ export const FALLBACK_STRINGS: UiStringsMap = {
   "nav.about": { it: "Chi sono", en: "About Me" },
   "nav.tours": { it: "Itinerari", en: "Tours" },
   "nav.experiences": { it: "Esperienze", en: "Experiences" },
-  "nav.exclusive": { it: "Esperienze", en: "Exclusive" },
+  "nav.exclusive": { it: "Esperienze", en: "Experiences" },
+  "nav.mobile.about": { it: "Chi sono", en: "About" },
+  "nav.mobile.tours": { it: "Tour", en: "Tours" },
+  "nav.mobile.exclusive": { it: "Esperienze", en: "Experiences" },
+  "nav.mobile.map": { it: "Mappa", en: "Map" },
+  "nav.mobile.book": { it: "Prenota", en: "Book" },
   "nav.ww1": { it: "Grande Guerra", en: "World War I" },
   "nav.media": { it: "Galleria", en: "Gallery" },
   "nav.reviews": { it: "Recensioni", en: "Reviews" },
@@ -262,8 +267,10 @@ export function LanguageProvider({
   const t = useCallback(
     (key: string, fallback?: string): string => {
       const s = strings[key];
-      if (s) return s[lang];
-      return fallback ?? key;
+      if (s && s[lang] && s[lang].trim()) return s[lang];
+      if (fallback !== undefined) return fallback;
+      if (s?.it && s.it.trim()) return s.it;
+      return key;
     },
     [strings, lang]
   );
