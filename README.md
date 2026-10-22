@@ -74,36 +74,6 @@ Il sistema di live editing consente di modificare ogni stringa di testo del sito
 
 ---
 
-## Architettura
-
-```
-app/
-  page.tsx              # Homepage pubblica (SSR con dati Supabase)
-  (map)/mappa/          # Mappa interattiva OpenStreetMap
-  admin/                # Area amministrativa (15+ sezioni)
-  api/
-    translate/          # Route handler per traduzione AI
-    geo/                # Proxy Nominatim (reverse/search) e Wikimedia Commons
-    ...
-
-components/
-  public/               # Sezioni della homepage (Hero, Tours, Events, ...)
-  admin/                # Componenti del pannello admin
-  live-edit/            # Sistema di editing inline in-page
-
-lib/
-  i18n/                 # LanguageProvider, hook useLang/useT
-  data/                 # Query Supabase (public.ts, admin.ts)
-  live-edit/            # Logica salvataggio modifiche live
-  imageUtils.ts         # Ottimizzazione URL immagini esterne
-  supabase/             # Client Supabase (server e browser)
-
-types/
-  database.types.ts     # Tipi generati automaticamente da Supabase
-```
-
----
-
 ## Note sul design
 
 ### Privacy — mappa
